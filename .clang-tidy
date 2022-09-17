@@ -1,0 +1,391 @@
+Checks: 'clang-diagnostic-*,clang-analyzer-*,google-*,darwin-*,llvm-*,modernize-*'
+CheckOptions:
+  ##############################################################################
+  # READABILITY
+  ##############################################################################
+  - key: readability-avoid-const-params-in-decls
+    value: 'true'
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: 4
+  - key: readability-const-return-type
+    value: 'true'
+  - key: readability-container-size-empty
+    value: 'true'
+  - key: readability-convert-member-functions-to-static
+    value: 'true'
+  - key: readability-delete-null-pointer
+    value: 'true'
+  - key: readability-else-after-return
+    value: 'true'
+  - key: readability-else-after-return.WarnOnConditionVariables
+    value: 'true'
+  - key: readability-function-cognitive-complexity
+    value: 'true'
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: 'true'
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: 'true'
+  - key: readability-inconsistent-declaration-parameter-name
+    value: 'true'
+  - key: readability-isolate-declaration
+    value: 'false'
+  - key: readability-magic-numbers
+    value: 'true'
+  - key: readability-make-member-function-const
+    value: 'true'
+  - key: readability-misleading-indentation
+    value: 'true'
+  - key: readability-misplaced-array-index
+    value: 'true'
+  - key: readability-named-parameter
+    value: 'true'
+  - key: readability-non-const-parameter
+    value: 'true'
+  - key: readability-redundant-control-flow
+    value: 'true'
+  - key: readability-redundant-declaration
+    value: 'true'
+  - key: readability-redundant-function-ptr-dereference
+    value: 'true'
+  - key: readability-redundant-member-init
+    value: 'true'
+  - key: readability-redundant-preprocessor
+    value: 'true'
+  - key: readability-redundant-smartptr-get
+    value: 'true'
+  - key: readability-redundant-string-cstr
+    value: 'true'
+  - key: readability-redundant-string-init
+    value: 'true'
+  - key: readability-simplify-boolean-expr
+    value: 'true'
+  - key: readability-simplify-subscript-expr
+    value: 'true'
+  - key: readability-static-accessed-through-instance
+    value: 'true'
+  - key: readability-static-definition-in-anonymous-namespace
+    value: 'true'
+  - key: readability-string-compare
+    value: 'true'
+  - key: readability-suspicious-call-argument
+    value: 'false'
+  - key: readability-uniqueptr-delete-release
+    value: 'true'
+  - key: readability-uniqueptr-delete-release.PreferResetCall
+    value: 'true'
+  - key: readability-uppercase-literal-suffix
+    value: 'true'
+  - key: readability-use-anyofallof
+    value: 'true'
+  - key: readability-qualified-auto
+    value: 'true'
+  ##############################################################################
+  # Modernize
+  ##############################################################################
+  - key: modernize-avoid-bind
+    value: 'true'
+  - key: modernize-avoid-c-arrays
+    value: 'true'
+  - key: modernize-concat-nested-namespaces
+    value: 'true'
+  - key: modernize-deprecated-headers
+    value: 'true'
+  - key: modernize-deprecated-ios-base-aliases
+    value: 'true'
+  - key: modernize-loop-convert
+    value: 'true'
+  - key: modernize-make-shared
+    value: 'true'
+  - key: modernize-make-unique
+    value: 'true'
+  - key: modernize-pass-by-value
+    value: 'true'
+  - key: modernize-raw-string-literal
+    value: 'true'
+  - key: modernize-redundant-void-arg
+    value: 'true'
+  - key: modernize-replace-auto-ptr
+    value: 'true'
+  - key: modernize-replace-disallow-copy-and-assign-macro
+    value: 'true'
+  - key: modernize-replace-random-shuffle
+    value: 'true'
+  - key: modernize-return-braced-init-list
+    value: 'true'
+  - key: modernize-shrink-to-fit
+    value: 'true'
+  - key: modernize-unary-static-assert
+    value: 'true'
+  - key: modernize-use-auto
+    value: 'true'
+  - key: modernize-use-bool-literals
+    value: 'true'
+  - key: modernize-use-default-member-init
+    value: 'true'
+  - key: modernize-use-emplace
+    value: 'true'
+  - key: modernize-use-equals-default
+    value: 'true'
+  - key: modernize-use-equals-delete
+    value: 'true'
+  - key: modernize-use-nodiscard
+    value: 'true'
+  - key: modernize-use-noexcept
+    value: 'true'
+  - key: modernize-use-nullptr
+    value: 'true'
+  - key: modernize-use-override
+    value: 'true'
+  - key: modernize-use-trailing-return-type
+    value: 'true'
+  - key: modernize-use-transparent-functors
+    value: 'true'
+  - key: modernize-use-uncaught-exceptions
+    value: 'true'
+  - key: modernize-use-using
+    value: 'true'
+  ##############################################################################
+  # LLVM
+  ##############################################################################
+  - key: llvm-header-guard.HeaderFileExtensions
+    value: 'h,def'
+  - key: llvm-include-order
+    value: 'true'
+  - key: llvm-namespace-comment
+    value: 'true'
+  - key: llvm-prefer-isa-or-dyn-cast-in-conditionals
+    value: 'true'
+  - key: llvm-prefer-isa-or-dyn-cast-in-conditionals.AddConstToQualified
+    value: 'true'
+  ##############################################################################
+  # Darwin
+  ##############################################################################
+  - key: darwin-avoid-spinlock
+    value: 'true'
+  - key: darwin-dispatch-once-nonstatic
+    value: 'true'
+  ##############################################################################
+  # Clang Analyzer
+  ##############################################################################
+  - key: clang-analyzer-apiModeling.StdCLibraryFunctions
+    value: 'true'
+  - key: clang-analyzer-apiModeling.TrustNonnull
+    value: 'true'
+  - key: clang-analyzer-apiModeling.llvm.ReturnValue
+    value: 'true'
+  - key: clang-analyzer-apiModeling.llvm.CastValue
+    value: 'true'
+  - key: clang-analyzer-apiModeling.google.GTest
+    value: 'true'
+  - key: clang-analyzer-core.CallAndMessage
+    value: 'true'
+  - key: clang-analyzer-core.CallAndMessageModeling
+    value: 'true'
+  - key: clang-analyzer-core.DivideZero
+    value: 'true'
+  - key: clang-analyzer-core.DynamicTypePropagation
+    value: 'true'
+  - key: clang-analyzer-core.NonNullParamChecker
+    value: 'true'
+  - key: clang-analyzer-core.NonnilStringConstants
+    value: 'true'
+  - key: clang-analyzer-core.NullDereference
+    value: 'true'
+  - key: clang-analyzer-core.StackAddrEscapeBase
+    value: 'true'
+  - key: clang-analyzer-core.StackAddressEscape
+    value: 'true'
+  - key: clang-analyzer-core.UndefinedBinaryOperatorResult
+    value: 'true'
+  - key: clang-analyzer-core.VLASize
+    value: 'true'
+  - key: clang-analyzer-core.builtin.BuiltinFunctions
+    value: 'true'
+  - key: clang-analyzer-core.builtin.NoReturnFunctions
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.ArraySubscript
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.Assign
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.Branch
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.CapturedBlockVariable
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.UndefReturn
+    value: 'true'
+  - key: clang-analyzer-cplusplus.InnerPointer
+    value: 'true'
+  - key: clang-analyzer-cplusplus.Move
+    value: 'true'
+  - key: clang-analyzer-cplusplus.NewDelete
+    value: 'true'
+  - key: clang-analyzer-cplusplus.NewDeleteLeaks
+    value: 'true'
+  - key: clang-analyzer-cplusplus.PlacementNew
+    value: 'true'
+  - key: clang-analyzer-cplusplus.PureVirtualCall
+    value: 'true'
+  - key: clang-analyzer-cplusplus.SelfAssignment
+    value: 'true'
+  - key: clang-analyzer-cplusplus.SmartPtrModeling
+    value: 'true'
+  - key: clang-analyzer-cplusplus.VirtualCallModeling
+    value: 'true'
+  - key: clang-analyzer-deadcode.DeadStores
+    value: 'true'
+  - key: clang-analyzer-fuchsia.HandleChecker
+    value: 'true'
+  - key: clang-analyzer-nullability.NullPassedToNonnull
+    value: 'true'
+  - key: clang-analyzer-nullability.NullReturnedFromNonnull
+    value: 'true'
+  - key: clang-analyzer-nullability.NullabilityBase
+    value: 'true'
+  - key: clang-analyzer-nullability.NullableDereferenced
+    value: 'true'
+  - key: clang-analyzer-nullability.NullablePassedToNonnull
+    value: 'true'
+  - key: clang-analyzer-nullability.NullableReturnedFromNonnull
+    value: 'true'
+  - key: clang-analyzer-optin.cplusplus.UninitializedObject
+    value: 'true'
+  - key: clang-analyzer-optin.cplusplus.VirtualCall
+    value: 'true'
+  - key: clang-analyzer-optin.mpi.MPI-Checker
+    value: 'true'
+  - key: clang-analyzer-optin.osx.OSObjectCStyleCast
+    value: 'true'
+  - key: clang-analyzer-optin.osx.cocoa.localizability.EmptyLocalizationContextChecker
+    value: 'true'
+  - key: clang-analyzer-optin.osx.cocoa.localizability.NonLocalizedStringChecker
+    value: 'true'
+  - key: clang-analyzer-optin.performance.GCDAntipattern
+    value: 'true'
+  - key: clang-analyzer-optin.performance.Padding
+    value: 'true'
+  - key: clang-analyzer-optin.portability.UnixAPI
+    value: 'true'
+  - key: clang-analyzer-osx.API
+    value: 'true'
+  - key: clang-analyzer-osx.MIG
+    value: 'true'
+  - key: clang-analyzer-osx.NSOrCFErrorDerefChecker
+    value: 'true'
+  - key: clang-analyzer-osx.NumberObjectConversion
+    value: 'true'
+  - key: clang-analyzer-osx.OSObjectRetainCount
+    value: 'true'
+  - key: clang-analyzer-osx.ObjCProperty
+    value: 'true'
+  - key: clang-analyzer-osx.SecKeychainAPI
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.AtSync
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.AutoreleaseWrite
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.ClassRelease
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.Dealloc
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.IncompatibleMethodTypes
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.Loops
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.MissingSuperCall
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.NSAutoreleasePool
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.NSError
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.NilArg
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.NonNilReturnValue
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.ObjCGenerics
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.RetainCount
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.RetainCountBase
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.RunLoopAutoreleaseLeak
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.SelfInit
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.SuperDealloc
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.UnusedIvars
+    value: 'true'
+  - key: clang-analyzer-osx.cocoa.VariadicMethodTypes
+    value: 'true'
+  - key: clang-analyzer-osx.coreFoundation.CFError
+    value: 'true'
+  - key: clang-analyzer-osx.coreFoundation.CFNumber
+    value: 'true'
+  - key: clang-analyzer-osx.coreFoundation.CFRetainRelease
+    value: 'true'
+  - key: clang-analyzer-osx.coreFoundation.containers.OutOfBounds
+    value: 'true'
+  - key: clang-analyzer-osx.coreFoundation.containers.PointerSizedValues
+    value: 'true'
+  - key: clang-analyzer-security.FloatLoopCounter
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.SecuritySyntaxChecker
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.UncheckedReturn
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bcmp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bcopy
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bzero
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.decodeValueOfObjCType
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.getpw
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.gets
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.mkstemp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.mktemp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.rand
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.strcpy
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.vfork
+    value: 'true'
+  - key: clang-analyzer-unix.API
+    value: 'true'
+  - key: clang-analyzer-unix.DynamicMemoryModeling
+    value: 'true'
+  - key: clang-analyzer-unix.Malloc
+    value: 'true'
+  - key: clang-analyzer-unix.MallocSizeof
+    value: 'true'
+  - key: clang-analyzer-unix.MismatchedDeallocator
+    value: 'true'
+  - key: clang-analyzer-unix.Vfork
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.BadSizeArg
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.CStringModeling
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.NullArg
+    value: 'true'
+  - key: clang-analyzer-valist.CopyToSelf
+    value: 'true'
+  - key: clang-analyzer-valist.Uninitialized
+    value: 'true'
+  - key: clang-analyzer-valist.Unterminated
+    value: 'true'
+  - key: clang-analyzer-valist.ValistBase
+    value: 'true'
+  - key: clang-analyzer-webkit.NoUncountedMemberChecker
+    value: 'true'
+  - key: clang-analyzer-webkit.RefCntblBaseVirtualDtor
+    value: 'true'
+  - key: clang-analyzer-webkit.UncountedLambdaCapturesChecker
+    value: 'true'

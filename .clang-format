@@ -1,0 +1,25 @@
+BasedOnStyle: LLVM
+AlwaysBreakTemplateDeclarations: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false # Clang-format 14: consider PackConstructorInitializers: CurrentLine
+BinPackParameters: false
+# EmptyLineAfterAccessModifier: true, # Clang-format 14
+# EmptyLineBeforeAccessModifier: true, # Clang-format 14
+AlignAfterOpenBracket: AlwaysBreak # Clang-format 14: consider `BlockIndent`
+AlwaysBreakTemplateDeclarations: Yes
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+PointerAlignment: Middle
+ReferenceAlignment: Left
+Cpp11BracedListStyle: true
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+StatementMacros:
+  - W2N_CONSTRUCTOR
+  - W2N_NOINLINE
+  - W2N_INLINE
+  - W2N_NORETURN
+  - W2N_UNUSED
+  - W2N_CONSTEXPR
+WhitespaceSensitiveMacros:
+  - W2N_META_STRINGIFY

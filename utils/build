@@ -5,6 +5,8 @@ ARG_NEEDS_CLEAN=0;
 ARG_CONFIG_ONLY=0;
 ARG_PRODUCTS=(LLVM W2N);
 
+BUILDS_ALL=1;
+
 # $1: ARG
 function arg_parse() {
   ARG=$1;
@@ -29,9 +31,11 @@ function arg_parse() {
       ;;
     "--build-llvm")
       ARG_PRODUCTS=(LLVM);
+      BUILDS_ALL=0;
       ;;
     "--build-wasm2native")
       ARG_PRODUCTS=(W2N);
+      BUILDS_ALL=0;
       ;;
   esac
 }
@@ -106,7 +110,7 @@ for EACH_ARG in "$@"; do
   arg_parse "$EACH_ARG"
 done
 
-if [[ $ARG_NEEDS_CLEAN -eq 1 ]]; then
+if [[ $BUILDS_ALL -eq 1 && $ARG_NEEDS_CLEAN -eq 1 ]]; then
   rm -rf $BUILD_ROOT
 fi
 

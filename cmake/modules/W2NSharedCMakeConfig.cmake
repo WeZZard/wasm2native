@@ -48,7 +48,7 @@ macro(w2n_common_standalone_build_config_llvm product)
     set(${product}_NATIVE_LLVM_TOOLS_PATH "${LLVM_TOOLS_BINARY_DIR}")
   endif()
 
-  if(w2n_INCLUDE_TOOLS)
+  if(W2N_INCLUDE_TOOLS)
     if(LLVM_TABLEGEN)
       set(LLVM_TABLEGEN_EXE ${LLVM_TABLEGEN})
     else()
@@ -187,47 +187,6 @@ macro(w2n_common_standalone_build_config_llvm product)
   endif()
 endmacro()
 
-macro(w2n_common_standalone_build_config_clang product)
-  find_package(Clang CONFIG REQUIRED NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-
-  if (NOT CMAKE_CROSSCOMPILING AND NOT w2n_PREBUILT_CLANG)
-    set(${product}_NATIVE_CLANG_TOOLS_PATH "${LLVM_TOOLS_BINARY_DIR}")
-  endif()
-
-  if(XCODE)
-    fix_imported_targets_for_xcode("${CLANG_EXPORTED_TARGETS}")
-  endif()
-
-  include_directories(${CLANG_INCLUDE_DIRS})
-endmacro()
-
-macro(w2n_common_standalone_build_config_cmark product)
-  set(${product}_PATH_TO_CMARK_SOURCE "${${product}_PATH_TO_CMARK_SOURCE}"
-    CACHE PATH "Path to CMark source code.")
-  set(${product}_PATH_TO_CMARK_BUILD "${${product}_PATH_TO_CMARK_BUILD}"
-    CACHE PATH "Path to the directory where CMark was built.")
-  set(${product}_CMARK_LIBRARY_DIR "${${product}_CMARK_LIBRARY_DIR}" CACHE PATH
-    "Path to the directory where CMark was installed.")
-  get_filename_component(PATH_TO_CMARK_BUILD "${${product}_PATH_TO_CMARK_BUILD}"
-    ABSOLUTE)
-  get_filename_component(CMARK_MAIN_SRC_DIR "${${product}_PATH_TO_CMARK_SOURCE}"
-    ABSOLUTE)
-  get_filename_component(CMARK_LIBRARY_DIR "${${product}_CMARK_LIBRARY_DIR}"
-    ABSOLUTE)
-
-  set(CMARK_MAIN_INCLUDE_DIR "${CMARK_MAIN_SRC_DIR}/src")
-  set(CMARK_BUILD_INCLUDE_DIR "${PATH_TO_CMARK_BUILD}/src")
-
-  file(TO_CMAKE_PATH "${CMARK_MAIN_INCLUDE_DIR}" CMARK_MAIN_INCLUDE_DIR)
-  file(TO_CMAKE_PATH "${CMARK_BUILD_INCLUDE_DIR}" CMARK_BUILD_INCLUDE_DIR)
-
-  include_directories("${CMARK_MAIN_INCLUDE_DIR}"
-                      "${CMARK_BUILD_INCLUDE_DIR}")
-
-  include(${PATH_TO_CMARK_BUILD}/src/cmarkTargets.cmake)
-  add_definitions(-DCMARK_STATIC_DEFINE)
-endmacro()
-
 # Common cmake project config for standalone builds.
 #
 # Parameters:
@@ -236,10 +195,6 @@ endmacro()
 #     cmake variables.
 macro(w2n_common_standalone_build_config product)
   w2n_common_standalone_build_config_llvm(${product})
-  if(w2n_INCLUDE_TOOLS)
-    w2n_common_standalone_build_config_clang(${product})
-    w2n_common_standalone_build_config_cmark(${product})
-  endif()
 
   # Enable groups for IDE generators (Xcode and MSVC).
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)

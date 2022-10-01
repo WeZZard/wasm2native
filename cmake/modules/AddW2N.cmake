@@ -82,7 +82,7 @@ function(add_w2n_host_library name)
   # If we are compiling in release or release with deb info, compile w2n code
   # with -cross-module-optimization enabled.
   target_compile_options(${name} PRIVATE
-    $<$<AND:$<COMPILE_LANGUAGE:Swift>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-cross-module-optimization>)
+    $<$<AND:$<COMPILE_LANGUAGE:WebAssembly>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-cross-module-optimization>)
 
 endfunction()
 

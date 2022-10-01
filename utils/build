@@ -1,0 +1,111 @@
+#!/bin/sh
+
+ARG_BUILD_TYPE="Debug";
+ARG_NEEDS_CLEAN=0;
+ARG_CONFIG_ONLY=0;
+ARG_PRODUCTS=(LLVM W2N);
+
+# $1: ARG
+function arg_parse() {
+  ARG=$1;
+  case $ARG in
+    "--debug")
+      ARG_BUILD_TYPE="Debug";
+      ;;
+    "--release")
+      ARG_BUILD_TYPE="Release";
+      ;;
+    "--release-with-debug-info")
+      ARG_BUILD_TYPE="RelWithDebInfo";
+      ;;
+    "--release-min-size")
+      ARG_BUILD_TYPE="MinSizeRel";
+      ;;
+    "--clean")
+      ARG_NEEDS_CLEAN=1;
+      ;;
+    "--config-only")
+      ARG_CONFIG_ONLY=1;
+      ;;
+    "--build-llvm")
+      ARG_PRODUCTS=(LLVM);
+      ;;
+    "--build-wasm2native")
+      ARG_PRODUCTS=(W2N);
+      ;;
+  esac
+}
+
+EXEC_PATH="$PWD/$0"
+UTILS_DIR=$(dirname $EXEC_PATH) 
+PROJECT_ROOT="$UTILS_DIR/.."
+MONOREPO_ROOT="$PROJECT_ROOT/.."
+BUILD_ROOT="$MONOREPO_ROOT/build"
+
+# 3rd party projects in the monorepo
+LLVM_PROJECT_ROOT=$MONOREPO_ROOT/llvm-project
+
+# LLVM args
+LLVM_SOURCE_ROOT=$LLVM_PROJECT_ROOT/llvm
+LLVM_BUILD_ROOT=$BUILD_ROOT/llvm-project
+LLVM_CMAKE_CONFIG_ARGS="-DCMAKE_BUILD_TYPE=${ARG_BUILD_TYPE}"
+
+# wasm2native args
+W2N_SOURCE_ROOT=$PROJECT_ROOT
+W2N_BUILD_ROOT=$BUILD_ROOT/wasm2native
+W2N_CMAKE_CONFIG_ARGS="-DCMAKE_BUILD_TYPE:string=${ARG_BUILD_TYPE} -DW2N_MONOREPO_ROOT:string=${MONOREPO_ROOT} -DLLVM_BUILD_ROOT:string=${LLVM_BUILD_ROOT} -DLLVM_SOURCE_ROOT:string=${LLVM_SOURCE_ROOT}"
+
+# $1: PRODUCT_NAME, $2: CLEAN, $3: ARG_CONFIG_ONLY
+function build() {
+  PRODUCT_NAME=$1
+  if [[ $2 -ne 0 ]]; then
+    CLEAN=1;
+  else
+    CLEAN=0;
+  fi
+  if [[ $3 -ne 0 ]]; then
+    ARG_CONFIG_ONLY=1;
+  else
+    ARG_CONFIG_ONLY=0;
+  fi
+  
+  PRODUCT_BUILD_ROOT=${PRODUCT_NAME}_BUILD_ROOT
+  PRODUCT_BUILD_ROOT=${!PRODUCT_BUILD_ROOT}
+  PRODUCT_SOURCE_ROOT=${PRODUCT_NAME}_SOURCE_ROOT
+  PRODUCT_SOURCE_ROOT=${!PRODUCT_SOURCE_ROOT}
+  PRODUCT_CMAKE_CONFIG_ARGS=${PRODUCT_NAME}_CMAKE_CONFIG_ARGS
+  PRODUCT_CMAKE_CONFIG_ARGS=${!PRODUCT_CMAKE_CONFIG_ARGS}
+
+  if [[ $CLEAN -eq 1 ]]; then
+    rm -rf $PRODUCT_BUILD_ROOT
+  fi
+
+  echo "mkdir -p $PRODUCT_BUILD_ROOT"
+  mkdir -p $PRODUCT_BUILD_ROOT
+
+  pushd "$PRODUCT_BUILD_ROOT"
+  echo "cmake -G Ninja $PRODUCT_SOURCE_ROOT ${PRODUCT_CMAKE_CONFIG_ARGS}"
+  cmake -G Ninja "$PRODUCT_SOURCE_ROOT" ${PRODUCT_CMAKE_CONFIG_ARGS}
+
+  if [[ $ARG_CONFIG_ONLY -ne 1 ]]; then
+    echo "cmake --build $PRODUCT_BUILD_ROOT"
+    cmake --build "$PRODUCT_BUILD_ROOT"
+  fi
+
+  popd
+  return 0;
+}
+
+for EACH_ARG in "$@"; do
+  arg_parse "$EACH_ARG"
+done
+
+if [[ $ARG_NEEDS_CLEAN -eq 1 ]]; then
+  rm -rf $BUILD_ROOT
+fi
+
+for PRODUCT_NAME in "${ARG_PRODUCTS[@]}"; do
+  build $PRODUCT_NAME $ARG_NEEDS_CLEAN $ARG_CONFIG_ONLY
+done
+
+exit 0

@@ -22,7 +22,7 @@ The frontend is planned to support the following commands:
 # Modes:
 
 # emit object file
-w2n-frontend -emit-object
+w2n-frontend -emit-object [FILEPATH]... [-target TARGET]
 
 # emit LLVM IR
 w2n-frontend -emit-ir
@@ -35,6 +35,9 @@ w2n-frontend -emit-bc
 
 # emit ast?
 w2n-frontend -emit-ast # optional
+
+# TARGET: An LLVM triple like "aarch64-apple-macos13.0". Use current host
+# triple is target is not specified.
 ```
 
 ### Batch Driver

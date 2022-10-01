@@ -1,0 +1,177 @@
+#!/bin/sh
+
+ARG_CLONES=0
+
+# $1: ARG
+function arg_parse() {
+  ARG=$1;
+  case $ARG in
+    "--clone")
+      ARG_CLONES=1;
+      ;;
+  esac
+}
+
+for EACH_ARG in "$@"; do
+  arg_parse "$EACH_ARG"
+done
+
+EXEC_PATH="$PWD/$0"
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+UTILS_DIR="$PROJECT_ROOT/utils"
+MONOREPO_ROOT=$(dirname $PROJECT_ROOT)
+BUILD_ROOT="$MONOREPO_ROOT/build"
+# repo directory'name, does not include path the directory is in
+REPO_DIR=$(basename $PROJECT_ROOT)
+GIT_REPO_UPSTREAM_NAME="wasm2native-update-checkout-managed-upstream"
+
+# A list of space-separated repo checkout config which follows the pattern:
+# REPO-NAME REPO-DIR-IN-MONO-REPO SOURCE-SCHEMA SOURCE-URL CHECKOUT-PATTERN
+SCHEMA=(
+  'w2n wasm2native git ./ branch=main'
+  'LLVM llvm-project git https://github.com/llvm/llvm-project.git commit=29c841ce93e087fa4e0c5f3abae94edd460bc24a'
+)
+
+if [ "$REPO_DIR" != "wasm2native" ]; then
+  echo "wasm2native's project root directory shall be named as wasm2native."
+  echo "Currently is $REPO_DIR."
+  exit 1;
+fi
+
+function git_check_remote() {
+  REPO_NAME=$1
+  REPO_PATH=$2
+  SOURCE_URL=$3
+  REMOTE_VERBOSE=$(git remote -v)
+  WASM2NATIVE_UPDATE_CHECKOUT_MANAGED_UPSTREAM_URL=''
+  while read -r REMOTE; do
+    read -s REMOTE_NAME REMOTE_URL PATTERN <<< $REMOTE;
+    if [[ $REMOTE_NAME == $GIT_REPO_UPSTREAM_NAME && $PATTERN == "(fetch)" ]]; then
+      WASM2NATIVE_UPDATE_CHECKOUT_MANAGED_UPSTREAM_URL=$REMOTE_URL
+    fi
+  done <<< "$REMOTE_VERBOSE"
+  if [[ $WASM2NATIVE_UPDATE_CHECKOUT_MANAGED_UPSTREAM_URL == '' ]]; then
+    git remote add $GIT_REPO_UPSTREAM_NAME $SOURCE_URL
+  else
+    git remote set-url $GIT_REPO_UPSTREAM_NAME $SOURCE_URL
+  fi
+  RET_VAL=$?
+  return $RET_VAL;
+}
+
+function update_checkout_git_impl() {
+  REPO_NAME=$1
+  REPO_DIR=$2
+  SOURCE_URL=$3
+  CHECKOUT_DEST=$4 # commit hash, branch name
+  CLONES=$5
+  REPO_PATH="$MONOREPO_ROOT/$REPO_DIR"
+  if [ ! -d "$REPO_PATH" ]; then
+    if [ -f "$REPO_PATH" ]; then
+      echo "$REPO_PATH seems like a file."
+      echo "Remove this file before running update-checkout."
+      return 1;
+    fi
+    if [[ $CLONES -ne 1 ]]; then
+      echo "Repo $REPO_NAME is missing in monorepo dir but update-checkout was asked not to clone."
+      echo "Use update-checkout --clone to make update-checkout clone a repo."
+      echo "Skipped repo update-checkout $REPO_NAME."
+      return 0
+    fi
+    pushd $MONOREPO_ROOT
+    git clone $SOURCE_URL $REPO_DIR -o $GIT_REPO_UPSTREAM_NAME
+    RET_VAL=$?
+    if [[ $RET_VAL -ne 0 ]]; then
+      echo "Error happened while executing git clone $SOURCE_URL $REPO_DIR -o $GIT_REPO_UPSTREAM_NAME."
+      popd
+      return $RET_VAL;
+    fi
+    pushd $REPO_PATH
+    git checkout $CHECKOUT_DEST
+    RET_VAL=$?
+    popd
+    if [[ $RET_VAL -ne 0 ]]; then
+      echo "Error happened while executing git checkout $CHECKOUT_DEST."
+      popd
+      return $RET_VAL;
+    fi
+    popd
+  else
+    pushd $REPO_PATH
+    if [ "$REPO_DIR" == "wasm2native" ]; then
+      git fetch
+    else
+      git_check_remote $REPO_NAME $REPO_PATH $SOURCE_URL
+      if [[ $RET_VAL -ne 0 ]]; then
+        return $RET_VAL;
+      fi
+      git fetch "$GIT_REPO_UPSTREAM_NAME"
+    fi
+    RET_VAL=$?
+    if [[ $RET_VAL -ne 0 ]]; then
+      echo "Error happened while executing git fetch under $REPO_PATH."
+      return $RET_VAL;
+    fi
+    echo "git checkout $CHECKOUT_DEST"
+    git checkout $CHECKOUT_DEST
+    RET_VAL=$?
+    if [[ $RET_VAL -ne 0 ]]; then
+      echo "Error happened while executing git checkout under $REPO_PATH."
+      return $RET_VAL;
+    fi
+    popd
+  fi
+  return 0
+}
+
+function update_checkout_git() {
+  REPO_NAME=$1
+  REPO_DIR=$2
+  SOURCE_URL=$3
+  CHECKOUT_PATTERN=$4
+  CLONES=$5
+  case $CHECKOUT_PATTERN in
+    branch=*)
+      BRANCH=$(awk -F 'branch=' '{print $2}' <<< $CHECKOUT_PATTERN)
+      update_checkout_git_impl $REPO_NAME $REPO_DIR $SOURCE_URL $BRANCH $CLONES;
+      RET_VAL=$?
+      return $RET_VAL;
+      ;;
+    commit=*)
+      COMMIT=$(awk -F 'commit=' '{print $2}' <<< $CHECKOUT_PATTERN)
+      update_checkout_git_impl $REPO_NAME $REPO_DIR $SOURCE_URL $COMMIT $CLONES;
+      RET_VAL=$?
+      return $RET_VAL;
+      ;;
+    tag=*)
+      TAG=$(awk -F 'tag=' '{print $2}' <<< $CHECKOUT_PATTERN)
+      update_checkout_git_impl $REPO_NAME $REPO_DIR $SOURCE_URL $TAG $CLONES;
+      RET_VAL=$?
+      return $RET_VAL;
+      ;;
+    *)
+      echo "Error happend when update checkout of $REPO_NAME."
+      echo "Unspported checkout pattern: $CHECKOUT_PATTERN."
+      return 1;
+  esac
+}
+
+for REPO_CONFIG in "${SCHEMA[@]}"; do
+  while IFS=' ' read -r REPO_NAME REPO_DIR SOURCE_SCHEMA SOURCE_URL CHECKOUT_PATTERN; do
+    case $SOURCE_SCHEMA in
+      git)
+        update_checkout_git $REPO_NAME $REPO_DIR $SOURCE_URL $CHECKOUT_PATTERN $ARG_CLONES;
+        RET_VAL=$?
+        if [[ $RET_VAL -ne 0 ]]; then
+          exit $RET_VAL;
+        fi
+        ;;
+      *)
+        echo "Error happend when process repo config: $REPO_CONFIG."
+        echo "Currently only support git repo."
+        exit 1;
+    esac
+  done <<< "$REPO_CONFIG"
+done
+
+exit 0

@@ -293,22 +293,26 @@ endmacro()
 function(w2n_common_llvm_config target)
   set(link_components ${ARGN})
 
-  if((w2n_BUILT_STANDALONE OR SOURCEKIT_BUILT_STANDALONE) AND NOT "${CMAKE_CFG_INTDIR}" STREQUAL ".")
-    llvm_map_components_to_libnames(libnames ${link_components})
+  llvm_config("${target}" ${ARGN})
 
-    get_target_property(target_type "${target}" TYPE)
-    if("${target_type}" STREQUAL "STATIC_LIBRARY")
-      target_link_libraries("${target}" INTERFACE ${libnames})
-    elseif("${target_type}" STREQUAL "SHARED_LIBRARY" OR
-           "${target_type}" STREQUAL "MODULE_LIBRARY")
-      target_link_libraries("${target}" PRIVATE ${libnames})
-    else()
-      # HACK: Otherwise (for example, for executables), use a plain signature,
-      # because LLVM CMake does that already.
-      target_link_libraries("${target}" PRIVATE ${libnames})
-    endif()
+  target_link_directories(${target} 
+    PRIVATE "${LLVM_BUILD_ROOT}/lib"
+  )
+
+  target_include_directories( ${target}
+    PUBLIC "${LLVM_SOURCE_ROOT}/include"
+    PUBLIC "${LLVM_BUILD_ROOT}/include"
+  )
+
+  get_target_property(target_type "${target}" TYPE)
+  if("${target_type}" STREQUAL "STATIC_LIBRARY")
+    target_link_libraries("${target}" INTERFACE ${libnames})
+  elseif("${target_type}" STREQUAL "SHARED_LIBRARY" OR
+         "${target_type}" STREQUAL "MODULE_LIBRARY")
+    target_link_libraries("${target}" PRIVATE ${libnames})
   else()
-    # If w2n was not built standalone, dispatch to 'llvm_config()'.
-    llvm_config("${target}" ${ARGN})
+    # HACK: Otherwise (for example, for executables), use a plain signature,
+    # because LLVM CMake does that already.
+    target_link_libraries("${target}" PRIVATE ${libnames})
   endif()
 endfunction()

@@ -79,6 +79,6 @@ w2n repl
 
 ## Project Structure
 
-The project is structured like the Swift compiler or LLVM which the entire
+The project is structured like the w2n compiler or LLVM which the entire
 project is split into several components of libraries or executables to help
 people to make use of the project even if they only need a singular part.

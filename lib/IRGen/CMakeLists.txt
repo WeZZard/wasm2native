@@ -1,0 +1,12 @@
+
+add_w2n_host_library(w2nIRGen STATIC
+  IRGen.cpp
+  LLVM_LINK_COMPONENTS
+    target
+    transformutils
+)
+target_link_libraries(w2nIRGen PRIVATE
+  w2nAST
+  w2nParse)
+
+set_w2n_llvm_is_available(w2nIRGen)

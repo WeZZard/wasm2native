@@ -41,9 +41,9 @@ function arg_parse() {
 }
 
 EXEC_PATH="$PWD/$0"
-UTILS_DIR=$(dirname $EXEC_PATH) 
-PROJECT_ROOT="$UTILS_DIR/.."
-MONOREPO_ROOT="$PROJECT_ROOT/.."
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+UTILS_DIR="$PROJECT_ROOT/utils"
+MONOREPO_ROOT=$(dirname $PROJECT_ROOT)
 BUILD_ROOT="$MONOREPO_ROOT/build"
 
 # 3rd party projects in the monorepo

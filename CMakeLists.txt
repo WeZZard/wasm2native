@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24.2)
+cmake_minimum_required(VERSION 3.23)
 project(wasm2native)
 
 # ${W2N_MONOREPO_ROOT}: w2n monorepo root. The parent directory of the git repo.

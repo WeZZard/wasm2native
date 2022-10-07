@@ -12,8 +12,9 @@ add_dependencies(w2nFrontend
 
 target_link_libraries(w2nFrontend PRIVATE
   w2nAST
-  w2nParse
   w2nIRGen
-  w2nOptions)
+  w2nOptions
+  w2nParse
+  w2nSema)
 
 set_w2n_llvm_is_available(w2nFrontend)

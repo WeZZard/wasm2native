@@ -190,3 +190,5 @@ def target : Separate<["-"], "target">,
   HelpText<"Generate code for the given target <triple>, such as aarch64-apple-macos13.0">, MetaVarName<"<triple>">;
 def target_legacy_spelling : Joined<["--"], "target=">,
   Flags<[FrontendOption]>, Alias<target>;
+
+include "FrontendOptions.td"

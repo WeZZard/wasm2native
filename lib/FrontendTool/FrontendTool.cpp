@@ -9,6 +9,11 @@ using namespace w2n;
 /// before or after LLVM depending on when the ASTContext gets freed.
 static void performEndOfPipelineActions(CompilerInstance &Instance);
 
+static bool withSemanticAnalysis(
+  CompilerInstance& Instance,
+  llvm::function_ref<bool(CompilerInstance&)> cont,
+  bool runDespiteErrors = false);
+
 int w2n::performFrontend(
   llvm::ArrayRef<const char *> Args,
   const char * Argv0,
@@ -50,12 +55,46 @@ bool w2n::performCompile(CompilerInstance& Instance, int& ReturnValue) {
 }
 
 bool w2n::performAction(CompilerInstance &Instance, int &ReturnValue) {
+  const auto &Invocation = Instance.getInvocation();
+  const auto &FrontendOpts = Invocation.getFrontendOptions();
+  const FrontendOptions::ActionType Action = FrontendOpts.RequestedAction;
+
+  switch (Action) {
+    case FrontendOptions::ActionType::NoneAction:
+      return false;
+    case FrontendOptions::ActionType::EmitIR:
+      break;
+    case FrontendOptions::ActionType::EmitIRGen:
+      break;
+    case FrontendOptions::ActionType::EmitAssembly:
+      break;
+    case FrontendOptions::ActionType::EmitBC:
+      break;
+    case FrontendOptions::ActionType::EmitObject:
+      break;
+    case FrontendOptions::ActionType::PrintVersion:
+      break;
+  }
+
   return false;
+}
+
+bool withSemanticAnalysis(
+  CompilerInstance& Instance,
+  llvm::function_ref<bool(CompilerInstance&)> Continuation)
+{
+  Instance.performSemanticAnalysis();
+  
+  bool hadError = Instance.getASTContext().hadError();
+  if (hadError) {
+    return true;
+  }
+
+  return Continuation(Instance) || hadError;
+
 }
 
 /// Perform any actions that must have access to the ASTContext, and need to be
 /// delayed until the w2n compile pipeline has finished. This may be called
 /// before or after LLVM depending on when the ASTContext gets freed.
-void performEndOfPipelineActions(CompilerInstance &Instance) {
-
-}
+void performEndOfPipelineActions(CompilerInstance& Instance) {}

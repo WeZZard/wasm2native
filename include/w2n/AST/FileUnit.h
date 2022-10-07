@@ -1,17 +1,57 @@
 #ifndef W2N_AST_FILEUNIT_H
 #define W2N_AST_FILEUNIT_H
 
+#include <w2n/AST/DeclContext.h>
+#include <w2n/AST/Module.h>
+
 namespace w2n {
 
-/// Discriminator for file-units.
+/**
+ * @brief Discriminator for file-units.
+ *
+ */
 enum class FileUnitKind {
-  /// For a .wasm binary file.
-  Wasm
+  /**
+   * @brief For a .wam or .wat file.
+   */
+  Source,
+
+  /**
+   * @brief For the compiler Builtin module.
+   */
+  Builtin,
 };
 
-class FileUnit {};
+/**
+ * @brief A container for module-scope declarations that itself provides a
+ * scope; the smallest unit of code organization.
+ *
+ * @note \c FileUnit is an abstract base class; its subclasses represent
+ * different sorts of containers that can each provide a set of decls,
+ * e.g. a source file. A module can contain several file-units.
+ */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+class FileUnit : public DeclContext, public ASTAllocated<FileUnit> {
+#pragma clang diagnostic pop
 
-class WasmFile : public FileUnit {};
+private:
+  FileUnitKind Kind;
+
+protected:
+  FileUnit(FileUnitKind Kind, ModuleDecl& Module)
+    : DeclContext(DeclContextKind::FileUnit, &Module), Kind(Kind) {}
+
+public:
+  FileUnitKind getKind() const { return Kind; }
+
+  static bool classof(const DeclContext * DC) {
+    return DC->getContextKind() == DeclContextKind::FileUnit;
+  }
+
+  using ASTAllocated<FileUnit>::operator new;
+  using ASTAllocated<FileUnit>::operator delete;
+};
 
 } // namespace w2n
 

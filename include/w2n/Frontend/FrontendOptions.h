@@ -33,6 +33,14 @@ public:
 
   ActionType RequestedAction = ActionType::NoneAction;
 
+  std::string ModuleName;
+
+  std::string ModuleABIName;
+
+  std::string ModuleLinkName;
+
+  unsigned BadFileDescriptorRetryCount = 0;
+
 public:
   FrontendOptions() {}
 

@@ -10,10 +10,17 @@ class FrontendInputsAndOutputs final {
 
   std::vector<Input> AllInputs;
 
+  /// Recover missing inputs. Note that recovery itself is users responsibility.
+  bool ShouldRecoverMissingInputs = false;
+  
 public:
   FrontendInputsAndOutputs() = default;
   FrontendInputsAndOutputs(const FrontendInputsAndOutputs& other);
   FrontendInputsAndOutputs& operator=(const FrontendInputsAndOutputs& other);
+
+  bool shouldRecoverMissingInputs() const { return ShouldRecoverMissingInputs; }
+  
+  void setShouldRecoverMissingInputs() { ShouldRecoverMissingInputs = true; }
 
 #pragma mark - Reading
 

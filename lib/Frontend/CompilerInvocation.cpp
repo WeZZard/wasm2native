@@ -1,12 +1,13 @@
+#include <llvm/ADT/SmallString.h>
 #include <llvm/Option/Arg.h>
 #include <llvm/Option/ArgList.h>
 #include <llvm/Option/Option.h>
+#include <llvm/Support/Host.h>
+#include <llvm/Support/Path.h>
+#include <set>
 #include <w2n/Basic/LLVM.h>
 #include <w2n/Frontend/Frontend.h>
 #include <w2n/Options/Options.h>
-#include <llvm/ADT/SmallString.h>
-#include <llvm/Support/Path.h>
-#include <llvm/Support/Host.h>
 
 using namespace w2n;
 using namespace llvm::opt;
@@ -35,7 +36,7 @@ static bool parseIRGenOptions(
   DiagnosticEngine& Diagnostic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers);
 
-CompilerInvocation::CompilerInvocation() {};
+CompilerInvocation::CompilerInvocation(){};
 
 bool CompilerInvocation::parseArgs(
   llvm::ArrayRef<const char *> Args,
@@ -89,8 +90,6 @@ bool CompilerInvocation::parseArgs(
   return false;
 }
 
-#include <set>
-
 bool parseFrontendOptions(
   FrontendOptions& Options,
   const ArgList& Args,
@@ -100,13 +99,15 @@ bool parseFrontendOptions(
   std::set<StringRef> AllInputFiles;
   bool hadDuplicates = false;
   for (const Arg * A : Args.filtered(options::OPT_INPUT)) {
-    hadDuplicates = !AllInputFiles.insert(A->getValue()).second || hadDuplicates;
+    hadDuplicates =
+      !AllInputFiles.insert(A->getValue()).second || hadDuplicates;
   }
 
   if (hadDuplicates) {
     // TODO: Diagnose duplicates
   }
 
+  // Derive InputsAndOutputs
   FrontendInputsAndOutputs InputsAndOutputs;
   for (const StringRef EachInputFile : AllInputFiles) {
     Input EachInput(EachInputFile);
@@ -122,6 +123,28 @@ bool parseFrontendOptions(
   }
   Options.InputsAndOutputs = InputsAndOutputs;
 
+  // Derive ModuleName
+  if (InputsAndOutputs.hasSingleInput()) {
+    auto& FirstISPs = InputsAndOutputs.firstInput().getInputSpecificPaths();
+    auto& OutputFileName = FirstISPs.OutputFilename;
+    StringRef Stem = llvm::sys::path::stem(OutputFileName);
+    Options.ModuleName = Stem.str();
+  } else {
+    if (Arg * OutputArg = Args.getLastArg(options::OPT_o)) {
+      Options.ModuleName = std::string(OutputArg->getValue());
+    } else {
+      // TODO: Diagnose ambiguous output
+      return true;
+    }
+  }
+
+  // Derive ModuleABIName
+  Options.ModuleABIName = Options.ModuleName;
+
+  // Derive ModuleLinkName
+  Options.ModuleLinkName = Options.ModuleName;
+
+  // Derive RequestedAction
   if (Args.hasArg(options::OPT_emit_object)) {
     Options.RequestedAction = FrontendOptions::ActionType::EmitObject;
   } else if (Args.hasArg(options::OPT_emit_assembly)) {
@@ -133,7 +156,7 @@ bool parseFrontendOptions(
   } else if (InputsAndOutputs.hasInputs()) {
     Options.RequestedAction = FrontendOptions::ActionType::EmitObject;
   }
-  
+
   return false;
 }
 
@@ -141,20 +164,24 @@ bool parseLanguageOptions(
   LanguageOptions& Options,
   const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers)
-{
-  if (Args.hasArgNoClaim(options::OPT_target)) {
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers) {
+  if (Args.hasArg(options::OPT_target)) {
     Options.Target = llvm::Triple(Args.getLastArgValue(options::OPT_target));
   } else {
     Options.Target = llvm::Triple(llvm::sys::getDefaultTargetTriple());
   }
 
-  if (Args.hasArgNoClaim(options::OPT_sdk)) {
+  if (Args.hasArg(options::OPT_sdk)) {
     Options.SDKName = Args.getLastArgValue(options::OPT_sdk);
   }
 
-  if (Args.hasArgNoClaim(options::OPT_entry_point)) {
-    Options.entryPointFunctionName = Args.getLastArgValue(options::OPT_entry_point);
+  if (Args.hasArg(options::OPT_entry_point)) {
+    Options.EntryPointFunctionName =
+      Args.getLastArgValue(options::OPT_entry_point);
+  }
+
+  if (Args.hasArg(options::OPT_use_malloc)) {
+    Options.EntryPointFunctionName = true;
   }
 
   return false;
@@ -164,8 +191,7 @@ bool parseSearchPathOptions(
   SearchPathOptions_t& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers)
-{
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers) {
   return false;
 }
 
@@ -173,7 +199,6 @@ bool parseIRGenOptions(
   IRGenOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers)
-{
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers) {
   return false;
 }

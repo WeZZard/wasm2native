@@ -11,7 +11,7 @@ DeclContextKind DeclContext::getContextKind() const {
   case ASTHierarchy::Decl: {
     // Decl shall be right after DeclContext in the inheritance list of a
     // declaration class.
-    const auto * D = reinterpret_cast<const Decl*>(this + 1);
+    const auto * D = reinterpret_cast<const Decl *>(this + 1);
     switch (D->getKind()) {
     case DeclKind::Module:
       return DeclContextKind::Module;

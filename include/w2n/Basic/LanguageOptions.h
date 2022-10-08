@@ -1,8 +1,8 @@
 #ifndef W2N_BASIC_LANGUAGEOPTIONS_H
 #define W2N_BASIC_LANGUAGEOPTIONS_H
 
-#include <llvm/ADT/Triple.h>
 #include <llvm/ADT/Optional.h>
+#include <llvm/ADT/Triple.h>
 #include <llvm/Support/VersionTuple.h>
 
 namespace w2n {
@@ -28,9 +28,8 @@ public:
   bool DebugDumpCycles = true;
 
   bool RecordRequestReferences = true;
-  
 };
 
-}
+} // namespace w2n
 
 #endif // W2N_BASIC_LANGUAGEOPTIONS_H

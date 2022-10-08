@@ -10,21 +10,21 @@ namespace w2n {
 
 using llvm::None;
 
-/// The class template \c OptionSet captures a set of options stored as the
-/// bits in an unsigned integral value.
+/// The class template \c OptionSet captures a set of options stored as
+/// the bits in an unsigned integral value.
 ///
 /// Each option corresponds to a particular flag value in the provided
-/// enumeration type (\c Flags). The option set provides ways to add options,
-/// remove options, intersect sets, etc., providing a thin type-safe layer
-/// over the underlying unsigned value.
+/// enumeration type (\c Flags). The option set provides ways to add
+/// options, remove options, intersect sets, etc., providing a thin
+/// type-safe layer over the underlying unsigned value.
 ///
 /// \tparam Flags An enumeration type that provides the individual flags
-/// for options. Each enumerator should have a power-of-two value, indicating
-/// which bit it is associated with.
+/// for options. Each enumerator should have a power-of-two value,
+/// indicating which bit it is associated with.
 ///
-/// \tparam StorageType The unsigned integral type to use to store the flags
-/// enabled within this option set. This defaults to the unsigned form of the
-/// underlying type of the enumeration.
+/// \tparam StorageType The unsigned integral type to use to store the
+/// flags enabled within this option set. This defaults to the unsigned
+/// form of the underlying type of the enumeration.
 template <
   typename Flags,
   typename StorageType = typename std::make_unsigned<
@@ -40,7 +40,8 @@ public:
   constexpr OptionSet(llvm::NoneType) : Storage() {}
 
   /// Create an option set with only the given option set.
-  constexpr OptionSet(Flags flag) : Storage(static_cast<StorageType>(flag)) {}
+  constexpr OptionSet(Flags flag)
+    : Storage(static_cast<StorageType>(flag)) {}
 
   /// Create an option set containing the given options.
   constexpr OptionSet(std::initializer_list<Flags> flags)
@@ -61,8 +62,9 @@ public:
   /// This member is not present if the underlying type is bigger than
   /// a pointer.
   template <typename T = std::intptr_t>
-  explicit constexpr operator typename std::
-    enable_if<sizeof(StorageType) <= sizeof(T), std::intptr_t>::type() const {
+  explicit constexpr operator typename std::enable_if<
+    sizeof(StorageType) <= sizeof(T),
+    std::intptr_t>::type() const {
     return static_cast<intptr_t>(Storage);
   }
 
@@ -75,14 +77,15 @@ public:
     return !static_cast<bool>(set - *this);
   }
 
-  /// Check if this option set contains the exact same options as the given set.
+  /// Check if this option set contains the exact same options as the
+  /// given set.
   constexpr bool containsOnly(OptionSet set) const {
     return Storage == set.Storage;
   }
 
-  // '==' and '!=' are deliberately not defined because they provide a pitfall
-  // where someone might use '==' but really want 'contains'. If you actually
-  // want '==' behavior, use 'containsOnly'.
+  // '==' and '!=' are deliberately not defined because they provide a
+  // pitfall where someone might use '==' but really want 'contains'. If
+  // you actually want '==' behavior, use 'containsOnly'.
 
   /// Produce the union of two option sets.
   friend constexpr OptionSet operator|(OptionSet lhs, OptionSet rhs) {
@@ -134,8 +137,10 @@ private:
   }
 
   static_assert(
-    !std::is_same<decltype(_checkResultTypeOperatorOr(Flags())), Flags>::value,
-    "operator| should produce an OptionSet");
+    !std::is_same<decltype(_checkResultTypeOperatorOr(Flags())), Flags>::
+      value,
+    "operator| should produce an OptionSet"
+  );
 };
 
 } // end namespace w2n

@@ -1,13 +1,16 @@
-#include <w2n/Basic/SourceLoc.h>
-#include <w2n/Basic/SourceManager.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/PrettyStackTrace.h>
 #include <llvm/Support/raw_ostream.h>
+#include <w2n/Basic/SourceLoc.h>
+#include <w2n/Basic/SourceManager.h>
 
 using namespace w2n;
 
-void SourceLoc::printLineAndColumn(raw_ostream &OS, const SourceManager &SM,
-                                   unsigned BufferID) const {
+void SourceLoc::printLineAndColumn(
+  raw_ostream& OS,
+  const SourceManager& SM,
+  unsigned BufferID
+) const {
   if (isInvalid()) {
     OS << "<invalid loc>";
     return;
@@ -17,8 +20,11 @@ void SourceLoc::printLineAndColumn(raw_ostream &OS, const SourceManager &SM,
   OS << "line:" << LineAndCol.first << ':' << LineAndCol.second;
 }
 
-void SourceLoc::print(raw_ostream &OS, const SourceManager &SM,
-                      unsigned &LastBufferID) const {
+void SourceLoc::print(
+  raw_ostream& OS,
+  const SourceManager& SM,
+  unsigned& LastBufferID
+) const {
   if (isInvalid()) {
     OS << "<invalid loc>";
     return;
@@ -36,21 +42,30 @@ void SourceLoc::print(raw_ostream &OS, const SourceManager &SM,
   OS << ':' << LineAndCol.first << ':' << LineAndCol.second;
 }
 
-void SourceLoc::dump(const SourceManager &SM) const {
+void SourceLoc::dump(const SourceManager& SM) const {
   print(llvm::errs(), SM);
 }
 
-CharSourceRange::CharSourceRange(const SourceManager &SM, SourceLoc Start,
-                                 SourceLoc End)
-    : Start(Start) {
-  assert(Start.isValid() == End.isValid() &&
-         "Start and end should either both be valid or both be invalid!");
+CharSourceRange::CharSourceRange(
+  const SourceManager& SM,
+  SourceLoc Start,
+  SourceLoc End
+)
+  : Start(Start) {
+  assert(
+    Start.isValid() == End.isValid() &&
+    "Start and end should either both be valid or both be invalid!"
+  );
   if (Start.isValid())
     ByteLength = SM.getByteDistance(Start, End);
 }
 
-void CharSourceRange::print(raw_ostream &OS, const SourceManager &SM,
-                            unsigned &LastBufferID, bool PrintText) const {
+void CharSourceRange::print(
+  raw_ostream& OS,
+  const SourceManager& SM,
+  unsigned& LastBufferID,
+  bool PrintText
+) const {
   OS << '[';
   Start.print(OS, SM, LastBufferID);
   OS << " - ";
@@ -65,6 +80,6 @@ void CharSourceRange::print(raw_ostream &OS, const SourceManager &SM,
   }
 }
 
-void CharSourceRange::dump(const SourceManager &SM) const {
+void CharSourceRange::dump(const SourceManager& SM) const {
   print(llvm::errs(), SM);
 }

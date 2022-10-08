@@ -27,7 +27,9 @@ class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext
 
   llvm::PointerIntPair<DeclContext *, 3, ASTHierarchy> ParentAndKind;
 
-  void setParent(DeclContext * parent) { ParentAndKind.setPointer(parent); }
+  void setParent(DeclContext * parent) {
+    ParentAndKind.setPointer(parent);
+  }
 
   static ASTHierarchy getASTHierarchyFromKind(DeclContextKind Kind) {
     switch (Kind) {
@@ -55,16 +57,18 @@ public:
   DeclContext(DeclContextKind Kind, DeclContext * Parent)
     : ParentAndKind(Parent, getASTHierarchyFromKind(Kind)) {
     if (Kind != DeclContextKind::Module)
-      assert(Parent != nullptr && "DeclContext must have a parent context");
+      assert(
+        Parent != nullptr && "DeclContext must have a parent context"
+      );
   }
 
   DeclContextKind getContextKind() const;
 
   /**
    * @brief Return \c true if this is a subclass of Module.
-   * 
+   *
    * @return bool
-   * 
+   *
    * @see \file w2n/AST/Module.h
    */
   LLVM_READONLY
@@ -73,7 +77,7 @@ public:
   /**
    * @brief Return the \c ASTContext for a specified \c DeclContext by
    * walking up to the enclosing module and returning its \c ASTContext.
-   * 
+   *
    * @return ASTContext&
    */
   LLVM_READONLY
@@ -87,8 +91,8 @@ public:
 
   /**
    * @brief Returns the module scope context that contains this context.
-   * 
-   * @return DeclContext * either a \c Module or a \c FileUnit. 
+   *
+   * @return DeclContext * either a \c Module or a \c FileUnit.
    */
   LLVM_READONLY
   DeclContext * getModuleScopeContext() const;
@@ -97,17 +101,19 @@ public:
    * @brief Some \c Decl are of \c DeclContext, but not all.
    *
    * @return bool
-   * 
+   *
    * @see \file w2n/AST/Decl.h
    */
   static bool classof(const Decl * D);
 };
 
-/// Define simple_display for DeclContexts but not for subclasses in order to
-/// avoid ambiguities with Decl* arguments.
-template <typename ParamT, typename = typename std::enable_if<
-                               std::is_same<ParamT, DeclContext>::value>::type>
-void simple_display(llvm::raw_ostream &out, const ParamT *dc) {
+/// Define simple_display for DeclContexts but not for subclasses in order
+/// to avoid ambiguities with Decl* arguments.
+template <
+  typename ParamT,
+  typename = typename std::enable_if<
+    std::is_same<ParamT, DeclContext>::value>::type>
+void simple_display(llvm::raw_ostream& out, const ParamT * dc) {
   if (dc)
     dc->printContext(out, 0, true);
   else

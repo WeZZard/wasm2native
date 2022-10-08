@@ -19,19 +19,21 @@ namespace w2n {
 int performFrontend(
   llvm::ArrayRef<const char *> args,
   const char * argv0,
-  void * mainAddr);
+  void * mainAddr
+);
 
 /**
  * @brief Performs the compile requested by the user.
  *
- * @param Instance Will be reset after performIRGeneration when the verifier
- *  mode is NoVerify and there were no errors.
+ * @param Instance Will be reset after performIRGeneration when the
+ * verifier mode is NoVerify and there were no errors.
  * @param ReturnValue
- * @return \c true if there are erros happen while compiling and vise versa.
+ * @return \c true if there are erros happen while compiling and vise
+ * versa.
  */
 bool performCompile(CompilerInstance& Instance, int& ReturnValue);
 
-bool performAction(CompilerInstance &Instance, int &ReturnValue);
+bool performAction(CompilerInstance& Instance, int& ReturnValue);
 
 } // namespace w2n
 

@@ -28,34 +28,35 @@ enum class SourceFileKind {
 class SourceFile : public FileUnit {
 
 private:
-
   /// The ID for the memory buffer containing this file's source.
   ///
   /// May be -1, to indicate no association with a buffer.
   int BufferID;
 
-  /// Describes what kind of file this is, which can affect some type checking
-  /// and other behavior.
+  /// Describes what kind of file this is, which can affect some type
+  /// checking and other behavior.
   const SourceFileKind Kind;
 
   bool IsPrimary;
-  
+
 public:
   static SourceFile * createSourceFile(
     SourceFileKind Kind,
     const CompilerInstance& Instance,
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
-    bool IsPrimary);
+    bool IsPrimary
+  );
 
   SourceFile(
     ModuleDecl& M,
     SourceFileKind K,
     Optional<unsigned> BufferID,
-    bool IsPrimary);
+    bool IsPrimary
+  );
 
-  /// Whether this source file is a primary file, meaning that we're generating
-  /// code for it. Note this method returns \c false in WMO.
+  /// Whether this source file is a primary file, meaning that we're
+  /// generating code for it. Note this method returns \c false in WMO.
   bool isPrimary() const { return IsPrimary; }
 
   /// The buffer ID for the file that was imported, or None if there
@@ -89,18 +90,21 @@ private:
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
-    bool IsPrimary)
+    bool IsPrimary
+  )
     : SourceFile(Module, SourceFileKind::Wasm, BufferID, IsPrimary){};
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.
-  static ParsingOptions getDefaultParsingOptions(const LanguageOptions& Opts);
+  static ParsingOptions
+  getDefaultParsingOptions(const LanguageOptions& Opts);
 
   static WasmFile * create(
     const CompilerInstance& Instance,
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
-    bool IsPrimary = false);
+    bool IsPrimary = false
+  );
 };
 
 class WatFile : public SourceFile {
@@ -117,18 +121,21 @@ private:
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
-    bool IsPrimary)
+    bool IsPrimary
+  )
     : SourceFile(Module, SourceFileKind::Wasm, BufferID, IsPrimary){};
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.
-  static ParsingOptions getDefaultParsingOptions(const LanguageOptions& Opts);
+  static ParsingOptions
+  getDefaultParsingOptions(const LanguageOptions& Opts);
 
   static WatFile * create(
     const CompilerInstance& Instance,
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
-    bool IsPrimary = false);
+    bool IsPrimary = false
+  );
 };
 
 } // namespace w2n

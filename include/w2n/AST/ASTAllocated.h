@@ -17,9 +17,9 @@ enum class AllocationArena {
    * @brief The permanent arena, which is tied to the lifetime of the
    * \c ASTContext.
    *
-   * @note All global declarations and types need to be allocated into this
-   * arena. At present, everything that is not a type involving a type
-   * variable is allocated in this arena.
+   * @note All global declarations and types need to be allocated into
+   * this arena. At present, everything that is not a type involving a
+   * type variable is allocated in this arena.
    */
   Permanent,
 };
@@ -29,7 +29,8 @@ void * allocateInASTContext(
   size_t bytes,
   const ASTContext& ctx,
   AllocationArena arena,
-  unsigned alignment);
+  unsigned alignment
+);
 }
 
 /**
@@ -44,21 +45,21 @@ void * allocateInASTContext(
 template <typename AlignTy>
 class LLVM_POINTER_LIKE_ALIGNMENT(ASTAllocated) ASTAllocated {
 public:
-
   // Make vanilla new/delete illegal.
 
   void * operator new(size_t Bytes) throw() = delete;
-  
+
   void operator delete(void * Data) throw() = delete;
 
   // Only allow allocation using the allocator in ASTContext or by doing a
   // placement new.
-  
+
   void * operator new(
     size_t bytes,
     const ASTContext& ctx,
     AllocationArena arena = AllocationArena::Permanent,
-    unsigned alignment = alignof(AlignTy)) {
+    unsigned alignment = alignof(AlignTy)
+  ) {
     return detail::allocateInASTContext(bytes, ctx, arena, alignment);
   }
 

@@ -12,8 +12,10 @@
 
 using namespace w2n;
 
-AbstractRequestFunction *
-Evaluator::getAbstractRequestFunction(uint8_t zoneID, uint8_t requestID) const {
+AbstractRequestFunction * Evaluator::getAbstractRequestFunction(
+  uint8_t zoneID,
+  uint8_t requestID
+) const {
   for (const auto& zone : requestFunctionsByZone) {
     if (zone.first == zoneID) {
       if (requestID < zone.second.size())
@@ -28,7 +30,8 @@ Evaluator::getAbstractRequestFunction(uint8_t zoneID, uint8_t requestID) const {
 
 void Evaluator::registerRequestFunctions(
   Zone zone,
-  ArrayRef<AbstractRequestFunction *> functions) {
+  ArrayRef<AbstractRequestFunction *> functions
+) {
   uint8_t zoneID = static_cast<uint8_t>(zone);
 #ifndef NDEBUG
   for (const auto& zone : requestFunctionsByZone) {
@@ -96,11 +99,14 @@ void Evaluator::diagnoseCycle(const ActiveRequest& request) {
     step.noteCycleStep(diags);
   }
 
-  llvm_unreachable("Diagnosed a cycle but it wasn't represented in the stack");
+  llvm_unreachable(
+    "Diagnosed a cycle but it wasn't represented in the stack"
+  );
 }
 
 void evaluator::DependencyRecorder::recordDependency(
-  const DependencyCollector::Reference& ref) {
+  const DependencyCollector::Reference& ref
+) {
   if (activeRequestReferences.empty())
     return;
 
@@ -108,31 +114,38 @@ void evaluator::DependencyRecorder::recordDependency(
 }
 
 evaluator::DependencyCollector::DependencyCollector(
-  evaluator::DependencyRecorder& parent)
+  evaluator::DependencyRecorder& parent
+)
   : parent(parent) {
 #ifndef NDEBUG
   assert(
     !parent.isRecording &&
-    "Probably not a good idea to allow nested recording");
+    "Probably not a good idea to allow nested recording"
+  );
   parent.isRecording = true;
 #endif
 }
 
 evaluator::DependencyCollector::~DependencyCollector() {
 #ifndef NDEBUG
-  assert(parent.isRecording && "Should have been recording this whole time");
+  assert(
+    parent.isRecording && "Should have been recording this whole time"
+  );
   parent.isRecording = false;
 #endif
 }
 
 void evaluator::DependencyCollector::addUsedMember(
   DeclContext * subject,
-  DeclBaseName name) {
+  DeclBaseName name
+) {
   // FIXME: assert(subject->isTypeContext());
   return parent.recordDependency(Reference::usedMember(subject, name));
 }
 
-void evaluator::DependencyCollector::addPotentialMember(DeclContext * subject) {
+void evaluator::DependencyCollector::addPotentialMember(
+  DeclContext * subject
+) {
   // FIXME: assert(subject->isTypeContext());
   return parent.recordDependency(Reference::potentialMember(subject));
 }
@@ -141,13 +154,16 @@ void evaluator::DependencyCollector::addTopLevelName(DeclBaseName name) {
   return parent.recordDependency(Reference::topLevel(name));
 }
 
-void evaluator::DependencyCollector::addDynamicLookupName(DeclBaseName name) {
+void evaluator::DependencyCollector::addDynamicLookupName(
+  DeclBaseName name
+) {
   return parent.recordDependency(Reference::dynamic(name));
 }
 
 void evaluator::DependencyRecorder::enumerateReferencesInFile(
   const SourceFile * SF,
-  ReferenceEnumerator f) const {
+  ReferenceEnumerator f
+) const {
   auto entry = fileReferences.find(SF);
   if (entry == fileReferences.end()) {
     return;

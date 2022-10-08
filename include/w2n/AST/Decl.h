@@ -41,11 +41,14 @@ private:
 
   Decl(const Decl&) = delete;
   void operator=(const Decl&) = delete;
-  
+
   SourceLoc getLocFromSource() const;
 
 protected:
-  Decl(DeclKind Kind, llvm::PointerUnion<DeclContext *, ASTContext *> Context)
+  Decl(
+    DeclKind Kind,
+    llvm::PointerUnion<DeclContext *, ASTContext *> Context
+  )
     : Kind(Kind), Context(Context) {}
 
   DeclContext * getDeclContextForModule() const;
@@ -90,9 +93,9 @@ public:
   SourceRange getSourceRange() const;
 };
 
-SourceLoc extractNearestSourceLoc(const Decl *decl);
+SourceLoc extractNearestSourceLoc(const Decl * decl);
 
-void simple_display(llvm::raw_ostream &out, const Decl *decl);
+void simple_display(llvm::raw_ostream& out, const Decl * decl);
 
 } // namespace w2n
 

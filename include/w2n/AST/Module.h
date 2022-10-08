@@ -27,7 +27,7 @@ private:
   Identifier Name;
 
   SmallVector<FileUnit *, 2> Files;
-  
+
   ModuleDecl(Identifier Name, ASTContext& Context);
 
   SourceLoc getLocFromSource() const { return SourceLoc(); }
@@ -41,8 +41,8 @@ public:
   bool isMainModule() const { return IsMainModule; }
 
   /**
-   * @brief For the main module, retrieves the list of primary source files
-   * being compiled, that is, the files we're generating code for.
+   * @brief For the main module, retrieves the list of primary source
+   * files being compiled, that is, the files we're generating code for.
    */
   ArrayRef<SourceFile *> getPrimarySourceFiles() const;
 
@@ -53,7 +53,8 @@ public:
     return new (Context) ModuleDecl(Name, Context);
   }
 
-  static ModuleDecl * createMainModule(ASTContext& Context, Identifier Name) {
+  static ModuleDecl *
+  createMainModule(ASTContext& Context, Identifier Name) {
     auto * Module = ModuleDecl::create(Name, Context);
     Module->IsMainModule = true;
     return Module;
@@ -71,31 +72,27 @@ public:
   void addFile(FileUnit& NewFile);
 
   /**
-   * @brief Returns \c true if there was an error trying to load this module.
+   * @brief Returns \c true if there was an error trying to load this
+   * module.
    */
-  bool failedToLoad() const {
-    return FailedToLoad;
-  }
+  bool failedToLoad() const { return FailedToLoad; }
 
-  void setFailedToLoad(bool Failed = true) {
-    FailedToLoad = Failed;
-  }
+  void setFailedToLoad(bool Failed = true) { FailedToLoad = Failed; }
 
   using Decl::getASTContext;
 
-  static bool classof(const DeclContext *DC) {
+  static bool classof(const DeclContext * DC) {
     if (auto D = DC->getAsDecl())
       return classof(D);
     return false;
   }
 
-  static bool classof(const Decl *D) {
+  static bool classof(const Decl * D) {
     return D->getKind() == DeclKind::Module;
   }
 
   using ASTAllocated<ModuleDecl>::operator new;
   using ASTAllocated<ModuleDecl>::operator delete;
-
 };
 
 inline bool DeclContext::isModuleContext() const {
@@ -105,7 +102,7 @@ inline bool DeclContext::isModuleContext() const {
 }
 
 /// Extract the source location from the given module declaration.
-inline SourceLoc extractNearestSourceLoc(const ModuleDecl *mod) {
+inline SourceLoc extractNearestSourceLoc(const ModuleDecl * mod) {
   return extractNearestSourceLoc(static_cast<const Decl *>(mod));
 }
 

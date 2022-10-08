@@ -10,19 +10,18 @@ using namespace w2n::file_types;
 
 namespace {
 struct TypeInfo {
-  const char *Name;
-  const char *Flags;
-  const char *Extension;
+  const char * Name;
+  const char * Flags;
+  const char * Extension;
 };
 } // end anonymous namespace
 
 static const TypeInfo TypeInfos[] = {
-#define TYPE(NAME, ID, EXTENSION, FLAGS) \
-  { NAME, FLAGS, EXTENSION },
+#define TYPE(NAME, ID, EXTENSION, FLAGS) {NAME, FLAGS, EXTENSION},
 #include <w2n/Basic/FileTypes.def>
 };
 
-static const TypeInfo &getInfo(unsigned Id) {
+static const TypeInfo& getInfo(unsigned Id) {
   assert(Id >= 0 && Id < TY_INVALID && "Invalid Type ID.");
   return TypeInfos[Id];
 }
@@ -38,18 +37,16 @@ ID file_types::lookupTypeForExtension(StringRef Ext) {
     return TY_INVALID;
   assert(Ext.front() == '.' && "not a file extension");
   return llvm::StringSwitch<file_types::ID>(Ext.drop_front())
-#define TYPE(NAME, ID, EXTENSION, FLAGS) \
-           .Case(EXTENSION, TY_##ID)
+#define TYPE(NAME, ID, EXTENSION, FLAGS) .Case(EXTENSION, TY_##ID)
 #include <w2n/Basic/FileTypes.def>
-      .Default(TY_INVALID);
+    .Default(TY_INVALID);
 }
 
 ID file_types::lookupTypeForName(StringRef Name) {
   return llvm::StringSwitch<file_types::ID>(Name)
-#define TYPE(NAME, ID, EXTENSION, FLAGS) \
-           .Case(NAME, TY_##ID)
+#define TYPE(NAME, ID, EXTENSION, FLAGS) .Case(NAME, TY_##ID)
 #include <w2n/Basic/FileTypes.def>
-      .Default(TY_INVALID);
+    .Default(TY_INVALID);
 }
 
 bool file_types::isInputType(ID Id) {

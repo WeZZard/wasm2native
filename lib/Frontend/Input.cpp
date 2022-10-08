@@ -6,7 +6,8 @@ using namespace w2n;
 
 bool Input::deriveInputSpecificPaths(
   InputSpecificPaths& ISPs,
-  DiagnosticEngine& Diag) const {
+  DiagnosticEngine& Diag
+) const {
   switch (FileID) {
   case file_types::ID::TY_Wasm: {
     using namespace llvm::sys;
@@ -16,7 +17,8 @@ bool Input::deriveInputSpecificPaths(
 
     SmallString<256> FilenameBodyBuf;
     path::append(
-      FilenameBodyBuf, path::begin(ParentPath), path::end(ParentPath));
+      FilenameBodyBuf, path::begin(ParentPath), path::end(ParentPath)
+    );
     path::append(FilenameBodyBuf, path::begin(Stem), path::end(Stem));
 
     Twine FilenameBody(FilenameBodyBuf);

@@ -3,7 +3,9 @@
 
 using namespace w2n;
 
-bool FrontendOptions::doesActionPerformEndOfPipelineActions(ActionType action) {
+bool FrontendOptions::doesActionPerformEndOfPipelineActions(
+  ActionType action
+) {
   switch (action) {
   case ActionType::NoneAction:
   case ActionType::PrintVersion:

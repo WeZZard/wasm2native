@@ -24,7 +24,9 @@ public:
 
   InputSpecificPaths(
     std::string OutputFilename = std::string(),
-    SupplementaryOutputPaths SupplementaryOutputs = SupplementaryOutputPaths())
+    SupplementaryOutputPaths SupplementaryOutputs =
+      SupplementaryOutputPaths()
+  )
     : OutputFilename(OutputFilename),
       SupplementaryOutputs(SupplementaryOutputs) {}
 };

@@ -10,7 +10,8 @@ void * detail::allocateInASTContext(
   size_t bytes,
   const ASTContext& ctx,
   AllocationArena arena,
-  unsigned alignment) {
+  unsigned alignment
+) {
   return ctx.Allocate(bytes, alignment, arena);
 }
 
@@ -27,7 +28,8 @@ struct ASTContext::Implementation {
 
     size_t getTotalMemory() const {
       return sizeof(*this)
-             // Adds up sizes of seats in arena with llvm::capacity_in_bytes
+             // Adds up sizes of seats in arena with
+             // llvm::capacity_in_bytes
              + 0;
     }
   };
@@ -44,7 +46,8 @@ struct ASTContext::Implementation {
 
   /// FIXME: This is a \c StringMap rather than a \c StringSet because
   /// \c StringSet doesn't allow passing in a pre-existing allocator.
-  llvm::StringMap<Identifier::Aligner, llvm::BumpPtrAllocator&> IdentifierTable;
+  llvm::StringMap<Identifier::Aligner, llvm::BumpPtrAllocator&>
+    IdentifierTable;
 
   Arena Permanent;
 
@@ -62,7 +65,8 @@ struct ASTContext::Implementation {
 ASTContext::ASTContext(
   LanguageOptions& LangOpts,
   SourceManager& SourceMgr,
-  DiagnosticEngine& Diags)
+  DiagnosticEngine& Diags
+)
   : LangOpts(LangOpts), SourceMgr(SourceMgr), Diags(Diags),
     Eval(Diags, LangOpts) {}
 
@@ -71,31 +75,38 @@ ASTContext::~ASTContext() { getImpl().~Implementation(); }
 ASTContext::Implementation& ASTContext::getImpl() const {
   auto pointer = reinterpret_cast<char *>(const_cast<ASTContext *>(this));
   auto offset = llvm::alignAddr(
-    (void *)sizeof(*this), llvm::Align(alignof(Implementation)));
+    (void *)sizeof(*this), llvm::Align(alignof(Implementation))
+  );
   return *reinterpret_cast<Implementation *>(pointer + offset);
 }
 
-void ASTContext::operator delete(void * Data) throw() { AlignedFree(Data); }
+void ASTContext::operator delete(void * Data) throw() {
+  AlignedFree(Data);
+}
 
 ASTContext * ASTContext::get(
   LanguageOptions& langOpts,
   SourceManager& SourceMgr,
-  DiagnosticEngine& Diags) {
-  // If more than two data structures are concatentated, then the aggregate
-  // size math needs to become more complicated due to per-struct alignment
-  // constraints.
+  DiagnosticEngine& Diags
+) {
+  // If more than two data structures are concatentated, then the
+  // aggregate size math needs to become more complicated due to
+  // per-struct alignment constraints.
   auto Align = std::max(alignof(ASTContext), alignof(Implementation));
-  auto Size = llvm::alignTo(sizeof(ASTContext) + sizeof(Implementation), Align);
+  auto Size =
+    llvm::alignTo(sizeof(ASTContext) + sizeof(Implementation), Align);
   auto RetAddr = AlignedAlloc(Size, Align);
   auto ImplAddr =
     reinterpret_cast<void *>((char *)RetAddr + sizeof(ASTContext));
   ImplAddr = reinterpret_cast<void *>(
-    llvm::alignAddr(ImplAddr, llvm::Align(alignof(Implementation))));
+    llvm::alignAddr(ImplAddr, llvm::Align(alignof(Implementation)))
+  );
   new (ImplAddr) Implementation();
   return new (RetAddr) ASTContext(langOpts, SourceMgr, Diags);
 }
 
-llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena arena) const {
+llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena arena
+) const {
   switch (arena) {
   case AllocationArena::Permanent:
     return getImpl().Allocator;

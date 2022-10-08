@@ -16,25 +16,29 @@ static bool parseFrontendOptions(
   FrontendOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers);
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+);
 
 static bool parseLanguageOptions(
   LanguageOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers);
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+);
 
 static bool parseSearchPathOptions(
   SearchPathOptions_t& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers);
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+);
 
 static bool parseIRGenOptions(
   IRGenOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers);
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+);
 
 CompilerInvocation::CompilerInvocation(){};
 
@@ -42,7 +46,8 @@ bool CompilerInvocation::parseArgs(
   llvm::ArrayRef<const char *> Args,
   DiagnosticEngine& Diagstic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> *
-    ConfigurationFileBuffers) {
+    ConfigurationFileBuffers
+) {
   using namespace options;
 
   if (Args.empty())
@@ -68,22 +73,26 @@ bool CompilerInvocation::parseArgs(
   }
 
   if (parseFrontendOptions(
-        FrontendOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers)) {
+        FrontendOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers
+      )) {
     return true;
   }
 
   if (parseLanguageOptions(
-        LanguageOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers)) {
+        LanguageOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers
+      )) {
     return true;
   }
 
   if (parseSearchPathOptions(
-        SearchPathOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers)) {
+        SearchPathOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers
+      )) {
     return true;
   }
 
   if (parseIRGenOptions(
-        IRGenOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers)) {
+        IRGenOpts, ParsedArgs, Diagstic, ConfigurationFileBuffers
+      )) {
     return true;
   }
 
@@ -94,7 +103,8 @@ bool parseFrontendOptions(
   FrontendOptions& Options,
   const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers) {
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
+) {
 
   std::set<StringRef> AllInputFiles;
   bool hadDuplicates = false;
@@ -126,7 +136,8 @@ bool parseFrontendOptions(
 
   // Derive ModuleName
   if (InputsAndOutputs.hasSingleInput()) {
-    auto& FirstISPs = InputsAndOutputs.firstInput().getInputSpecificPaths();
+    auto& FirstISPs =
+      InputsAndOutputs.firstInput().getInputSpecificPaths();
     auto& OutputFileName = FirstISPs.OutputFilename;
     StringRef Stem = llvm::sys::path::stem(OutputFileName);
     Options.ModuleName = Stem.str();
@@ -165,9 +176,11 @@ bool parseLanguageOptions(
   LanguageOptions& Options,
   const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers) {
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+) {
   if (Args.hasArg(options::OPT_target)) {
-    Options.Target = llvm::Triple(Args.getLastArgValue(options::OPT_target));
+    Options.Target =
+      llvm::Triple(Args.getLastArgValue(options::OPT_target));
   } else {
     Options.Target = llvm::Triple(llvm::sys::getDefaultTargetTriple());
   }
@@ -192,7 +205,8 @@ bool parseSearchPathOptions(
   SearchPathOptions_t& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers) {
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+) {
   return false;
 }
 
@@ -200,6 +214,7 @@ bool parseIRGenOptions(
   IRGenOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers) {
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+) {
   return false;
 }

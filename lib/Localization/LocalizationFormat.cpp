@@ -1,7 +1,6 @@
 /// This file implements the format for localized diagnostic messages.
 
-#include <w2n/Localization/LocalizationFormat.h>
-#include <w2n/Basic/Range.h>
+#include <cstdint>
 #include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
@@ -12,23 +11,25 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/YAMLParser.h>
 #include <llvm/Support/YAMLTraits.h>
-#include <cstdint>
 #include <string>
 #include <system_error>
 #include <type_traits>
+#include <w2n/Basic/Range.h>
+#include <w2n/Localization/LocalizationFormat.h>
 
 namespace {
 
 enum LocalDiagID : uint32_t {
+
 #define DIAG(KIND, ID, Options, Text, Signature) ID,
 #include <w2n/AST/DiagnosticsAll.def>
   NumDiags
 };
 
-static constexpr const char *const diagnosticNameStrings[] = {
+static constexpr const char * const diagnosticNameStrings[] = {
 #define DIAG(KIND, ID, Options, Text, Signature) " [" #ID "]",
 #include <w2n/AST/DiagnosticsAll.def>
-    "<not a diagnostic>",
+  "<not a diagnostic>",
 };
 
 } // namespace
@@ -36,9 +37,10 @@ static constexpr const char *const diagnosticNameStrings[] = {
 namespace llvm {
 namespace yaml {
 
-template <> struct ScalarEnumerationTraits<LocalDiagID> {
-  static void enumeration(IO &io, LocalDiagID &value) {
-#define DIAG(KIND, ID, Options, Text, Signature)                               \
+template <>
+struct ScalarEnumerationTraits<LocalDiagID> {
+  static void enumeration(IO& io, LocalDiagID& value) {
+#define DIAG(KIND, ID, Options, Text, Signature)                         \
   io.enumCase(value, #ID, LocalDiagID::ID);
 #include <w2n/AST/DiagnosticsAll.def>
     // Ignore diagnostic IDs that are available in the YAML file and not
@@ -54,8 +56,10 @@ template <> struct ScalarEnumerationTraits<LocalDiagID> {
 namespace w2n {
 namespace diag {
 
-void SerializedLocalizationWriter::insert(w2n::DiagID id,
-                                          llvm::StringRef translation) {
+void SerializedLocalizationWriter::insert(
+  w2n::DiagID id,
+  llvm::StringRef translation
+) {
   generator.insert(static_cast<uint32_t>(id), translation);
 }
 
@@ -69,7 +73,9 @@ bool SerializedLocalizationWriter::emit(llvm::StringRef filePath) {
 
   offset_type offset;
   {
-    llvm::support::endian::write<offset_type>(OS, 0, llvm::support::little);
+    llvm::support::endian::write<offset_type>(
+      OS, 0, llvm::support::little
+    );
     offset = generator.Emit(OS);
   }
   OS.seek(0);
@@ -89,9 +95,10 @@ void LocalizationProducer::initializeIfNeeded() {
     state = FailedInitialization;
 }
 
-llvm::StringRef
-LocalizationProducer::getMessageOr(w2n::DiagID id,
-                                   llvm::StringRef defaultMessage) {
+llvm::StringRef LocalizationProducer::getMessageOr(
+  w2n::DiagID id,
+  llvm::StringRef defaultMessage
+) {
   initializeIfNeeded();
   if (getState() == FailedInitialization) {
     return defaultMessage;
@@ -102,8 +109,9 @@ LocalizationProducer::getMessageOr(w2n::DiagID id,
     return defaultMessage;
   if (printDiagnosticNames) {
     llvm::StringRef diagnosticName(diagnosticNameStrings[(unsigned)id]);
-    auto localizedDebugDiagnosticMessage =
-        localizationSaver.save(localizedMessage.str() + diagnosticName.str());
+    auto localizedDebugDiagnosticMessage = localizationSaver.save(
+      localizedMessage.str() + diagnosticName.str()
+    );
     return localizedDebugDiagnosticMessage;
   }
   return localizedMessage;
@@ -114,47 +122,54 @@ LocalizationProducerState LocalizationProducer::getState() const {
 }
 
 SerializedLocalizationProducer::SerializedLocalizationProducer(
-    std::unique_ptr<llvm::MemoryBuffer> buffer, bool printDiagnosticNames)
-    : LocalizationProducer(printDiagnosticNames), Buffer(std::move(buffer)) {
-}
+  std::unique_ptr<llvm::MemoryBuffer> buffer,
+  bool printDiagnosticNames
+)
+  : LocalizationProducer(printDiagnosticNames),
+    Buffer(std::move(buffer)) {}
 
 bool SerializedLocalizationProducer::initializeImpl() {
   auto base =
-      reinterpret_cast<const unsigned char *>(Buffer.get()->getBufferStart());
+    reinterpret_cast<const unsigned char *>(Buffer.get()->getBufferStart()
+    );
   auto tableOffset = endian::read<offset_type>(base, little);
   SerializedTable.reset(SerializedLocalizationTable::Create(
-      base + tableOffset, base + sizeof(offset_type), base));
+    base + tableOffset, base + sizeof(offset_type), base
+  ));
   return true;
 }
 
-llvm::StringRef
-SerializedLocalizationProducer::getMessage(w2n::DiagID id) const {
+llvm::StringRef SerializedLocalizationProducer::getMessage(w2n::DiagID id
+) const {
   auto value = SerializedTable.get()->find(id);
   if (value.getDataLen() == 0)
     return llvm::StringRef();
   return {(const char *)value.getDataPtr(), value.getDataLen()};
 }
 
-YAMLLocalizationProducer::YAMLLocalizationProducer(llvm::StringRef filePath,
-                                                   bool printDiagnosticNames)
-    : LocalizationProducer(printDiagnosticNames), filePath(filePath) {
-}
+YAMLLocalizationProducer::YAMLLocalizationProducer(
+  llvm::StringRef filePath,
+  bool printDiagnosticNames
+)
+  : LocalizationProducer(printDiagnosticNames), filePath(filePath) {}
 
 bool YAMLLocalizationProducer::initializeImpl() {
   auto FileBufOrErr = llvm::MemoryBuffer::getFileOrSTDIN(filePath);
-  llvm::MemoryBuffer *document = FileBufOrErr->get();
+  llvm::MemoryBuffer * document = FileBufOrErr->get();
   diag::LocalizationInput yin(document->getBuffer());
   yin >> diagnostics;
   unknownIDs = std::move(yin.unknownIDs);
   return true;
 }
 
-llvm::StringRef YAMLLocalizationProducer::getMessage(w2n::DiagID id) const {
+llvm::StringRef YAMLLocalizationProducer::getMessage(w2n::DiagID id
+) const {
   return diagnostics[(unsigned)id];
 }
 
 void YAMLLocalizationProducer::forEachAvailable(
-    llvm::function_ref<void(w2n::DiagID, llvm::StringRef)> callback) {
+  llvm::function_ref<void(w2n::DiagID, llvm::StringRef)> callback
+) {
   initializeIfNeeded();
   if (getState() == FailedInitialization) {
     return;
@@ -167,9 +182,11 @@ void YAMLLocalizationProducer::forEachAvailable(
   }
 }
 
-std::unique_ptr<LocalizationProducer>
-LocalizationProducer::producerFor(llvm::StringRef locale, llvm::StringRef path,
-                                  bool printDiagnosticNames) {
+std::unique_ptr<LocalizationProducer> LocalizationProducer::producerFor(
+  llvm::StringRef locale,
+  llvm::StringRef path,
+  bool printDiagnosticNames
+) {
   std::unique_ptr<LocalizationProducer> producer;
   llvm::SmallString<128> filePath(path);
   llvm::sys::path::append(filePath, locale);
@@ -180,22 +197,24 @@ LocalizationProducer::producerFor(llvm::StringRef locale, llvm::StringRef path,
   if (llvm::sys::fs::exists(filePath)) {
     if (auto file = llvm::MemoryBuffer::getFile(filePath)) {
       producer = std::make_unique<diag::SerializedLocalizationProducer>(
-          std::move(file.get()), printDiagnosticNames);
+        std::move(file.get()), printDiagnosticNames
+      );
     }
   } else {
     llvm::sys::path::replace_extension(filePath, ".yaml");
-    // In case of missing localization files, we should fallback to messages
-    // from `.def` files.
+    // In case of missing localization files, we should fallback to
+    // messages from `.def` files.
     if (llvm::sys::fs::exists(filePath)) {
       producer = std::make_unique<diag::YAMLLocalizationProducer>(
-          filePath.str(), printDiagnosticNames);
+        filePath.str(), printDiagnosticNames
+      );
     }
   }
 
   return producer;
 }
 
-llvm::Optional<uint32_t> LocalizationInput::readID(llvm::yaml::IO &io) {
+llvm::Optional<uint32_t> LocalizationInput::readID(llvm::yaml::IO& io) {
   LocalDiagID diagID;
   io.mapRequired("id", diagID);
   if (diagID == LocalDiagID::NumDiags)
@@ -204,26 +223,29 @@ llvm::Optional<uint32_t> LocalizationInput::readID(llvm::yaml::IO &io) {
 }
 
 template <typename T, typename Context>
-typename std::enable_if<llvm::yaml::has_SequenceTraits<T>::value, void>::type
-readYAML(llvm::yaml::IO &io, T &Seq, T &unknownIDs, bool, Context &Ctx) {
+typename std::enable_if<
+  llvm::yaml::has_SequenceTraits<T>::value,
+  void>::type
+readYAML(llvm::yaml::IO& io, T& Seq, T& unknownIDs, bool, Context& Ctx) {
   unsigned count = io.beginSequence();
   if (count) {
     Seq.resize(LocalDiagID::NumDiags);
   }
 
   for (unsigned i = 0; i < count; ++i) {
-    void *SaveInfo;
+    void * SaveInfo;
     if (io.preflightElement(i, SaveInfo)) {
       io.beginMapping();
 
-      // If the current diagnostic ID is available in YAML and in `.def`, add it
-      // to the diagnostics array. Otherwise, re-parse the current diagnnostic
-      // id as a string and store it in `unknownIDs` array.
+      // If the current diagnostic ID is available in YAML and in `.def`,
+      // add it to the diagnostics array. Otherwise, re-parse the current
+      // diagnnostic id as a string and store it in `unknownIDs` array.
       if (auto id = LocalizationInput::readID(io)) {
-        // YAML file isn't guaranteed to have diagnostics in order of their
-        // declaration in `.def` files, to accommodate that we need to leave
-        // holes in diagnostic array for diagnostics which haven't yet been
-        // localized and for the ones that have `id` indicates their position.
+        // YAML file isn't guaranteed to have diagnostics in order of
+        // their declaration in `.def` files, to accommodate that we need
+        // to leave holes in diagnostic array for diagnostics which
+        // haven't yet been localized and for the ones that have `id`
+        // indicates their position.
         io.mapRequired("msg", Seq[*id]);
       } else {
         std::string unknownID, message;
@@ -240,9 +262,10 @@ readYAML(llvm::yaml::IO &io, T &Seq, T &unknownIDs, bool, Context &Ctx) {
 }
 
 template <typename T>
-typename std::enable_if<llvm::yaml::has_SequenceTraits<T>::value,
-                        LocalizationInput &>::type
-operator>>(LocalizationInput &yin, T &diagnostics) {
+typename std::enable_if<
+  llvm::yaml::has_SequenceTraits<T>::value,
+  LocalizationInput&>::type
+operator>>(LocalizationInput& yin, T& diagnostics) {
   llvm::yaml::EmptyContext Ctx;
   if (yin.setCurrentDocument()) {
     // If YAML file's format doesn't match the current format in
@@ -252,14 +275,15 @@ operator>>(LocalizationInput &yin, T &diagnostics) {
   return yin;
 }
 
-void DefToYAMLConverter::convert(llvm::raw_ostream &out) {
+void DefToYAMLConverter::convert(llvm::raw_ostream& out) {
   for (auto i : w2n::indices(IDs)) {
     out << "- id: " << IDs[i] << "\n";
 
-    const std::string &msg = Messages[i];
+    const std::string& msg = Messages[i];
 
     out << "  msg: \"";
-    // Add an escape character before a double quote `"` or a backslash `\`.
+    // Add an escape character before a double quote `"` or a backslash
+    // `\`.
     for (unsigned j = 0; j < msg.length(); ++j) {
       if (msg[j] == '"') {
         out << '\\';

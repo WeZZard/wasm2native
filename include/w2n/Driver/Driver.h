@@ -22,12 +22,11 @@ public:
   /// DriverKind determines how later arguments are parsed, as well as the
   /// allowable OutputInfo::Mode values.
   enum class DriverKind {
-    Interactive,     // w2n
-    Batch,           // w2nc
+    Interactive, // w2n
+    Batch,       // w2nc
   };
 
 private:
-
   DriverKind TheKind;
 
 public:
@@ -35,11 +34,11 @@ public:
     StringRef ExeName,
     StringRef Name,
     ArrayRef<const char *> Args,
-    DiagnosticEngine& Diags);
+    DiagnosticEngine& Diags
+  );
   ~Driver();
 
   DriverKind getDriverKind() const { return TheKind; }
-  
 };
 
 } // namespace driver

@@ -21,27 +21,29 @@ public:
 
 private:
   /**
-   * @brief Constructor, only accessible by \c ASTContext, which handles the
-   *  uniquing.
-   * 
-   * @param Ptr 
+   * @brief Constructor, only accessible by \c ASTContext, which handles
+   * the uniquing.
+   *
+   * @param Ptr
    */
   explicit Identifier(const char * Ptr) : Pointer(Ptr) {
     assert(
       ((uintptr_t)Ptr & SpareBitMask) == 0 &&
-      "Identifier pointer does not use any spare bits");
+      "Identifier pointer does not use any spare bits"
+    );
   }
 
   /**
    * @brief A type with the alignment expected of a valid
    *  \c Identifier::Pointer .
-   * 
+   *
    */
   struct alignas(uint64_t) Aligner {};
 
   static_assert(
     alignof(Aligner) >= RequiredAlignment,
-    "Identifier table will provide enough spare bits");
+    "Identifier table will provide enough spare bits"
+  );
 
 public:
   explicit Identifier() : Pointer(nullptr) {}
@@ -58,7 +60,9 @@ public:
   explicit operator std::string() const { return std::string(Pointer); }
 
   unsigned getLength() const {
-    assert(Pointer != nullptr && "Tried getting length of empty identifier");
+    assert(
+      Pointer != nullptr && "Tried getting length of empty identifier"
+    );
     return ::strlen(Pointer);
   }
 
@@ -78,10 +82,10 @@ public:
    * @brief Compare two identifiers, producing \c -1 if \c *this comes
    *  before \c other, \c 1 if \c *this comes after \c other, and \c 0 if
    *  they are equal.
-   * 
-   * @param other 
-   * @return int 
-   * 
+   *
+   * @param other
+   * @return int
+   *
    * @note Null identifiers come after all other identifiers.
    */
   int compare(Identifier other) const;
@@ -91,6 +95,7 @@ public:
   }
 
   bool operator==(Identifier RHS) const { return Pointer == RHS.Pointer; }
+
   bool operator!=(Identifier RHS) const { return !(*this == RHS); }
 
   bool operator<(Identifier RHS) const { return Pointer < RHS.Pointer; }
@@ -121,12 +126,15 @@ struct DenseMapInfo<w2n::Identifier> {
   static w2n::Identifier getEmptyKey() {
     return w2n::Identifier::getEmptyKey();
   }
+
   static w2n::Identifier getTombstoneKey() {
     return w2n::Identifier::getTombstoneKey();
   }
+
   static unsigned getHashValue(w2n::Identifier Val) {
     return DenseMapInfo<const void *>::getHashValue(Val.get());
   }
+
   static bool isEqual(w2n::Identifier LHS, w2n::Identifier RHS) {
     return LHS == RHS;
   }
@@ -135,15 +143,18 @@ struct DenseMapInfo<w2n::Identifier> {
 // An Identifier is "pointer like".
 template <typename T>
 struct PointerLikeTypeTraits;
+
 template <>
 struct PointerLikeTypeTraits<w2n::Identifier> {
 public:
   static inline void * getAsVoidPointer(w2n::Identifier I) {
     return const_cast<void *>(I.getAsOpaquePointer());
   }
+
   static inline w2n::Identifier getFromVoidPointer(void * P) {
     return w2n::Identifier::getFromOpaquePointer(P);
   }
+
   enum { NumLowBitsAvailable = w2n::Identifier::NumLowBitsAvailable };
 };
 

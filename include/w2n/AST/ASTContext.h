@@ -23,11 +23,11 @@ namespace w2n {
 class ASTContext final {
 
 private:
-
   ASTContext(
     LanguageOptions& LangOpts,
     SourceManager& SourceMgr,
-    DiagnosticEngine& Diags);
+    DiagnosticEngine& Diags
+  );
 
   /// Members that should only be used by \file w2n/AST/ASTContext.cpp.
   struct Implementation;
@@ -55,7 +55,8 @@ public:
   static ASTContext * get(
     LanguageOptions& LangOpts,
     SourceManager& SourceMgr,
-    DiagnosticEngine& Diags);
+    DiagnosticEngine& Diags
+  );
 
 #pragma Public Members
 
@@ -90,7 +91,8 @@ public:
   void * Allocate(
     unsigned long bytes,
     unsigned alignment,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     if (bytes == 0)
       return nullptr;
 
@@ -112,7 +114,8 @@ public:
   template <typename T>
   MutableArrayRef<T> AllocateUninitialized(
     unsigned NumElts,
-    AllocationArena Arena = AllocationArena::Permanent) const {
+    AllocationArena Arena = AllocationArena::Permanent
+  ) const {
     T * Data = (T *)Allocate(sizeof(T) * NumElts, alignof(T), Arena);
     return {Data, NumElts};
   }
@@ -120,7 +123,8 @@ public:
   template <typename T>
   MutableArrayRef<T> Allocate(
     unsigned numElts,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     T * res = (T *)Allocate(sizeof(T) * numElts, alignof(T), arena);
     for (unsigned i = 0; i != numElts; ++i)
       new (res + i) T();
@@ -133,11 +137,13 @@ public:
   template <typename T>
   typename std::remove_reference<T>::type * AllocateObjectCopy(
     T&& t,
-    AllocationArena arena = AllocationArena::Permanent) const {
-    // This function cannot be named AllocateCopy because it would always win
-    // overload resolution over the AllocateCopy(ArrayRef<T>).
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
+    // This function cannot be named AllocateCopy because it would always
+    // win overload resolution over the AllocateCopy(ArrayRef<T>).
     using TNoRef = typename std::remove_reference<T>::type;
-    TNoRef * res = (TNoRef *)Allocate(sizeof(TNoRef), alignof(TNoRef), arena);
+    TNoRef * res =
+      (TNoRef *)Allocate(sizeof(TNoRef), alignof(TNoRef), arena);
     new (res) TNoRef(std::forward<T>(t));
     return res;
   }
@@ -146,7 +152,8 @@ public:
   T * AllocateCopy(
     It start,
     It end,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     T * res = (T *)Allocate(sizeof(T) * (end - start), alignof(T), arena);
     for (unsigned i = 0; start != end; ++start, ++i)
       new (res + i) T(*start);
@@ -156,42 +163,51 @@ public:
   template <typename T, size_t N>
   MutableArrayRef<T> AllocateCopy(
     T (&array)[N],
-    AllocationArena arena = AllocationArena::Permanent) const {
-    return MutableArrayRef<T>(AllocateCopy<T>(array, array + N, arena), N);
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
+    return MutableArrayRef<T>(
+      AllocateCopy<T>(array, array + N, arena), N
+    );
   }
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
     ArrayRef<T> array,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     return MutableArrayRef<T>(
-      AllocateCopy<T>(array.begin(), array.end(), arena), array.size());
+      AllocateCopy<T>(array.begin(), array.end(), arena), array.size()
+    );
   }
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
     const std::vector<T>& vec,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     return AllocateCopy(ArrayRef<T>(vec), arena);
   }
 
   template <typename T>
   ArrayRef<T> AllocateCopy(
     const SmallVectorImpl<T>& vec,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     return AllocateCopy(ArrayRef<T>(vec), arena);
   }
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
     SmallVectorImpl<T>& vec,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     return AllocateCopy(MutableArrayRef<T>(vec), arena);
   }
 
   StringRef AllocateCopy(
     StringRef Str,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     ArrayRef<char> Result =
       AllocateCopy(llvm::makeArrayRef(Str.data(), Str.size()), arena);
     return StringRef(Result.data(), Result.size());
@@ -200,21 +216,24 @@ public:
   template <typename T, typename Vector, typename Set>
   MutableArrayRef<T> AllocateCopy(
     llvm::SetVector<T, Vector, Set> setVector,
-    AllocationArena arena = AllocationArena::Permanent) const {
+    AllocationArena arena = AllocationArena::Permanent
+  ) const {
     return MutableArrayRef<T>(
       AllocateCopy<T>(setVector.begin(), setVector.end(), arena),
-      setVector.size());
+      setVector.size()
+    );
   }
 
 #pragma Configure Compilations
 
   void addLoadedModule(ModuleDecl * Module);
 
-  /// Add a cleanup function to be called when the ASTContext is deallocated.
+  /// Add a cleanup function to be called when the ASTContext is
+  /// deallocated.
   void addCleanup(std::function<void(void)> cleanup);
 
-  /// Add a cleanup to run the given object's destructor when the ASTContext is
-  /// deallocated.
+  /// Add a cleanup to run the given object's destructor when the
+  /// ASTContext is deallocated.
   template <typename T>
   void addDestructorCleanup(T& object) {
     addCleanup([&object] { object.~T(); });

@@ -32,6 +32,7 @@ enum class FileUnitKind {
  */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+
 class FileUnit : public DeclContext, public ASTAllocated<FileUnit> {
 #pragma clang diagnostic pop
 

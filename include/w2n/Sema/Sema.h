@@ -9,6 +9,6 @@ class SourceFile;
 
 void performTypeChecking(SourceFile& File);
 
-}
+} // namespace w2n
 
 #endif // W2N_SEMA_SEMA_H

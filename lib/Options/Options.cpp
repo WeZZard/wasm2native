@@ -7,15 +7,19 @@
 using namespace w2n::options;
 using namespace llvm::opt;
 
-#define PREFIX(NAME, VALUE) static const char *const NAME[] = VALUE;
+#define PREFIX(NAME, VALUE) static const char * const NAME[] = VALUE;
 #include <w2n/Options/Options.inc>
 #undef PREFIX
 
 static const OptTable::Info InfoTable[] = {
-#define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, ALIASARGS, FLAGS, PARAM,  \
-               HELPTEXT, METAVAR, VALUES)                                      \
-  {PREFIX, NAME,  HELPTEXT,    METAVAR,     OPT_##ID,  Option::KIND##Class,    \
-   PARAM,  FLAGS, OPT_##GROUP, OPT_##ALIAS, ALIASARGS, VALUES},
+#define OPTION(                                                          \
+  PREFIX, NAME, ID, KIND, GROUP, ALIAS, ALIASARGS, FLAGS, PARAM,         \
+  HELPTEXT, METAVAR, VALUES                                              \
+)                                                                        \
+  {PREFIX,      NAME,      HELPTEXT,                                     \
+   METAVAR,     OPT_##ID,  Option::KIND##Class,                          \
+   PARAM,       FLAGS,     OPT_##GROUP,                                  \
+   OPT_##ALIAS, ALIASARGS, VALUES},
 #include <w2n/Options/Options.inc>
 #undef OPTION
 };

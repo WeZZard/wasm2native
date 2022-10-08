@@ -18,10 +18,10 @@ struct HasTrivialDisplay {
   static const bool value = false;
 };
 
-#define HAS_TRIVIAL_DISPLAY(Type)                                              \
-  template <>                                                                  \
-  struct HasTrivialDisplay<Type> {                                             \
-    static const bool value = true;                                            \
+#define HAS_TRIVIAL_DISPLAY(Type)                                        \
+  template <>                                                            \
+  struct HasTrivialDisplay<Type> {                                       \
+    static const bool value = true;                                      \
   }
 
 HAS_TRIVIAL_DISPLAY(unsigned char);
@@ -54,7 +54,8 @@ template <
   typename std::enable_if<I == sizeof...(Types)>::type * = nullptr>
 void simple_display_tuple(
   llvm::raw_ostream& out,
-  const std::tuple<Types...>& value);
+  const std::tuple<Types...>& value
+);
 
 template <
   unsigned I,
@@ -62,7 +63,8 @@ template <
   typename std::enable_if<I<sizeof...(Types)>::type * = nullptr> void
     simple_display_tuple(
       llvm::raw_ostream& out,
-      const std::tuple<Types...>& value) {
+      const std::tuple<Types...>& value
+    ) {
   // Start or separator.
   if (I == 0)
     out << "(";
@@ -82,18 +84,25 @@ template <
   typename std::enable_if<I == sizeof...(Types)>::type *>
 void simple_display_tuple(
   llvm::raw_ostream& out,
-  const std::tuple<Types...>& value) {
+  const std::tuple<Types...>& value
+) {
   // Last element.
   out << ")";
 }
 
 template <typename... Types>
-void simple_display(llvm::raw_ostream& out, const std::tuple<Types...>& value) {
+void simple_display(
+  llvm::raw_ostream& out,
+  const std::tuple<Types...>& value
+) {
   simple_display_tuple<0>(out, value);
 }
 
 template <typename T1, typename T2>
-void simple_display(llvm::raw_ostream& out, const std::pair<T1, T2>& value) {
+void simple_display(
+  llvm::raw_ostream& out,
+  const std::pair<T1, T2>& value
+) {
   out << "(";
   simple_display(out, value.first);
   out << ", ";
@@ -104,7 +113,8 @@ void simple_display(llvm::raw_ostream& out, const std::pair<T1, T2>& value) {
 template <typename T>
 void simple_display(
   llvm::raw_ostream& out,
-  const llvm::TinyPtrVector<T>& vector) {
+  const llvm::TinyPtrVector<T>& vector
+) {
   out << "{";
   bool first = true;
   for (const T& value : vector) {
@@ -119,7 +129,10 @@ void simple_display(
 }
 
 template <typename T>
-void simple_display(llvm::raw_ostream& out, const llvm::ArrayRef<T>& array) {
+void simple_display(
+  llvm::raw_ostream& out,
+  const llvm::ArrayRef<T>& array
+) {
   out << "{";
   bool first = true;
   for (const T& value : array) {
@@ -136,7 +149,8 @@ void simple_display(llvm::raw_ostream& out, const llvm::ArrayRef<T>& array) {
 template <typename T>
 void simple_display(
   llvm::raw_ostream& out,
-  const llvm::SmallVectorImpl<T>& vec) {
+  const llvm::SmallVectorImpl<T>& vec
+) {
   out << "{";
   bool first = true;
   for (const T& value : vec) {
@@ -168,7 +182,8 @@ void simple_display(llvm::raw_ostream& out, const std::vector<T>& vec) {
 template <typename T, typename U>
 void simple_display(
   llvm::raw_ostream& out,
-  const llvm::PointerUnion<T, U>& ptrUnion) {
+  const llvm::PointerUnion<T, U>& ptrUnion
+) {
   if (const auto t = ptrUnion.template dyn_cast<T>())
     simple_display(out, t);
   else

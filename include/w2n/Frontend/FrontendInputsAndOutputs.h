@@ -10,17 +10,23 @@ class FrontendInputsAndOutputs final {
 
   std::vector<Input> AllInputs;
 
-  /// Recover missing inputs. Note that recovery itself is users responsibility.
+  /// Recover missing inputs. Note that recovery itself is users
+  /// responsibility.
   bool ShouldRecoverMissingInputs = false;
-  
+
 public:
   FrontendInputsAndOutputs() = default;
   FrontendInputsAndOutputs(const FrontendInputsAndOutputs& other);
-  FrontendInputsAndOutputs& operator=(const FrontendInputsAndOutputs& other);
+  FrontendInputsAndOutputs&
+  operator=(const FrontendInputsAndOutputs& other);
 
-  bool shouldRecoverMissingInputs() const { return ShouldRecoverMissingInputs; }
-  
-  void setShouldRecoverMissingInputs() { ShouldRecoverMissingInputs = true; }
+  bool shouldRecoverMissingInputs() const {
+    return ShouldRecoverMissingInputs;
+  }
+
+  void setShouldRecoverMissingInputs() {
+    ShouldRecoverMissingInputs = true;
+  }
 
 #pragma mark - Reading
 
@@ -41,6 +47,7 @@ public:
   bool hasSingleInput() const { return inputCount() == 1; }
 
   const Input& firstInput() const { return AllInputs[0]; }
+
   Input& firstInput() { return AllInputs[0]; }
 
   const Input& lastInput() const { return AllInputs.back(); }
@@ -59,7 +66,8 @@ public:
 public:
   void clearInputs();
   void addInput(const Input& input);
-  void addInputFile(StringRef file, llvm::MemoryBuffer * buffer = nullptr);
+  void
+  addInputFile(StringRef file, llvm::MemoryBuffer * buffer = nullptr);
 };
 
 } // namespace w2n

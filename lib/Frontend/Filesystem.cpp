@@ -12,40 +12,42 @@
 using namespace w2n;
 
 namespace {
-  class OpenFileRAII {
-    static const int INVALID_FD = -1;
-  public:
-    int fd = INVALID_FD;
+class OpenFileRAII {
+  static const int INVALID_FD = -1;
 
-    ~OpenFileRAII() {
-      if (fd != INVALID_FD)
-        llvm::sys::Process::SafelyCloseFileDescriptor(fd);
-    }
-  };
+public:
+  int fd = INVALID_FD;
+
+  ~OpenFileRAII() {
+    if (fd != INVALID_FD)
+      llvm::sys::Process::SafelyCloseFileDescriptor(fd);
+  }
+};
 } // end anonymous namespace
 
-/// Does some simple checking to see if a temporary file can be written next to
-/// \p outputPath and then renamed into place.
+/// Does some simple checking to see if a temporary file can be written
+/// next to \p outputPath and then renamed into place.
 ///
 /// Helper for w2n::atomicallyWritingToFile.
 ///
-/// If the result is an error, the write won't succeed at all, and the calling
-/// operation should bail out early.
+/// If the result is an error, the write won't succeed at all, and the
+/// calling operation should bail out early.
 static llvm::ErrorOr<bool>
 canUseTemporaryForWrite(const StringRef outputPath) {
   namespace fs = llvm::sys::fs;
 
   if (outputPath == "-") {
-    // Special case: "-" represents stdout, and LLVM's output stream APIs are
-    // aware of this. It doesn't make sense to use a temporary in this case.
+    // Special case: "-" represents stdout, and LLVM's output stream APIs
+    // are aware of this. It doesn't make sense to use a temporary in this
+    // case.
     return false;
   }
 
   fs::file_status status;
   (void)fs::status(outputPath, status);
   if (!fs::exists(status)) {
-    // Assume we'll be able to write to both a temporary file and to the final
-    // destination if the final destination doesn't exist yet.
+    // Assume we'll be able to write to both a temporary file and to the
+    // final destination if the final destination doesn't exist yet.
     return true;
   }
 
@@ -58,29 +60,32 @@ canUseTemporaryForWrite(const StringRef outputPath) {
   return fs::is_regular_file(status);
 }
 
-/// Attempts to open a temporary file next to \p outputPath, with the intent
-/// that once the file has been written it will be renamed into place.
+/// Attempts to open a temporary file next to \p outputPath, with the
+/// intent that once the file has been written it will be renamed into
+/// place.
 ///
 /// Helper for w2n::atomicallyWritingToFile.
 ///
-/// \param[out] openedStream On success, a stream opened for writing to the
-/// temporary file that was just created.
-/// \param outputPath The path to the final output file, which is used to decide
-/// where to put the temporary.
+/// \param[out] openedStream On success, a stream opened for writing to
+/// the temporary file that was just created. \param outputPath The path
+/// to the final output file, which is used to decide where to put the
+/// temporary.
 ///
-/// \returns The path to the temporary file that was opened, or \c None if the
-/// file couldn't be created.
-static Optional<std::string>
-tryToOpenTemporaryFile(Optional<llvm::raw_fd_ostream> &openedStream,
-                       const StringRef outputPath) {
+/// \returns The path to the temporary file that was opened, or \c None if
+/// the file couldn't be created.
+static Optional<std::string> tryToOpenTemporaryFile(
+  Optional<llvm::raw_fd_ostream>& openedStream,
+  const StringRef outputPath
+) {
   namespace fs = llvm::sys::fs;
 
   // Create a temporary file path.
-  // Insert a placeholder for a random suffix before the extension (if any).
-  // Then because some tools glob for build artifacts (such as clang's own
-  // GlobalModuleIndex.cpp), also append .tmp.
+  // Insert a placeholder for a random suffix before the extension (if
+  // any). Then because some tools glob for build artifacts (such as
+  // clang's own GlobalModuleIndex.cpp), also append .tmp.
   SmallString<128> tempPath;
-  const StringRef outputExtension = llvm::sys::path::extension(outputPath);
+  const StringRef outputExtension =
+    llvm::sys::path::extension(outputPath);
   tempPath = outputPath.drop_back(outputExtension.size());
   tempPath += "-%%%%%%%%";
   tempPath += outputExtension;
@@ -88,12 +93,12 @@ tryToOpenTemporaryFile(Optional<llvm::raw_fd_ostream> &openedStream,
 
   int fd;
   const unsigned perms = fs::all_read | fs::all_write;
-  std::error_code EC = fs::createUniqueFile(tempPath, fd, tempPath,
-                                            fs::OF_None, perms);
+  std::error_code EC =
+    fs::createUniqueFile(tempPath, fd, tempPath, fs::OF_None, perms);
 
   if (EC) {
-    // Ignore the specific error; the caller has to fall back to not using a
-    // temporary anyway.
+    // Ignore the specific error; the caller has to fall back to not using
+    // a temporary anyway.
     return None;
   }
 
@@ -104,16 +109,18 @@ tryToOpenTemporaryFile(Optional<llvm::raw_fd_ostream> &openedStream,
 }
 
 std::error_code w2n::atomicallyWritingToFile(
-    const StringRef outputPath,
-    const llvm::function_ref<void(llvm::raw_pwrite_stream &)> action) {
+  const StringRef outputPath,
+  const llvm::function_ref<void(llvm::raw_pwrite_stream&)> action
+) {
   namespace fs = llvm::sys::fs;
 
   // FIXME: This is mostly a simplified version of
-  // clang::CompilerInstance::createOutputFile. It would be great to share the
-  // implementation.
+  // clang::CompilerInstance::createOutputFile. It would be great to share
+  // the implementation.
   assert(!outputPath.empty());
 
-  llvm::ErrorOr<bool> canUseTemporary = canUseTemporaryForWrite(outputPath);
+  llvm::ErrorOr<bool> canUseTemporary =
+    canUseTemporaryForWrite(outputPath);
   if (std::error_code error = canUseTemporary.getError())
     return error;
 
@@ -125,9 +132,9 @@ std::error_code w2n::atomicallyWritingToFile(
 
       if (!temporaryPath) {
         assert(!OS.has_value());
-        // If we failed to create the temporary, fall back to writing to the
-        // file directly. This handles the corner case where we cannot write to
-        // the directory, but can write to the file.
+        // If we failed to create the temporary, fall back to writing to
+        // the file directly. This handles the corner case where we cannot
+        // write to the directory, but can write to the file.
       }
     }
 
@@ -152,10 +159,11 @@ std::error_code w2n::atomicallyWritingToFile(
   return w2n::moveFileIfDifferent(temporaryPath.value(), outputPath);
 }
 
-llvm::ErrorOr<FileDifference>
-w2n::areFilesDifferent(const llvm::Twine &source,
-                         const llvm::Twine &destination,
-                         bool allowDestinationErrors) {
+llvm::ErrorOr<FileDifference> w2n::areFilesDifferent(
+  const llvm::Twine& source,
+  const llvm::Twine& destination,
+  bool allowDestinationErrors
+) {
   namespace fs = llvm::sys::fs;
 
   if (fs::equivalent(source, destination)) {
@@ -175,9 +183,9 @@ w2n::areFilesDifferent(const llvm::Twine &source,
 
   /// Converts an error from the destination file into either an error or
   /// DifferentContents return, depending on `allowDestinationErrors`.
-  auto convertDestinationError = [=](std::error_code error) ->
-      llvm::ErrorOr<FileDifference> {
-    if (allowDestinationErrors){
+  auto convertDestinationError = [=](std::error_code error
+                                 ) -> llvm::ErrorOr<FileDifference> {
+    if (allowDestinationErrors) {
       return FileDifference::DifferentContents;
     }
     return error;
@@ -186,11 +194,13 @@ w2n::areFilesDifferent(const llvm::Twine &source,
   OpenFileRAII destFile;
   fs::file_status destStatus;
   if (std::error_code error = fs::openFileForRead(destination, destFile.fd)) {
-    // If we can't open the destination file, fail in the specified fashion.
+    // If we can't open the destination file, fail in the specified
+    // fashion.
     return convertDestinationError(error);
   }
   if (std::error_code error = fs::status(destFile.fd, destStatus)) {
-    // If we can't open the destination file, fail in the specified fashion.
+    // If we can't open the destination file, fail in the specified
+    // fashion.
     return convertDestinationError(error);
   }
 
@@ -204,20 +214,22 @@ w2n::areFilesDifferent(const llvm::Twine &source,
     return FileDifference::SameContents;
   }
 
-  // The two files match in size, so we have to compare the bytes to determine
-  // if they're the same.
+  // The two files match in size, so we have to compare the bytes to
+  // determine if they're the same.
   std::error_code sourceRegionErr;
-  fs::mapped_file_region sourceRegion(fs::convertFDToNativeFile(sourceFile.fd),
-                                      fs::mapped_file_region::readonly,
-                                      size, 0, sourceRegionErr);
+  fs::mapped_file_region sourceRegion(
+    fs::convertFDToNativeFile(sourceFile.fd),
+    fs::mapped_file_region::readonly, size, 0, sourceRegionErr
+  );
   if (sourceRegionErr) {
     return sourceRegionErr;
   }
 
   std::error_code destRegionErr;
-  fs::mapped_file_region destRegion(fs::convertFDToNativeFile(destFile.fd),
-                                    fs::mapped_file_region::readonly,
-                                    size, 0, destRegionErr);
+  fs::mapped_file_region destRegion(
+    fs::convertFDToNativeFile(destFile.fd),
+    fs::mapped_file_region::readonly, size, 0, destRegionErr
+  );
 
   if (destRegionErr) {
     return convertDestinationError(destRegionErr);
@@ -230,12 +242,16 @@ w2n::areFilesDifferent(const llvm::Twine &source,
   return FileDifference::SameContents;
 }
 
-std::error_code w2n::moveFileIfDifferent(const llvm::Twine &source,
-                                           const llvm::Twine &destination) {
+std::error_code w2n::moveFileIfDifferent(
+  const llvm::Twine& source,
+  const llvm::Twine& destination
+) {
   namespace fs = llvm::sys::fs;
 
-  auto result = areFilesDifferent(source, destination,
-                                  /*allowDestinationErrors=*/true);
+  auto result = areFilesDifferent(
+    source, destination,
+    /*allowDestinationErrors=*/true
+  );
 
   if (!result)
     return result.getError();
@@ -257,21 +273,25 @@ std::error_code w2n::moveFileIfDifferent(const llvm::Twine &source,
 }
 
 llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>>
-w2n::vfs::getFileOrSTDIN(llvm::vfs::FileSystem &FS,
-                           const llvm::Twine &Filename,
-                           int64_t FileSize,
-                           bool RequiresNullTerminator,
-                           bool IsVolatile,
-                           unsigned BADFRetry) {
+w2n::vfs::getFileOrSTDIN(
+  llvm::vfs::FileSystem& FS,
+  const llvm::Twine& Filename,
+  int64_t FileSize,
+  bool RequiresNullTerminator,
+  bool IsVolatile,
+  unsigned BADFRetry
+) {
   llvm::SmallString<256> NameBuf;
   llvm::StringRef NameRef = Filename.toStringRef(NameBuf);
 
   if (NameRef == "-")
     return llvm::MemoryBuffer::getSTDIN();
-  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> inputFileOrErr = nullptr;
-  for (unsigned I = 0; I != BADFRetry + 1; ++ I) {
-    inputFileOrErr = FS.getBufferForFile(Filename, FileSize,
-                                         RequiresNullTerminator, IsVolatile);
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> inputFileOrErr =
+    nullptr;
+  for (unsigned I = 0; I != BADFRetry + 1; ++I) {
+    inputFileOrErr = FS.getBufferForFile(
+      Filename, FileSize, RequiresNullTerminator, IsVolatile
+    );
     if (inputFileOrErr)
       return inputFileOrErr;
     if (inputFileOrErr.getError().value() != EBADF)

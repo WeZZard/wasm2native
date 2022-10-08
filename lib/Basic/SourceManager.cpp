@@ -42,23 +42,30 @@ StringRef SourceManager::getDisplayNameForLoc(SourceLoc Loc) const {
   return Ident;
 }
 
-unsigned
-SourceManager::addNewSourceBuffer(std::unique_ptr<llvm::MemoryBuffer> Buffer) {
+unsigned SourceManager::addNewSourceBuffer(
+  std::unique_ptr<llvm::MemoryBuffer> Buffer
+) {
   assert(Buffer);
   StringRef BufIdentifier = Buffer->getBufferIdentifier();
-  auto ID = LLVMSourceMgr.AddNewSourceBuffer(std::move(Buffer), llvm::SMLoc());
+  auto ID =
+    LLVMSourceMgr.AddNewSourceBuffer(std::move(Buffer), llvm::SMLoc());
   BufIdentIDMap[BufIdentifier] = ID;
   return ID;
 }
 
 unsigned SourceManager::addMemBufferCopy(llvm::MemoryBuffer * Buffer) {
-  return addMemBufferCopy(Buffer->getBuffer(), Buffer->getBufferIdentifier());
+  return addMemBufferCopy(
+    Buffer->getBuffer(), Buffer->getBufferIdentifier()
+  );
 }
 
-unsigned
-SourceManager::addMemBufferCopy(StringRef InputData, StringRef BufIdentifier) {
+unsigned SourceManager::addMemBufferCopy(
+  StringRef InputData,
+  StringRef BufIdentifier
+) {
   auto Buffer = std::unique_ptr<llvm::MemoryBuffer>(
-    llvm::MemoryBuffer::getMemBufferCopy(InputData, BufIdentifier));
+    llvm::MemoryBuffer::getMemBufferCopy(InputData, BufIdentifier)
+  );
   return addNewSourceBuffer(std::move(Buffer));
 }
 
@@ -66,7 +73,8 @@ void SourceManager::createVirtualFile(
   SourceLoc Loc,
   StringRef Name,
   int LineOffset,
-  unsigned Length) {
+  unsigned Length
+) {
   CharSourceRange Range = CharSourceRange(Loc, Length);
 
   // Skip if this range has already been added
@@ -92,8 +100,10 @@ void SourceManager::createVirtualFile(
 bool SourceManager::openVirtualFile(
   SourceLoc loc,
   StringRef name,
-  int lineOffset) {
-  CharSourceRange fullRange = getRangeForBuffer(findBufferContainingLoc(loc));
+  int lineOffset
+) {
+  CharSourceRange fullRange =
+    getRangeForBuffer(findBufferContainingLoc(loc));
   SourceLoc end;
 
   auto nextRangeIter = VirtualFiles.upper_bound(loc.Value.getPointer());
@@ -108,7 +118,8 @@ bool SourceManager::openVirtualFile(
     }
     assert(
       !existingFile.Range.contains(loc) &&
-      "must close current open file first");
+      "must close current open file first"
+    );
     end = nextRangeIter->second.Range.getStart();
   } else {
     end = fullRange.getEnd();
@@ -129,7 +140,8 @@ void SourceManager::closeVirtualFile(SourceLoc end) {
     assert(
       (fullRange.getByteLength() == 0 ||
        getVirtualFile(end.getAdvancedLoc(-1))) &&
-      "no open virtual file for this location");
+      "no open virtual file for this location"
+    );
     assert(fullRange.getEnd() == end);
 #endif
     return;
@@ -177,24 +189,29 @@ StringRef SourceManager::getIdentifierForBuffer(unsigned bufferID) const {
   return buffer->getBufferIdentifier();
 }
 
-CharSourceRange SourceManager::getRangeForBuffer(unsigned bufferID) const {
+CharSourceRange SourceManager::getRangeForBuffer(unsigned bufferID
+) const {
   auto * buffer = LLVMSourceMgr.getMemoryBuffer(bufferID);
   SourceLoc start{llvm::SMLoc::getFromPointer(buffer->getBufferStart())};
   return CharSourceRange(start, buffer->getBufferSize());
 }
 
-unsigned
-SourceManager::getLocOffsetInBuffer(SourceLoc Loc, unsigned BufferID) const {
+unsigned SourceManager::getLocOffsetInBuffer(
+  SourceLoc Loc,
+  unsigned BufferID
+) const {
   assert(Loc.isValid() && "location should be valid");
   auto * Buffer = LLVMSourceMgr.getMemoryBuffer(BufferID);
   assert(
     Loc.Value.getPointer() >= Buffer->getBuffer().begin() &&
     Loc.Value.getPointer() <= Buffer->getBuffer().end() &&
-    "Location is not from the specified buffer");
+    "Location is not from the specified buffer"
+  );
   return Loc.Value.getPointer() - Buffer->getBuffer().begin();
 }
 
-unsigned SourceManager::getByteDistance(SourceLoc Start, SourceLoc End) const {
+unsigned
+SourceManager::getByteDistance(SourceLoc Start, SourceLoc End) const {
   assert(Start.isValid() && "start location should be valid");
   assert(End.isValid() && "end location should be valid");
 #ifndef NDEBUG
@@ -203,7 +220,8 @@ unsigned SourceManager::getByteDistance(SourceLoc Start, SourceLoc End) const {
   assert(
     End.Value.getPointer() >= Buffer->getBuffer().begin() &&
     End.Value.getPointer() <= Buffer->getBuffer().end() &&
-    "End location is not from the same buffer");
+    "End location is not from the same buffer"
+  );
 #endif
   // When we have a rope buffer, could be implemented in terms of
   // getLocOffsetInBuffer().
@@ -215,7 +233,8 @@ SourceManager::getColumnInBuffer(SourceLoc Loc, unsigned BufferID) const {
   assert(Loc.isValid());
 
   const StringRef Buffer = getEntireTextForBuffer(BufferID);
-  const char * Ptr = static_cast<const char *>(Loc.getOpaquePointerValue());
+  const char * Ptr =
+    static_cast<const char *>(Loc.getOpaquePointerValue());
 
   StringRef UpToLoc = Buffer.slice(0, Ptr - Buffer.data());
 
@@ -233,14 +252,18 @@ StringRef SourceManager::getEntireTextForBuffer(unsigned BufferID) const {
 
 StringRef SourceManager::extractText(
   CharSourceRange Range,
-  Optional<unsigned> BufferID) const {
+  Optional<unsigned> BufferID
+) const {
   assert(Range.isValid() && "range should be valid");
 
   if (!BufferID)
     BufferID = findBufferContainingLoc(Range.getStart());
-  StringRef Buffer = LLVMSourceMgr.getMemoryBuffer(*BufferID)->getBuffer();
+  StringRef Buffer =
+    LLVMSourceMgr.getMemoryBuffer(*BufferID)->getBuffer();
   return Buffer.substr(
-    getLocOffsetInBuffer(Range.getStart(), *BufferID), Range.getByteLength());
+    getLocOffsetInBuffer(Range.getStart(), *BufferID),
+    Range.getByteLength()
+  );
 }
 
 Optional<unsigned>
@@ -250,7 +273,7 @@ SourceManager::findBufferContainingLocInternal(SourceLoc Loc) const {
   // visited first.
   auto less_equal = std::less_equal<const char *>();
   for (unsigned i = LLVMSourceMgr.getNumBuffers(), e = 1; i >= e; --i) {
-    auto Buf = LLVMSourceMgr.getMemoryBuffer(i);
+    const auto * Buf = LLVMSourceMgr.getMemoryBuffer(i);
     if (
       less_equal(Buf->getBufferStart(), Loc.Value.getPointer()) &&
       // Use <= here so that a pointer to the null at the end of the buffer
@@ -292,12 +315,13 @@ void SourceRange::print(
   raw_ostream& OS,
   const SourceManager& SM,
   unsigned& LastBufferID,
-  bool PrintText) const {
+  bool PrintText
+) const {
   // FIXME: CharSourceRange is a half-open character-based range, while
-  // SourceRange is a closed token-based range, so this conversion omits the
-  // last token in the range. Unfortunately, we can't actually get to the end
-  // of the token without using the Lex library, which would be a layering
-  // violation. This is still better than nothing.
+  // SourceRange is a closed token-based range, so this conversion omits
+  // the last token in the range. Unfortunately, we can't actually get to
+  // the end of the token without using the Lex library, which would be a
+  // layering violation. This is still better than nothing.
   CharSourceRange(SM, Start, End).print(OS, SM, LastBufferID, PrintText);
 }
 
@@ -307,7 +331,8 @@ void SourceRange::dump(const SourceManager& SM) const {
 
 llvm::Optional<unsigned> SourceManager::resolveOffsetForEndOfLine(
   unsigned BufferId,
-  unsigned Line) const {
+  unsigned Line
+) const {
   return resolveFromLineCol(BufferId, Line, ~0u);
 }
 
@@ -324,7 +349,8 @@ SourceManager::getLineLength(unsigned BufferId, unsigned Line) const {
 llvm::Optional<unsigned> SourceManager::resolveFromLineCol(
   unsigned BufferId,
   unsigned Line,
-  unsigned Col) const {
+  unsigned Col
+) const {
   if (Line == 0) {
     return None;
   }
@@ -338,7 +364,7 @@ llvm::Optional<unsigned> SourceManager::resolveFromLineCol(
   if (!loc.isValid())
     return None;
 
-  auto InputBuf = getLLVMSourceMgr().getMemoryBuffer(BufferId);
+  const auto * InputBuf = getLLVMSourceMgr().getMemoryBuffer(BufferId);
   const char * Ptr = loc.getPointer();
   if (LineEnd) {
     const char * End = InputBuf->getBufferEnd();
@@ -358,8 +384,8 @@ unsigned SourceManager::getExternalSourceBufferID(StringRef Path) {
   unsigned Id = 0u;
   auto InputFileOrErr = w2n::vfs::getFileOrSTDIN(*getFileSystem(), Path);
   if (InputFileOrErr) {
-    // This assertion ensures we can look up from the map in the future when
-    // using the same Path.
+    // This assertion ensures we can look up from the map in the future
+    // when using the same Path.
     assert(InputFileOrErr.get()->getBufferIdentifier() == Path);
     Id = addNewSourceBuffer(std::move(InputFileOrErr.get()));
   }
@@ -369,32 +395,39 @@ unsigned SourceManager::getExternalSourceBufferID(StringRef Path) {
 SourceLoc SourceManager::getLocFromExternalSource(
   StringRef Path,
   unsigned Line,
-  unsigned Col) {
+  unsigned Col
+) {
   auto BufferId = getExternalSourceBufferID(Path);
-  if (BufferId == 0u)
+  if (BufferId == 0u) {
     return SourceLoc();
+  }
   auto Offset = resolveFromLineCol(BufferId, Line, Col);
-  if (!Offset.has_value())
+  if (!Offset.has_value()) {
     return SourceLoc();
+  }
   return getLocForOffset(BufferId, *Offset);
 }
 
 SourceLoc SourceManager::getLocForForeignLoc(
   SourceLoc otherLoc,
-  SourceManager& otherMgr) {
-  if (&otherMgr == this || otherLoc.isInvalid())
+  SourceManager& otherMgr
+) {
+  if (&otherMgr == this || otherLoc.isInvalid()) {
     return otherLoc;
+  }
 
   assert(otherMgr.isOwning(otherLoc));
 
   if (auto otherBufferID = otherMgr.findBufferContainingLocInternal(otherLoc)) {
     auto offset = otherMgr.getLocOffsetInBuffer(otherLoc, *otherBufferID);
 
-    auto otherBufferName = otherMgr.getIdentifierForBuffer(*otherBufferID);
+    auto otherBufferName =
+      otherMgr.getIdentifierForBuffer(*otherBufferID);
     auto thisBufferID = getIDForBufferIdentifier(otherBufferName);
     if (!thisBufferID) {
       thisBufferID = addMemBufferCopy(
-        otherMgr.getEntireTextForBuffer(*otherBufferID), otherBufferName);
+        otherMgr.getEntireTextForBuffer(*otherBufferID), otherBufferName
+      );
     }
 
     return getLocForOffset(*thisBufferID, offset);

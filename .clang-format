@@ -1,12 +1,12 @@
 BasedOnStyle: LLVM
+ColumnLimit: 74 # 4 for git diff
 AlwaysBreakTemplateDeclarations: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false # Clang-format 14: consider PackConstructorInitializers: CurrentLine
 BinPackParameters: false
-# EmptyLineAfterAccessModifier: true, # Clang-format 14
-# EmptyLineBeforeAccessModifier: true, # Clang-format 14
-AlignAfterOpenBracket: AlwaysBreak # Clang-format 14: consider `BlockIndent`
+SeparateDefinitionBlocks: Always # Clang-format 14
+AlignAfterOpenBracket: BlockIndent
 AlwaysBreakTemplateDeclarations: Yes
 ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 2

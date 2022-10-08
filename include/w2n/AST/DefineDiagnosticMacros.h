@@ -1,4 +1,5 @@
-//===--- DefineDiagnosticMacros.h - Shared Diagnostic Macros ----*- C++ -*-===//
+//===--- DefineDiagnosticMacros.h - Shared Diagnostic Macros ----*- C++
+//-*-===//
 //
 // This source file is part of the Swift.org open source project
 //
@@ -6,7 +7,8 @@
 // Licensed under Apache License v2.0 with Runtime Library Exception
 //
 // See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project
+// authors
 //
 //===----------------------------------------------------------------------===//
 //
@@ -17,29 +19,30 @@
 // Define macros
 #ifdef DEFINE_DIAGNOSTIC_MACROS
 
-#if !(                                                                         \
-  defined(DIAG) ||                                                             \
-  (defined(ERROR) && defined(WARNING) && defined(NOTE) && defined(REMARK)))
+#if !(                                                                   \
+  defined(DIAG) || (defined(ERROR) && defined(WARNING) &&                \
+                    defined(NOTE) && defined(REMARK))                    \
+)
 #error Must define either DIAG or the set {ERROR,WARNING,NOTE,REMARK}
 #endif
 
 #ifndef ERROR
-#define ERROR(ID, Options, Text, Signature)                                    \
+#define ERROR(ID, Options, Text, Signature)                              \
   DIAG(ERROR, ID, Options, Text, Signature)
 #endif
 
 #ifndef WARNING
-#define WARNING(ID, Options, Text, Signature)                                  \
+#define WARNING(ID, Options, Text, Signature)                            \
   DIAG(WARNING, ID, Options, Text, Signature)
 #endif
 
 #ifndef NOTE
-#define NOTE(ID, Options, Text, Signature)                                     \
+#define NOTE(ID, Options, Text, Signature)                               \
   DIAG(NOTE, ID, Options, Text, Signature)
 #endif
 
 #ifndef REMARK
-#define REMARK(ID, Options, Text, Signature)                                   \
+#define REMARK(ID, Options, Text, Signature)                             \
   DIAG(REMARK, ID, Options, Text, Signature)
 #endif
 

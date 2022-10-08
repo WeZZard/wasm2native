@@ -8,7 +8,8 @@ SourceFile * SourceFile::createSourceFile(
   const CompilerInstance& Instance,
   ModuleDecl& Module,
   Optional<unsigned> BufferID,
-  bool IsPrimary) {
+  bool IsPrimary
+) {
   switch (Kind) {
   case SourceFileKind::Wasm:
     return WasmFile::create(Instance, Module, BufferID, IsPrimary);
@@ -21,9 +22,11 @@ SourceFile::SourceFile(
   ModuleDecl& Module,
   SourceFileKind Kind,
   Optional<unsigned> BufferID,
-  bool IsPrimary)
-  : FileUnit(FileUnitKind::Source, Module), BufferID(BufferID ? *BufferID : -1),
-    Kind(Kind), IsPrimary(IsPrimary) {
+  bool IsPrimary
+)
+  : FileUnit(FileUnitKind::Source, Module),
+    BufferID(BufferID ? *BufferID : -1), Kind(Kind),
+    IsPrimary(IsPrimary) {
   Module.getASTContext().addDestructorCleanup(*this);
 }
 
@@ -31,7 +34,8 @@ WasmFile * WasmFile::create(
   const CompilerInstance& Instance,
   ModuleDecl& Module,
   Optional<unsigned> BufferID,
-  bool IsPrimary) {
+  bool IsPrimary
+) {
   ParsingOptions Opts = Instance.getWasmFileParsingOptions();
   return new (Instance.getASTContext())
     WasmFile(Module, BufferID, Opts, IsPrimary);
@@ -46,7 +50,8 @@ WatFile * WatFile::create(
   const CompilerInstance& Instance,
   ModuleDecl& Module,
   Optional<unsigned> BufferID,
-  bool IsPrimary) {
+  bool IsPrimary
+) {
   ParsingOptions Opts = Instance.getWatFileParsingOptions();
   return new (Instance.getASTContext())
     WatFile(Module, BufferID, Opts, IsPrimary);

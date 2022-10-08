@@ -3,10 +3,8 @@
 
 namespace w2n {
 
-namespace TypeCheck {
+namespace TypeCheck {}
 
-}
-
-}
+} // namespace w2n
 
 #endif // W2N_SEMA_TYPECHECK_H

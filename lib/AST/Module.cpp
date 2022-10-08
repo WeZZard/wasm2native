@@ -20,8 +20,11 @@ void ModuleDecl::addFile(FileUnit& NewFile) {
 
 ArrayRef<SourceFile *> PrimarySourceFilesRequest::evaluate(
   Evaluator& Eval,
-  ModuleDecl * Module) const {
-  assert(Module->isMainModule() && "Only the main module can have primaries");
+  ModuleDecl * Module
+) const {
+  assert(
+    Module->isMainModule() && "Only the main module can have primaries"
+  );
 
   SmallVector<SourceFile *, 8> primaries;
   for (auto * file : Module->getFiles()) {

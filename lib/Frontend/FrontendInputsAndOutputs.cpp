@@ -1,16 +1,18 @@
-#include <w2n/Frontend/Input.h>
 #include <w2n/Frontend/FrontendInputsAndOutputs.h>
+#include <w2n/Frontend/Input.h>
 
 using namespace w2n;
 
 FrontendInputsAndOutputs::FrontendInputsAndOutputs(
-  const FrontendInputsAndOutputs& other) {
+  const FrontendInputsAndOutputs& other
+) {
   for (Input input : other.AllInputs)
     addInput(input);
 }
 
 FrontendInputsAndOutputs&
-FrontendInputsAndOutputs::operator=(const FrontendInputsAndOutputs& other) {
+FrontendInputsAndOutputs::operator=(const FrontendInputsAndOutputs& other
+) {
   clearInputs();
   for (Input input : other.AllInputs)
     addInput(input);
@@ -19,7 +21,8 @@ FrontendInputsAndOutputs::operator=(const FrontendInputsAndOutputs& other) {
 
 // All inputs:
 
-std::vector<std::string> FrontendInputsAndOutputs::getInputFilenames() const {
+std::vector<std::string>
+FrontendInputsAndOutputs::getInputFilenames() const {
   std::vector<std::string> filenames;
   for (auto& input : AllInputs) {
     filenames.push_back(input.getFileName());
@@ -31,7 +34,8 @@ bool FrontendInputsAndOutputs::isReadingFromStdin() const {
   return hasSingleInput() && getFilenameOfFirstInput() == "-";
 }
 
-const std::string& FrontendInputsAndOutputs::getFilenameOfFirstInput() const {
+const std::string&
+FrontendInputsAndOutputs::getFilenameOfFirstInput() const {
   assert(hasInputs());
   const Input& input = AllInputs[0];
   const std::string& f = input.getFileName();
@@ -40,7 +44,8 @@ const std::string& FrontendInputsAndOutputs::getFilenameOfFirstInput() const {
 }
 
 bool FrontendInputsAndOutputs::forEachInput(
-  llvm::function_ref<bool(const Input&)> fn) const {
+  llvm::function_ref<bool(const Input&)> fn
+) const {
   for (const Input& input : AllInputs)
     if (fn(input))
       return true;
@@ -55,6 +60,7 @@ void FrontendInputsAndOutputs::addInput(const Input& input) {
 
 void FrontendInputsAndOutputs::addInputFile(
   StringRef file,
-  llvm::MemoryBuffer * buffer) {
+  llvm::MemoryBuffer * buffer
+) {
   addInput(Input(file, buffer));
 }

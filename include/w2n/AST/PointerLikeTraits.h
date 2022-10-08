@@ -14,7 +14,7 @@
  * @brief Attributes a custom type's alignment to make it usable in LLVM
  * data structures which has pointer-alignment-oriented optimizations.
  */
-#define LLVM_POINTER_LIKE_ALIGNMENT(TYPE_NAME)                                 \
+#define LLVM_POINTER_LIKE_ALIGNMENT(TYPE_NAME)                           \
   alignas(1 << w2n::TYPE_NAME##AlignInBits)
 
 namespace w2n {
@@ -43,7 +43,9 @@ namespace llvm {
 template <class T, size_t AlignInBits>
 struct MoreAlignedPointerTraits {
   enum { NumLowBitsAvailable = AlignInBits };
+
   static inline void * getAsVoidPointer(T * ptr) { return ptr; }
+
   static inline T * getFromVoidPointer(void * ptr) {
     return static_cast<T *>(ptr);
   }
@@ -54,28 +56,29 @@ struct PointerLikeTypeTraits;
 } // namespace llvm
 
 /**
- * @brief Declare the expected alignment of pointers to the given type. This
- * macro should be invoked from a top-level file context.
+ * @brief Declare the expected alignment of pointers to the given type.
+ * This macro should be invoked from a top-level file context.
  */
-#define LLVM_DECLARE_TYPE_ALIGNMENT(CLASS, ALIGNMENT)                          \
-  namespace llvm {                                                             \
-  template <>                                                                  \
-  struct PointerLikeTypeTraits<CLASS *>                                        \
-    : public MoreAlignedPointerTraits<CLASS, ALIGNMENT> {};                    \
+#define LLVM_DECLARE_TYPE_ALIGNMENT(CLASS, ALIGNMENT)                    \
+  namespace llvm {                                                       \
+  template <>                                                            \
+  struct PointerLikeTypeTraits<CLASS *>                                  \
+    : public MoreAlignedPointerTraits<CLASS, ALIGNMENT> {};              \
   }
 
-#define LLVM_DECLARE_TEMPLATE_TYPE_ALIGNMENT_1(CLASS, ALIGNMENT)               \
-  namespace llvm {                                                             \
-  template <typename Arg0>                                                     \
-  struct PointerLikeTypeTraits<CLASS<Arg0> *>                                  \
-    : public MoreAlignedPointerTraits<CLASS<Arg0>, ALIGNMENT> {};              \
+#define LLVM_DECLARE_TEMPLATE_TYPE_ALIGNMENT_1(CLASS, ALIGNMENT)         \
+  namespace llvm {                                                       \
+  template <typename Arg0>                                               \
+  struct PointerLikeTypeTraits<CLASS<Arg0> *>                            \
+    : public MoreAlignedPointerTraits<CLASS<Arg0>, ALIGNMENT> {};        \
   }
 
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::Decl, w2n::DeclAlignInBits)
 
 LLVM_DECLARE_TEMPLATE_TYPE_ALIGNMENT_1(
   w2n::ASTAllocated,
-  w2n::ASTAllocatedAlignInBits)
+  w2n::ASTAllocatedAlignInBits
+)
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::ASTContext, w2n::ASTContextAlignInBits)
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::DeclContext, w2n::DeclContextAlignInBits)
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::FileUnit, w2n::DeclContextAlignInBits)

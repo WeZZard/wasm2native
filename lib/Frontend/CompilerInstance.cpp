@@ -9,7 +9,8 @@ CompilerInstance::CompilerInstance() {}
 
 bool CompilerInstance::setup(
   const CompilerInvocation& Invocation,
-  std::string& Error) {
+  std::string& Error
+) {
   this->Invocation = Invocation;
 
   // If initializing the overlay file system fails there's no sense in
@@ -35,7 +36,8 @@ bool CompilerInstance::setup(
 }
 
 bool CompilerInstance::setUpVirtualFileSystemOverlays() {
-  // FIXME: Set overlay filesystem to SourceMgr when introduce search paths.
+  // FIXME: Set overlay filesystem to SourceMgr when introduce search
+  // paths.
   return false;
 }
 
@@ -65,30 +67,29 @@ bool CompilerInstance::setUpInputs() {
 }
 
 bool CompilerInstance::setUpASTContextIfNeeded() {
-  Context.reset(
-    ASTContext::get(Invocation.getLanguageOptions(), SourceMgr, Diagnostics));
+  Context.reset(ASTContext::get(
+    Invocation.getLanguageOptions(), SourceMgr, Diagnostics
+  ));
   return false;
 }
 
 Optional<unsigned> CompilerInstance::getRecordedBufferID(
   const Input& I,
   bool ShouldRecover,
-  bool& Failed) {
+  bool& Failed
+) {
   if (!I.getBuffer()) {
-    if (
-      Optional<unsigned> existingBufferID =
-        SourceMgr.getIDForBufferIdentifier(I.getFileName())) {
+    if (Optional<unsigned> existingBufferID = SourceMgr.getIDForBufferIdentifier(I.getFileName())) {
       return existingBufferID;
     }
   }
   auto BuffersForInput = getInputBuffersIfPresent(I);
 
   // Recover by dummy buffer if requested.
-  if (
-    !BuffersForInput.has_value() && I.getType() == file_types::TY_Wasm &&
-    ShouldRecover) {
-    BuffersForInput = ModuleBuffers(
-      llvm::MemoryBuffer::getMemBuffer("// missing file\n", I.getFileName()));
+  if (!BuffersForInput.has_value() && I.getType() == file_types::TY_Wasm && ShouldRecover) {
+    BuffersForInput = ModuleBuffers(llvm::MemoryBuffer::getMemBuffer(
+      "// missing file\n", I.getFileName()
+    ));
   }
 
   if (!BuffersForInput.has_value()) {
@@ -98,7 +99,8 @@ Optional<unsigned> CompilerInstance::getRecordedBufferID(
 
   // Transfer ownership of the MemoryBuffer to the SourceMgr.
   unsigned bufferID =
-    SourceMgr.addNewSourceBuffer(std::move(BuffersForInput->ModuleBuffer));
+    SourceMgr.addNewSourceBuffer(std::move(BuffersForInput->ModuleBuffer)
+    );
 
   InputSourceCodeBufferIDs.push_back(bufferID);
   return bufferID;
@@ -108,7 +110,8 @@ Optional<ModuleBuffers>
 CompilerInstance::getInputBuffersIfPresent(const Input& I) {
   if (auto b = I.getBuffer()) {
     return ModuleBuffers(llvm::MemoryBuffer::getMemBufferCopy(
-      b->getBuffer(), b->getBufferIdentifier()));
+      b->getBuffer(), b->getBufferIdentifier()
+    ));
   }
   // FIXME: Working with filenames is fragile, maybe use the real path
   // or have some kind of FileManager.
@@ -119,7 +122,8 @@ CompilerInstance::getInputBuffersIfPresent(const Input& I) {
     /*RequiresNullTerminator*/ true,
     /*IsVolatile*/ false,
     /*Bad File Descriptor Retry*/
-    getInvocation().getFrontendOptions().BadFileDescriptorRetryCount);
+    getInvocation().getFrontendOptions().BadFileDescriptorRetryCount
+  );
   if (!inputFileOrErr) {
     // Diagnose error open input file.
     return None;
@@ -142,11 +146,12 @@ ModuleDecl * CompilerInstance::getMainModule() const {
       for (auto * EachFile : Files)
         MainModule->addFile(*EachFile);
     } else {
-      // If we failed to load a partial module, mark the main module as having
-      // "failed to load", as it will contain no files. Note that we don't try
-      // to add any of the successfully loaded partial modules. This ensures
-      // that we don't encounter cases where we try to resolve a cross-reference
-      // into a partial module that failed to load.
+      // If we failed to load a partial module, mark the main module as
+      // having "failed to load", as it will contain no files. Note that
+      // we don't try to add any of the successfully loaded partial
+      // modules. This ensures that we don't encounter cases where we try
+      // to resolve a cross-reference into a partial module that failed to
+      // load.
       MainModule->setFailedToLoad();
     }
   }
@@ -155,11 +160,12 @@ ModuleDecl * CompilerInstance::getMainModule() const {
 
 bool CompilerInstance::createFilesForMainModule(
   ModuleDecl * Module,
-  SmallVectorImpl<FileUnit *>& Files) const {
+  SmallVectorImpl<FileUnit *>& Files
+) const {
   // Try to pull out the main source file, if any. This ensures that it
   // is at the start of the list of files.
   Optional<unsigned> MainBufferID = None;
-  
+
   // Finally add the library files.
   // FIXME: This is the only demand point for InputSourceCodeBufferIDs. We
   // should compute this list of source files lazily.
@@ -169,8 +175,9 @@ bool CompilerInstance::createFilesForMainModule(
       continue;
 
     // FIXME: Probe file kind when .wat file support was added.
-    auto * File =
-      createSourceFileForMainModule(SourceFileKind::Wasm, Module, BufferID);
+    auto * File = createSourceFileForMainModule(
+      SourceFileKind::Wasm, Module, BufferID
+    );
     Files.push_back(File);
   }
   return false;
@@ -180,13 +187,16 @@ SourceFile * CompilerInstance::createSourceFileForMainModule(
   SourceFileKind Kind,
   ModuleDecl * Module,
   Optional<unsigned> BufferID,
-  bool IsMainBuffer) const {
+  bool IsMainBuffer
+) const {
   auto IsPrimary = BufferID && isPrimaryInput(*BufferID);
-  auto * InputFile =
-    SourceFile::createSourceFile(Kind, *this, *Module, BufferID, IsPrimary);
+  auto * InputFile = SourceFile::createSourceFile(
+    Kind, *this, *Module, BufferID, IsPrimary
+  );
 
   // if (IsMainBuffer)
-  // FIXME: InputFile->SyntaxParsingCache = Invocation.getMainFileSyntaxParsingCache();
+  // FIXME: InputFile->SyntaxParsingCache =
+  // Invocation.getMainFileSyntaxParsingCache();
 
   return InputFile;
 }
@@ -207,7 +217,8 @@ bool CompilerInstance::performParseAndResolveImportsOnly() {
 }
 
 bool CompilerInstance::forEachFileToTypeCheck(
-  llvm::function_ref<bool(SourceFile&)> fn) {
+  llvm::function_ref<bool(SourceFile&)> fn
+) {
   for (auto * SF : getPrimarySourceFiles()) {
     if (fn(*SF))
       return true;
@@ -219,11 +230,13 @@ void CompilerInstance::recordPrimaryInputBuffer(unsigned BufID) {
   PrimaryBufferIDs.insert(BufID);
 }
 
-WasmFile::ParsingOptions CompilerInstance::getWasmFileParsingOptions() const {
+WasmFile::ParsingOptions
+CompilerInstance::getWasmFileParsingOptions() const {
   return WasmFile::getDefaultParsingOptions(getASTContext().LangOpts);
 }
 
-WatFile::ParsingOptions CompilerInstance::getWatFileParsingOptions() const {
+WatFile::ParsingOptions
+CompilerInstance::getWatFileParsingOptions() const {
   return WatFile::getDefaultParsingOptions(getASTContext().LangOpts);
 }
 

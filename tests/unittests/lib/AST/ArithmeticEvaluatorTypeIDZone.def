@@ -1,0 +1,24 @@
+//  This definition file describes the types in the "arithmetic
+//  evaluation" TypeID zone, for use with the TypeID template.
+
+W2N_REQUEST(
+  ArithmeticEvaluator,
+  UncachedEvaluationRule,
+  double(ArithmeticExpr *),
+  Uncached,
+  HasNearestLocation
+)
+W2N_REQUEST(
+  ArithmeticEvaluator,
+  InternallyCachedEvaluationRule,
+  double(ArithmeticExpr *),
+  Cached,
+  HasNearestLocation
+)
+W2N_REQUEST(
+  ArithmeticEvaluator,
+  ExternallyCachedEvaluationRule,
+  double(ArithmeticExpr *),
+  SeparatelyCached,
+  HasNearestLocation
+)

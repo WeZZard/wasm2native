@@ -1,5 +1,14 @@
 include(W2NUtils)
 
+function(_compute_lto_flag option out_var)
+  string(TOLOWER "${option}" lowercase_option)
+  if (lowercase_option STREQUAL "full")
+    set(${out_var} "-flto=full" PARENT_SCOPE)
+  elseif (lowercase_option STREQUAL "thin")
+    set(${out_var} "-flto=thin" PARENT_SCOPE)
+  endif()
+endfunction()
+
 function(add_w2n_host_tool executable)
   set(options "")
   set(single_parameter_options "")

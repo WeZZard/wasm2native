@@ -45,6 +45,8 @@ include(AddW2N)
 # Standalone build configs
 w2n_common_standalone_build_config(W2N)
 
+set(W2N_LIBRARY_OUTPUT_INTDIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
+
 include_directories(SYSTEM "${W2N_SOURCE_ROOT}/include")
 include_directories(SYSTEM "${W2N_BUILD_ROOT}/include")
 

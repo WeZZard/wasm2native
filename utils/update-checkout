@@ -29,7 +29,7 @@ GIT_REPO_UPSTREAM_NAME="wasm2native-update-checkout-managed-upstream"
 # REPO-NAME REPO-DIR-IN-MONO-REPO SOURCE-SCHEMA SOURCE-URL CHECKOUT-PATTERN
 SCHEMA=(
   'w2n wasm2native git ./ branch=main'
-  'LLVM llvm-project git https://github.com/llvm/llvm-project.git commit=29c841ce93e087fa4e0c5f3abae94edd460bc24a'
+  'LLVM llvm-project git https://github.com/WeZZard/llvm-project.git branch=wasm2native/main'
 )
 
 if [ "$REPO_DIR" != "wasm2native" ]; then

@@ -30,6 +30,7 @@ GIT_REPO_UPSTREAM_NAME="wasm2native-update-checkout-managed-upstream"
 SCHEMA=(
   'w2n wasm2native git ./ branch=main'
   'LLVM llvm-project git https://github.com/WeZZard/llvm-project.git branch=wasm2native/main'
+  'WebAssemblySpec WebAssemblySpec git https://github.com/webassembly/spec.git branch=main'
 )
 
 if [ "$REPO_DIR" != "wasm2native" ]; then

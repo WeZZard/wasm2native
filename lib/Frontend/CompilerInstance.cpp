@@ -48,12 +48,14 @@ bool CompilerInstance::setUpInputs() {
   bool HasFailed = false;
   for (const Input& EachInput : Inputs) {
     bool HasEachFailed = false;
-    Optional<unsigned> bufferID =
+    Optional<unsigned> BufferID =
       getRecordedBufferID(EachInput, ShouldRecover, HasEachFailed);
     HasFailed |= HasEachFailed;
 
-    if (!bufferID.has_value())
+    if (!BufferID.has_value() || !EachInput.isPrimary())
       continue;
+
+    recordPrimaryInputBuffer(*BufferID);
   }
 
   if (HasFailed)
@@ -179,8 +181,9 @@ SourceFile * CompilerInstance::createSourceFileForMainModule(
   ModuleDecl * Module,
   Optional<unsigned> BufferID,
   bool IsMainBuffer) const {
+  auto IsPrimary = BufferID && isPrimaryInput(*BufferID);
   auto * InputFile =
-    SourceFile::createSourceFile(Kind, *this, *Module, BufferID);
+    SourceFile::createSourceFile(Kind, *this, *Module, BufferID, IsPrimary);
 
   // if (IsMainBuffer)
   // FIXME: InputFile->SyntaxParsingCache = Invocation.getMainFileSyntaxParsingCache();
@@ -210,6 +213,10 @@ bool CompilerInstance::forEachFileToTypeCheck(
       return true;
   }
   return false;
+}
+
+void CompilerInstance::recordPrimaryInputBuffer(unsigned BufID) {
+  PrimaryBufferIDs.insert(BufID);
 }
 
 WasmFile::ParsingOptions CompilerInstance::getWasmFileParsingOptions() const {

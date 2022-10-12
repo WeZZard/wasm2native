@@ -40,7 +40,7 @@ ID file_types::lookupTypeForExtension(StringRef Ext) {
   return llvm::StringSwitch<file_types::ID>(Ext.drop_front())
 #define TYPE(NAME, ID, EXTENSION, FLAGS) \
            .Case(EXTENSION, TY_##ID)
-#include "w2n/Basic/FileTypes.def"
+#include <w2n/Basic/FileTypes.def>
       .Default(TY_INVALID);
 }
 
@@ -48,7 +48,7 @@ ID file_types::lookupTypeForName(StringRef Name) {
   return llvm::StringSwitch<file_types::ID>(Name)
 #define TYPE(NAME, ID, EXTENSION, FLAGS) \
            .Case(NAME, TY_##ID)
-#include "w2n/Basic/FileTypes.def"
+#include <w2n/Basic/FileTypes.def>
       .Default(TY_INVALID);
 }
 

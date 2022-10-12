@@ -24,6 +24,10 @@ public:
   std::string EntryPointFunctionName = "main";
 
   bool UsesMalloc = false;
+
+  bool DebugDumpCycles = true;
+
+  bool RecordRequestReferences = true;
   
 };
 

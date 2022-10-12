@@ -1,0 +1,9 @@
+///  This definition file describes the types in the type checker's
+///  \c TypeID zone, for use with the \c TypeID template.
+
+W2N_REQUEST(
+  TypeChecker,
+  PrimarySourceFilesRequest,
+  ArrayRef<SourceFile *>(ModuleDecl *),
+  Cached,
+  NoLocationInfo)

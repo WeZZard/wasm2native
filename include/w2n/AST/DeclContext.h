@@ -3,7 +3,9 @@
 
 #include <llvm/ADT/PointerIntPair.h>
 #include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/raw_ostream.h>
 #include <w2n/AST/ASTAllocated.h>
+#include <w2n/Basic/SourceLoc.h>
 
 namespace w2n {
 class Decl;
@@ -17,6 +19,7 @@ enum class DeclContextKind {
 
 class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext
   : public ASTAllocated<DeclContext> {
+
   enum class ASTHierarchy : unsigned {
     Decl,
     FileUnit,
@@ -83,6 +86,14 @@ public:
   ModuleDecl * getParentModule() const;
 
   /**
+   * @brief Returns the module scope context that contains this context.
+   * 
+   * @return DeclContext * either a \c Module or a \c FileUnit. 
+   */
+  LLVM_READONLY
+  DeclContext * getModuleScopeContext() const;
+
+  /**
    * @brief Some \c Decl are of \c DeclContext, but not all.
    *
    * @return bool
@@ -91,6 +102,20 @@ public:
    */
   static bool classof(const Decl * D);
 };
+
+/// Define simple_display for DeclContexts but not for subclasses in order to
+/// avoid ambiguities with Decl* arguments.
+template <typename ParamT, typename = typename std::enable_if<
+                               std::is_same<ParamT, DeclContext>::value>::type>
+void simple_display(llvm::raw_ostream &out, const ParamT *dc) {
+  if (dc)
+    dc->printContext(out, 0, true);
+  else
+    out << "(null)";
+}
+
+/// Extract the source location from the given declaration context.
+SourceLoc extractNearestSourceLoc(const DeclContext * DC);
 
 } // namespace w2n
 

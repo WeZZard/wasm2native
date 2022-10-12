@@ -42,13 +42,13 @@ struct ASTContext::Implementation {
   /// DenseMap.
   llvm::MapVector<Identifier, ModuleDecl *> LoadedModules;
 
-  /// FIXME: This is a \c StringMap rather than a \c StringSet because 
+  /// FIXME: This is a \c StringMap rather than a \c StringSet because
   /// \c StringSet doesn't allow passing in a pre-existing allocator.
   llvm::StringMap<Identifier::Aligner, llvm::BumpPtrAllocator&> IdentifierTable;
 
   Arena Permanent;
 
-  Implementation(): IdentifierTable(Allocator) {}
+  Implementation() : IdentifierTable(Allocator) {}
 
   ~Implementation() {
     for (auto& EachCleanup : Cleanups) {
@@ -63,7 +63,8 @@ ASTContext::ASTContext(
   LanguageOptions& LangOpts,
   SourceManager& SourceMgr,
   DiagnosticEngine& Diags)
-  : LangOpts(LangOpts), SourceMgr(SourceMgr), Diags(Diags) {}
+  : LangOpts(LangOpts), SourceMgr(SourceMgr), Diags(Diags),
+    Eval(Diags, LangOpts) {}
 
 ASTContext::~ASTContext() { getImpl().~Implementation(); }
 
@@ -104,7 +105,7 @@ llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena arena) const {
 
 void ASTContext::addLoadedModule(ModuleDecl * Module) {
   assert(Module);
-  // Add a loaded module using an actual module name (physical name on 
+  // Add a loaded module using an actual module name (physical name on
   // disk).
   getImpl().LoadedModules[Module->getName()] = Module;
 }

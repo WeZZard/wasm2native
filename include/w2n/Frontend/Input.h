@@ -1,11 +1,12 @@
 #ifndef W2N_FRONTEND_INPUT_H
 #define W2N_FRONTEND_INPUT_H
 
+#include <llvm/ADT/PointerIntPair.h>
 #include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/Path.h>
 #include <string>
 #include <w2n/Basic/FileTypes.h>
 #include <w2n/Basic/InputSpecificPaths.h>
-#include <llvm/Support/Path.h>
 
 namespace w2n {
 
@@ -14,7 +15,7 @@ class DiagnosticEngine;
 class Input final {
   std::string Filename;
   file_types::ID FileID;
-  llvm::MemoryBuffer * Buffer;
+  llvm::PointerIntPair<llvm::MemoryBuffer *, 1, bool> BufferAndIsPrimary;
   InputSpecificPaths ISPs;
 
 public:
@@ -24,27 +25,40 @@ public:
   /// and is therefore not suitable for most clients that use files synthesized
   /// from memory buffers. Use the overload of this constructor accepting a
   /// memory buffer and an explicit \c file_types::ID instead.
-  Input(StringRef filename, llvm::MemoryBuffer * buffer = nullptr)
+  Input(
+    StringRef Filename,
+    bool IsPrimary,
+    llvm::MemoryBuffer * Buffer = nullptr)
     : Input(
-        filename,
-        buffer,
+        Filename,
+        IsPrimary,
+        Buffer,
         file_types::lookupTypeForExtension(
-          llvm::sys::path::extension(filename))) {}
+          llvm::sys::path::extension(Filename))) {}
 
   /// Constructs an input file from the provided data.
-  Input(StringRef filename, llvm::MemoryBuffer * buffer, file_types::ID FileID)
+  Input(
+    StringRef Filename,
+    bool IsPrimary,
+    llvm::MemoryBuffer * Buffer,
+    file_types::ID FileID)
     : Filename(
-        convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions(filename)),
-      FileID(FileID), Buffer(buffer) {
-    assert(!filename.empty());
+        convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions(Filename)),
+      FileID(FileID), BufferAndIsPrimary(Buffer, IsPrimary) {
+    assert(!Filename.empty());
   }
 
 public:
   /// Retrieves the type of this input file.
   file_types::ID getType() const { return FileID; };
 
+  /// Retrieves whether this input file was passed as a primary to the frontend.
+  bool isPrimary() const { return BufferAndIsPrimary.getInt(); }
+
   /// Retrieves the backing buffer for this input file, if any.
-  llvm::MemoryBuffer * getBuffer() const { return Buffer; }
+  llvm::MemoryBuffer * getBuffer() const {
+    return BufferAndIsPrimary.getPointer();
+  }
 
   /// The name of this \c Input, or `-` if this input corresponds to the
   /// standard input stream.

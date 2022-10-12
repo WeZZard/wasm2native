@@ -234,7 +234,7 @@ public:
   SourceLoc
   getLocForLineCol(unsigned BufferId, unsigned Line, unsigned Col) const {
     auto Offset = resolveFromLineCol(BufferId, Line, Col);
-    return Offset.has_value() ? getLocForOffset(BufferId, Offset.getValue())
+    return Offset.has_value() ? getLocForOffset(BufferId, Offset.value())
                              : SourceLoc();
   }
 

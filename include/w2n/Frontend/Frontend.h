@@ -103,6 +103,19 @@ private:
   /// Contains buffer IDs for input source code files.
   std::vector<unsigned> InputSourceCodeBufferIDs;
 
+  /// Identifies the set of input buffers in the SourceManager that are
+  /// considered primaries.
+  llvm::SetVector<unsigned> PrimaryBufferIDs;
+
+  /// Return whether there is an entry in PrimaryInputs for buffer \p BufID.
+  bool isPrimaryInput(unsigned BufID) const {
+    return PrimaryBufferIDs.count(BufID) != 0;
+  }
+
+  /// Record in PrimaryBufferIDs the fact that \p BufID is a primary.
+  /// If \p BufID is already in the set, do nothing.
+  void recordPrimaryInputBuffer(unsigned BufID);
+  
 public:
   CompilerInstance();
 

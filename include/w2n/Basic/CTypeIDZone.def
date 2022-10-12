@@ -1,0 +1,32 @@
+///  This definition file describes the types  in the "C++" TypeID zone,
+///  for use with the TypeID template.
+
+// C types.
+W2N_TYPEID_NAMED(unsigned char, UnsignedChar)
+W2N_TYPEID_NAMED(signed char, SignedChar)
+W2N_TYPEID_NAMED(char, Char)
+W2N_TYPEID_NAMED(short, Short)
+W2N_TYPEID_NAMED(unsigned short, UnsignedShort)
+W2N_TYPEID_NAMED(int, Int)
+W2N_TYPEID_NAMED(unsigned int, UnsignedInt)
+W2N_TYPEID_NAMED(long, Long)
+W2N_TYPEID_NAMED(unsigned long, UnsignedLong)
+W2N_TYPEID_NAMED(long long, LongLong)
+W2N_TYPEID_NAMED(unsigned long long, UnsignedLongLong)
+W2N_TYPEID_NAMED(float, Float)
+W2N_TYPEID_NAMED(double, Double)
+W2N_TYPEID_NAMED(bool, Bool)
+W2N_TYPEID_NAMED(decltype(nullptr), NullPtr)
+W2N_TYPEID_NAMED(void, Void)
+W2N_TYPEID_NAMED(std::string, String)
+
+// C++ standard library types.
+W2N_TYPEID_NAMED(evaluator::SideEffect, SideEffect)
+W2N_TYPEID_TEMPLATE1_NAMED(std::vector, Vector, typename T, T)
+W2N_TYPEID_TEMPLATE1_NAMED(std::unique_ptr, UniquePtr, typename T, T)
+W2N_TYPEID_TEMPLATE2_NAMED(std::pair, Pair, typename T1, T1, typename T2, T2)
+
+// LLVM ADT types.
+W2N_TYPEID_TEMPLATE1_NAMED(llvm::TinyPtrVector, TinyPtrVector, typename T, T)
+W2N_TYPEID_TEMPLATE1_NAMED(llvm::ArrayRef, ArrayRef, typename T, T)
+W2N_TYPEID_TEMPLATE1_NAMED(llvm::Optional, Optional, typename T, T)

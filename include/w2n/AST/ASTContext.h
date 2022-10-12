@@ -5,6 +5,7 @@
 #include <llvm/Support/Allocator.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/DiagnosticEngine.h>
+#include <w2n/AST/Evaluator.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/Module.h>
 #include <w2n/Basic/LLVM.h>
@@ -67,6 +68,9 @@ public:
   /// Diags - The diagnostics engine.
   DiagnosticEngine& Diags;
 
+  /// The request-evaluator that is used to process various requests.
+  Evaluator Eval;
+
 #pragma Error Handling
 
 public:
@@ -93,7 +97,7 @@ public:
     if (LangOpts.UsesMalloc)
       return AlignedAlloc(bytes, alignment);
 
-    // FIXME: Make statistic
+    // FIXME: statistics
 
     return getAllocator(arena).Allocate(bytes, alignment);
   }

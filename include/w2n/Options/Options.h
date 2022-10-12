@@ -26,7 +26,7 @@ namespace options {
 #define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, ALIASARGS, FLAGS, PARAM,  \
                HELPTEXT, METAVAR, VALUES)                                      \
     OPT_##ID,
-#include "w2n/Options/Options.inc"
+#include <w2n/Options/Options.inc>
     LastOption
 #undef OPTION
   };

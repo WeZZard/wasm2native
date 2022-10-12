@@ -1,0 +1,10 @@
+/// This file associates diagnostics with relevant educational notes which
+/// explain important concepts.
+
+#ifndef EDUCATIONAL_NOTES
+#  error Must define EDUCATIONAL_NOTES
+#endif
+
+// EDUCATIONAL_NOTES(DIAG_ID, EDUCATIONAL_NOTE_FILENAMES...)
+                  
+#undef EDUCATIONAL_NOTES

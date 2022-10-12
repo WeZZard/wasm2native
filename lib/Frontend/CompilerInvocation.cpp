@@ -110,7 +110,8 @@ bool parseFrontendOptions(
   // Derive InputsAndOutputs
   FrontendInputsAndOutputs InputsAndOutputs;
   for (const StringRef EachInputFile : AllInputFiles) {
-    Input EachInput(EachInputFile);
+    // FIXME: Sets all as primary input before add support to .wat file.
+    Input EachInput(EachInputFile, /*IsPrimary*/ true);
     if (!file_types::isInputType(EachInput.getType())) {
       // TODO: Diagnose invalid input files.
       continue;

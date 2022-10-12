@@ -1,6 +1,7 @@
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/TypeCheckerRequests.h>
 
 using namespace w2n;
 
@@ -17,6 +18,23 @@ void ModuleDecl::addFile(FileUnit& NewFile) {
   // FIXME: clearLookupCache();
 }
 
+ArrayRef<SourceFile *> PrimarySourceFilesRequest::evaluate(
+  Evaluator& Eval,
+  ModuleDecl * Module) const {
+  assert(Module->isMainModule() && "Only the main module can have primaries");
+
+  SmallVector<SourceFile *, 8> primaries;
+  for (auto * file : Module->getFiles()) {
+    if (auto * SF = dyn_cast<SourceFile>(file)) {
+      if (SF->isPrimary())
+        primaries.push_back(SF);
+    }
+  }
+  return Module->getASTContext().AllocateCopy(primaries);
+}
+
 ArrayRef<SourceFile *> ModuleDecl::getPrimarySourceFiles() const {
-  return ArrayRef<SourceFile *>();
+  auto& Eval = getASTContext().Eval;
+  auto * Mutable = const_cast<ModuleDecl *>(this);
+  return evaluateOrDefault(Eval, PrimarySourceFilesRequest{Mutable}, {});
 }

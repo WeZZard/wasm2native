@@ -18,7 +18,11 @@ class ModuleDecl : public DeclContext,
                    public ASTAllocated<ModuleDecl> {
 
 private:
+  friend class Decl;
+
   bool IsMainModule = false;
+
+  bool FailedToLoad = false;
 
   Identifier Name;
 
@@ -26,11 +30,15 @@ private:
   
   ModuleDecl(Identifier Name, ASTContext& Context);
 
+  SourceLoc getLocFromSource() const { return SourceLoc(); }
+
 public:
   /**
    * @brief Retrieve the module name for this module
    */
   Identifier getName() const;
+
+  bool isMainModule() const { return IsMainModule; }
 
   /**
    * @brief For the main module, retrieves the list of primary source files
@@ -51,10 +59,26 @@ public:
     return Module;
   }
 
+  ArrayRef<FileUnit *> getFiles() {
+    assert(!Files.empty() || failedToLoad());
+    return Files;
+  }
+
+  ArrayRef<const FileUnit *> getFiles() const {
+    return {Files.begin(), Files.size()};
+  }
+
   void addFile(FileUnit& NewFile);
 
+  /**
+   * @brief Returns \c true if there was an error trying to load this module.
+   */
+  bool failedToLoad() const {
+    return FailedToLoad;
+  }
+
   void setFailedToLoad(bool Failed = true) {
-    // FIXME: Bits.ModuleDecl.FailedToLoad = Failed;
+    FailedToLoad = Failed;
   }
 
   using Decl::getASTContext;
@@ -78,6 +102,11 @@ inline bool DeclContext::isModuleContext() const {
   if (auto D = getAsDecl())
     return ModuleDecl::classof(D);
   return false;
+}
+
+/// Extract the source location from the given module declaration.
+inline SourceLoc extractNearestSourceLoc(const ModuleDecl *mod) {
+  return extractNearestSourceLoc(static_cast<const Decl *>(mod));
 }
 
 } // namespace w2n

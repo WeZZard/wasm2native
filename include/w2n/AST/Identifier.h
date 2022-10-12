@@ -108,6 +108,8 @@ public:
   }
 };
 
+using DeclBaseName = Identifier;
+
 } // namespace w2n
 
 namespace llvm {

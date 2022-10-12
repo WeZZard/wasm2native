@@ -1,11 +1,10 @@
 #ifndef W2N_BASIC_OPTIONSET_H
 #define W2N_BASIC_OPTIONSET_H
 
-#include "llvm/ADT/None.h"
-
-#include <type_traits>
 #include <cstdint>
 #include <initializer_list>
+#include <llvm/ADT/None.h>
+#include <type_traits>
 
 namespace w2n {
 
@@ -26,10 +25,10 @@ using llvm::None;
 /// \tparam StorageType The unsigned integral type to use to store the flags
 /// enabled within this option set. This defaults to the unsigned form of the
 /// underlying type of the enumeration.
-template<typename Flags,
-         typename StorageType = typename std::make_unsigned<
-                                  typename std::underlying_type<Flags>::type
-                                 >::type>
+template <
+  typename Flags,
+  typename StorageType = typename std::make_unsigned<
+    typename std::underlying_type<Flags>::type>::type>
 class OptionSet {
   StorageType Storage;
 
@@ -45,7 +44,7 @@ public:
 
   /// Create an option set containing the given options.
   constexpr OptionSet(std::initializer_list<Flags> flags)
-      : Storage(combineFlags(flags)) {}
+    : Storage(combineFlags(flags)) {}
 
   /// Create an option set from raw storage.
   explicit constexpr OptionSet(StorageType storage) : Storage(storage) {}
@@ -62,9 +61,8 @@ public:
   /// This member is not present if the underlying type is bigger than
   /// a pointer.
   template <typename T = std::intptr_t>
-  explicit constexpr
-  operator typename std::enable_if<sizeof(StorageType) <= sizeof(T),
-                                   std::intptr_t>::type() const {
+  explicit constexpr operator typename std::
+    enable_if<sizeof(StorageType) <= sizeof(T), std::intptr_t>::type() const {
     return static_cast<intptr_t>(Storage);
   }
 
@@ -92,7 +90,7 @@ public:
   }
 
   /// Produce the union of two option sets.
-  friend constexpr OptionSet &operator|=(OptionSet &lhs, OptionSet rhs) {
+  friend constexpr OptionSet& operator|=(OptionSet& lhs, OptionSet rhs) {
     lhs.Storage |= rhs.Storage;
     return lhs;
   }
@@ -103,7 +101,7 @@ public:
   }
 
   /// Produce the intersection of two option sets.
-  friend constexpr OptionSet &operator&=(OptionSet &lhs, OptionSet rhs) {
+  friend constexpr OptionSet& operator&=(OptionSet& lhs, OptionSet rhs) {
     lhs.Storage &= rhs.Storage;
     return lhs;
   }
@@ -114,28 +112,30 @@ public:
   }
 
   /// Produce the difference of two option sets.
-  friend constexpr OptionSet &operator-=(OptionSet &lhs, OptionSet rhs) {
+  friend constexpr OptionSet& operator-=(OptionSet& lhs, OptionSet rhs) {
     lhs.Storage &= ~rhs.Storage;
     return lhs;
   }
 
 private:
   template <typename T>
-  static auto _checkResultTypeOperatorOr(T t) -> decltype(t | t) { return T(); }
+  static auto _checkResultTypeOperatorOr(T t) -> decltype(t | t) {
+    return T();
+  }
 
   static void _checkResultTypeOperatorOr(...) {}
 
   static constexpr StorageType
-  combineFlags(const std::initializer_list<Flags> &flags) {
+  combineFlags(const std::initializer_list<Flags>& flags) {
     OptionSet result;
     for (Flags flag : flags)
       result |= flag;
     return result.Storage;
   }
 
-  static_assert(!std::is_same<decltype(_checkResultTypeOperatorOr(Flags())),
-                              Flags>::value,
-                "operator| should produce an OptionSet");
+  static_assert(
+    !std::is_same<decltype(_checkResultTypeOperatorOr(Flags())), Flags>::value,
+    "operator| should produce an OptionSet");
 };
 
 } // end namespace w2n

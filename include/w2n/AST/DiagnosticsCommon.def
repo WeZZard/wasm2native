@@ -1,0 +1,35 @@
+//===--- DiagnosticsCommon.def - Diagnostics Text ---------------*- C++ -*-===//
+//
+// This source file is part of the Swift.org open source project
+//
+// Copyright (c) 2014 - 2017 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
+//
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+//
+//===----------------------------------------------------------------------===//
+//
+//  This file defines diagnostics that can be emitted across the whole compiler.
+//  Each diagnostic is described using one of three kinds (error, warning, or
+//  note) along with a unique identifier, category, options, and text, and is
+//  followed by a signature describing the diagnostic argument kinds.
+//
+//===----------------------------------------------------------------------===//
+
+#define DEFINE_DIAGNOSTIC_MACROS
+#include <w2n/AST/DefineDiagnosticMacros.h>
+
+ERROR(invalid_diagnostic,none,
+      "INTERNAL ERROR: this diagnostic should not be produced", ())
+
+//------------------------------------------------------------------------------
+// MARK: Circular reference diagnostics
+//------------------------------------------------------------------------------
+
+ERROR(circular_reference, none, "circular reference", ())
+
+NOTE(circular_reference_through, none, "through reference here", ())
+
+#define UNDEFINE_DIAGNOSTIC_MACROS
+#include <w2n/AST/DefineDiagnosticMacros.h>

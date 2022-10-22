@@ -69,6 +69,23 @@ W2N_CMAKE_CONFIG_ARGS="$W2N_CMAKE_CONFIG_ARGS -DW2N_BUILD_ROOT:PATH=${W2N_BUILD_
 W2N_CMAKE_CONFIG_ARGS="$W2N_CMAKE_CONFIG_ARGS -DLLVM_DIR:PATH=${LLVM_BUILD_ROOT}/lib/cmake/llvm"
 W2N_CMAKE_CONFIG_ARGS="$W2N_CMAKE_CONFIG_ARGS -DLLVM_TARGETS_TO_BUILD:string=${SUPPORTED_TARGETS}"
 
+# $1: SECONDS_TO_COUNTDOWN, $2: PRODUCT_NAME
+function countdown_for_clean_build() {
+  if [[ ! $1 -ge 0 ]]; then
+    echo "The number used for countdown second shall be greater than 0.";
+    echo "Currently is \"$1\".";
+    exit 1;
+  fi
+  SEC=$1;
+  PRODUCT=$2;
+  while [ $SEC -ge 0 ]; do
+    echo "$SEC seconds left to start the clean build of $PRODUCT...\r\c";
+    let "SEC=SEC-1";
+    sleep 1;
+  done
+  return 0;
+}
+
 # $1: PRODUCT_NAME, $2: CLEAN, $3: ARG_CONFIG_ONLY
 function build() {
   PRODUCT_NAME=$1
@@ -91,6 +108,7 @@ function build() {
   PRODUCT_CMAKE_CONFIG_ARGS=${!PRODUCT_CMAKE_CONFIG_ARGS}
 
   if [[ $CLEAN -eq 1 ]]; then
+    countdown_for_clean_build 3 $PRODUCT_NAME
     rm -rf $PRODUCT_BUILD_ROOT
   fi
 

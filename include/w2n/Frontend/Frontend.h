@@ -8,18 +8,18 @@
 #include <utility>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/DiagnosticEngine.h>
+#include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/Basic/LanguageOptions.h>
 #include <w2n/Basic/SourceManager.h>
+#include <w2n/Basic/Statistic.h>
 #include <w2n/Frontend/FrontendOptions.h>
 #include <w2n/Frontend/Input.h>
 
 namespace w2n {
 
 class SearchPathOptions_t {};
-
-class IRGenOptions {};
 
 /**
  * @brief A suite of module buffers.
@@ -109,6 +109,10 @@ private:
 
   std::unique_ptr<ASTContext> Context;
 
+  /// If there is no stats output directory by the time the
+  /// instance has completed its setup, this will be null.
+  std::unique_ptr<UnifiedStatsReporter> Stats;
+
   mutable ModuleDecl * MainModule = nullptr;
 
   /// Contains buffer IDs for input source code files.
@@ -157,6 +161,10 @@ public:
   const ASTContext& getASTContext() const { return *Context; }
 
   bool hasASTContext() const { return Context != nullptr; }
+
+  UnifiedStatsReporter * getStatsReporter() const { return Stats.get(); }
+
+  void freeASTContext();
 
 private:
   /// Set up the file system by loading and validating all VFS overlay

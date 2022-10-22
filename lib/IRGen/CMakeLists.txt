@@ -4,6 +4,8 @@ add_w2n_host_library(w2nIRGen STATIC
   LLVM_LINK_COMPONENTS
     target
     transformutils
+    bitwriter
+    lto
 )
 target_link_libraries(w2nIRGen PRIVATE
   w2nAST

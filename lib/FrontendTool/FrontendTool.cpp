@@ -1,8 +1,43 @@
 #include <iostream>
+#include <llvm/Target/TargetMachine.h>
 #include <w2n/Frontend/Frontend.h>
 #include <w2n/FrontendTool/FrontendTool.h>
+#include <w2n/IRGen/IRGen.h>
 
 using namespace w2n;
+
+#pragma mark - Pipeline Function Prototypes
+
+/**
+ * @brief Performs the compile requested by the user.
+ *
+ * @param Instance Will be reset after performIRGeneration when the
+ * verifier mode is NoVerify and there were no errors.
+ * @param ReturnValue
+ * @return \c true if there are erros happen while compiling and vise
+ * versa.
+ */
+static bool performCompile(CompilerInstance& Instance, int& ReturnValue);
+
+static bool performAction(CompilerInstance& Instance, int& ReturnValue);
+
+static bool withSemanticAnalysis(
+  CompilerInstance& Instance,
+  llvm::function_ref<bool(CompilerInstance&)> Continuation,
+  bool runDespiteErrors = false
+);
+
+static bool
+performCompileStepsPostSema(CompilerInstance& Instance, int& ReturnValue);
+
+static void freeASTContextIfPossible(CompilerInstance& Instance);
+
+static bool generateCode(
+  CompilerInstance& Instance,
+  StringRef OutputFilename,
+  llvm::Module * IRModule,
+  llvm::GlobalVariable * HashGlobal
+);
 
 /// Perform any actions that must have access to the ASTContext, and need
 /// to be delayed until the w2n compile pipeline has finished. This may be
@@ -10,11 +45,7 @@ using namespace w2n;
 /// freed.
 static void performEndOfPipelineActions(CompilerInstance& Instance);
 
-static bool withSemanticAnalysis(
-  CompilerInstance& Instance,
-  llvm::function_ref<bool(CompilerInstance&)> cont,
-  bool runDespiteErrors = false
-);
+#pragma mark - Implementations
 
 int w2n::performFrontend(
   llvm::ArrayRef<const char *> Args,
@@ -32,7 +63,7 @@ int w2n::performFrontend(
     return 1;
   }
 
-  int RetVal;
+  int RetVal = 0;
   if (performCompile(Instance, RetVal)) {
     // TODO: Diagnose error.
     return 1;
@@ -41,7 +72,7 @@ int w2n::performFrontend(
   return RetVal;
 }
 
-bool w2n::performCompile(CompilerInstance& Instance, int& ReturnValue) {
+bool performCompile(CompilerInstance& Instance, int& ReturnValue) {
   bool hadError = performAction(Instance, ReturnValue);
   const auto& Invocation = Instance.getInvocation();
   const auto& FrontendOpts = Invocation.getFrontendOptions();
@@ -56,7 +87,7 @@ bool w2n::performCompile(CompilerInstance& Instance, int& ReturnValue) {
   return hadError;
 }
 
-bool w2n::performAction(CompilerInstance& Instance, int& ReturnValue) {
+bool performAction(CompilerInstance& Instance, int& ReturnValue) {
   const auto& Invocation = Instance.getInvocation();
   const auto& FrontendOpts = Invocation.getFrontendOptions();
   const FrontendOptions::ActionType Action = FrontendOpts.RequestedAction;
@@ -73,7 +104,12 @@ bool w2n::performAction(CompilerInstance& Instance, int& ReturnValue) {
   case FrontendOptions::ActionType::EmitBC:
     break;
   case FrontendOptions::ActionType::EmitObject:
-    break;
+    return withSemanticAnalysis(
+      Instance,
+      [&](CompilerInstance& Instance) {
+        return performCompileStepsPostSema(Instance, ReturnValue);
+      }
+    );
   case FrontendOptions::ActionType::PrintVersion:
     break;
   }
@@ -83,7 +119,8 @@ bool w2n::performAction(CompilerInstance& Instance, int& ReturnValue) {
 
 bool withSemanticAnalysis(
   CompilerInstance& Instance,
-  llvm::function_ref<bool(CompilerInstance&)> Continuation
+  llvm::function_ref<bool(CompilerInstance&)> Continuation,
+  bool RunDespiteErrors
 ) {
   Instance.performSemanticAnalysis();
 
@@ -95,8 +132,73 @@ bool withSemanticAnalysis(
   return Continuation(Instance) || hadError;
 }
 
+bool performCompileStepsPostSema(
+  CompilerInstance& Instance,
+  int& ReturnValue
+) {
+  return generateCode(Instance, StringRef("a.out"), nullptr, nullptr);
+}
+
 /// Perform any actions that must have access to the ASTContext, and need
 /// to be delayed until the w2n compile pipeline has finished. This may be
 /// called before or after LLVM depending on when the ASTContext gets
 /// freed.
 void performEndOfPipelineActions(CompilerInstance& Instance) {}
+
+void freeASTContextIfPossible(CompilerInstance& Instance) {
+  // If the stats reporter is installed, we need the ASTContext to live
+  // through the entire compilation process.
+  if (Instance.getASTContext().Stats) {
+    return;
+  }
+
+  // If this instance is used for multiple compilations, we need the
+  // ASTContext to live.
+  if (Instance.getInvocation()
+        .getFrontendOptions()
+        .ReuseFrontendForMultipleCompilations) {
+    return;
+  }
+
+  const auto& opts = Instance.getInvocation().getFrontendOptions();
+
+  // If there are multiple primary inputs it is too soon to free
+  // the ASTContext, etc.. OTOH, if this compilation generates code for >
+  // 1 primary input, then freeing it after processing the last primary is
+  // unlikely to reduce the peak heap size. So, only optimize the
+  // single-primary-case (or WMO).
+  // if (opts.InputsAndOutputs.hasMultiplePrimaryInputs()) {
+  //   return;
+  // }
+
+  // Make sure to perform the end of pipeline actions now, because they
+  // need access to the ASTContext.
+  performEndOfPipelineActions(Instance);
+
+  Instance.freeASTContext();
+}
+
+bool generateCode(
+  CompilerInstance& Instance,
+  StringRef OutputFilename,
+  llvm::Module * IRModule,
+  llvm::GlobalVariable * HashGlobal
+) {
+  const auto& Opts = Instance.getInvocation().getIRGenOptions();
+  std::unique_ptr<llvm::TargetMachine> TargetMachine =
+    createTargetMachine(Opts, Instance.getASTContext());
+
+  // Free up some compiler resources now that we have an IRModule.
+  freeASTContextIfPossible(Instance);
+
+  // If we emitted any errors while performing the end-of-pipeline
+  // actions, bail.
+  if (Instance.getDiags().hadAnyError())
+    return true;
+
+  // Now that we have a single IR Module, hand it over to performLLVM.
+  return performLLVM(
+    Opts, Instance.getDiags(), nullptr, HashGlobal, IRModule,
+    TargetMachine.get(), OutputFilename, Instance.getStatsReporter()
+  );
+}

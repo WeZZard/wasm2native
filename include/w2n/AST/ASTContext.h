@@ -39,6 +39,12 @@ public:
 
   ~ASTContext();
 
+  /// Optional table of counters to report, nullptr when not collecting.
+  ///
+  /// This must be initialized early so that Allocate() doesn't try to
+  /// access it before being set to null.
+  UnifiedStatsReporter * Stats = nullptr;
+
   void operator delete(void * Data) throw();
 
   /**
@@ -223,6 +229,9 @@ public:
       setVector.size()
     );
   }
+
+  /// Set a new stats reporter.
+  void setStatsReporter(UnifiedStatsReporter * stats);
 
 #pragma Configure Compilations
 

@@ -41,6 +41,10 @@ public:
 
   unsigned BadFileDescriptorRetryCount = 0;
 
+  /// Whether to reuse a frontend (i.e. compiler instance) for multiple
+  /// compilations. This prevents ASTContext being freed.
+  bool ReuseFrontendForMultipleCompilations = false;
+
 public:
   FrontendOptions() {}
 

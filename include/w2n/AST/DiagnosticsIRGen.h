@@ -1,4 +1,4 @@
-//===--- DiagnosticsAll.def - Diagnostics Text Index ------*- C++ -*-===//
+//===--- DiagnosticsIRGen.h - Diagnostic Definitions ------*- C++ -*-===//
 //
 // This source file is part of the Swift.org open source project
 //
@@ -11,20 +11,25 @@
 //
 //===----------------------------------------------------------------===//
 //
-//  This file imports all the other diagnostic files.
+/// \file
+/// This file defines diagnostics for IR generation.
 //
 //===----------------------------------------------------------------===//
 
-#define DEFINE_DIAGNOSTIC_MACROS
-#include "DefineDiagnosticMacros.h"
+#ifndef W2N_DIAGNOSTICSIRGEN_H
+#define W2N_DIAGNOSTICSIRGEN_H
 
-#define DIAG_NO_UNDEF
+#include <w2n/AST/DiagnosticsCommon.h>
 
-#include "DiagnosticsCommon.def"
-#include "DiagnosticsFrontend.def"
+namespace w2n {
+namespace diag {
+
+// Declare common diagnostics objects with their appropriate types.
+#define DIAG(KIND, ID, Options, Text, Signature)                         \
+  extern detail::DiagWithArguments<void Signature>::type ID;
 #include "DiagnosticsIRGen.def"
 
-#undef DIAG_NO_UNDEF
+} // namespace diag
+} // namespace w2n
 
-#define UNDEFINE_DIAGNOSTIC_MACROS
-#include "DefineDiagnosticMacros.h"
+#endif

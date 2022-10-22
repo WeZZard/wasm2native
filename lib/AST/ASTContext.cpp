@@ -114,6 +114,16 @@ llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena arena
   llvm_unreachable("bad AllocationArena");
 }
 
+/// Set a new stats reporter.
+void ASTContext::setStatsReporter(UnifiedStatsReporter * stats) {
+  if (stats) {
+    stats->getFrontendCounters().NumASTBytesAllocated =
+      getAllocator().getBytesAllocated();
+  }
+  Eval.setStatsReporter(stats);
+  Stats = stats;
+}
+
 void ASTContext::addLoadedModule(ModuleDecl * Module) {
   assert(Module);
   // Add a loaded module using an actual module name (physical name on

@@ -1,0 +1,24 @@
+//  This file defines diagnostics emitted during IR generation.
+//  Each diagnostic is described using one of three kinds (error, warning,
+//  or note) along with a unique identifier, category, options, and text,
+//  and is followed by a signature describing the diagnostic argument
+//  kinds.
+
+#define DEFINE_DIAGNOSTIC_MACROS
+#include "DefineDiagnosticMacros.h"
+
+ERROR(
+  no_llvm_target,
+  none,
+  "error loading LLVM target for triple '%0': %1",
+  (StringRef, StringRef)
+)
+ERROR(
+  error_codegen_init_fail,
+  none,
+  "cannot initialize code generation passes for target",
+  ()
+)
+
+#define UNDEFINE_DIAGNOSTIC_MACROS
+#include "DefineDiagnosticMacros.h"

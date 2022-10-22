@@ -35,6 +35,12 @@ bool CompilerInstance::setup(
   return false;
 }
 
+void CompilerInstance::freeASTContext() {
+  Context.reset();
+  MainModule = nullptr;
+  PrimaryBufferIDs.clear();
+}
+
 bool CompilerInstance::setUpVirtualFileSystemOverlays() {
   // FIXME: Set overlay filesystem to SourceMgr when introduce search
   // paths.
@@ -108,7 +114,7 @@ Optional<unsigned> CompilerInstance::getRecordedBufferID(
 
 Optional<ModuleBuffers>
 CompilerInstance::getInputBuffersIfPresent(const Input& I) {
-  if (auto b = I.getBuffer()) {
+  if (auto * b = I.getBuffer()) {
     return ModuleBuffers(llvm::MemoryBuffer::getMemBufferCopy(
       b->getBuffer(), b->getBufferIdentifier()
     ));

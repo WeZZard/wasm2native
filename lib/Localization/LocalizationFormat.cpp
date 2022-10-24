@@ -1,6 +1,7 @@
 /// This file implements the format for localized diagnostic messages.
 
-#include <cstdint>
+#include <system_error>
+#include <type_traits>
 #include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
@@ -11,9 +12,8 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/YAMLParser.h>
 #include <llvm/Support/YAMLTraits.h>
+#include <cstdint>
 #include <string>
-#include <system_error>
-#include <type_traits>
 #include <w2n/Basic/Range.h>
 #include <w2n/Localization/LocalizationFormat.h>
 

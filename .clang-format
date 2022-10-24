@@ -14,6 +14,22 @@ PointerAlignment: Middle
 ReferenceAlignment: Left
 Cpp11BracedListStyle: true
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+SortIncludes: CaseInsensitive
+IncludeCategories:
+  - Regex:           '^(<|")(llvm|llvm-c|clang|clang-c)/'
+    Priority:        2
+    SortPriority:    2
+    CaseSensitive:   true
+  - Regex:           '^<[[:alnum:].]+>$'
+    Priority:        3
+    SortPriority:    3
+  - Regex:           '^(<|")w2n/'
+    Priority:        4
+    SortPriority:    4
+    CaseSensitive:   true
+  - Regex:           '.*'
+    Priority:        1
+    SortPriority:    0
 StatementMacros:
   - W2N_CONSTRUCTOR
   - W2N_NOINLINE

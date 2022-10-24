@@ -1,8 +1,8 @@
 #include <w2n/Options/Options.h>
 
 #include <llvm/ADT/STLExtras.h>
-#include <llvm/Option/OptTable.h>
 #include <llvm/Option/Option.h>
+#include <llvm/Option/OptTable.h>
 
 using namespace w2n::options;
 using namespace llvm::opt;

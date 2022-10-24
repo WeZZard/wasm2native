@@ -3,11 +3,11 @@
 #ifndef W2N_BASIC_VERSION_H
 #define W2N_BASIC_VERSION_H
 
-#include <array>
 #include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/VersionTuple.h>
+#include <array>
 #include <string>
 #include <w2n/Basic/LLVM.h>
 

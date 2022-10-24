@@ -1,10 +1,10 @@
 #ifndef W2N_BASIC_OPTIONSET_H
 #define W2N_BASIC_OPTIONSET_H
 
-#include <cstdint>
 #include <initializer_list>
-#include <llvm/ADT/None.h>
 #include <type_traits>
+#include <llvm/ADT/None.h>
+#include <cstdint>
 
 namespace w2n {
 

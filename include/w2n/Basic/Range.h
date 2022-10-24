@@ -11,11 +11,11 @@
 #ifndef W2N_BASIC_RANGE_H
 #define W2N_BASIC_RANGE_H
 
-#include <algorithm>
-#include <llvm/ADT/ArrayRef.h>
-#include <llvm/ADT/STLExtras.h>
-#include <llvm/ADT/iterator_range.h>
 #include <type_traits>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ADT/iterator_range.h>
+#include <llvm/ADT/STLExtras.h>
+#include <algorithm>
 #include <utility>
 
 namespace w2n {

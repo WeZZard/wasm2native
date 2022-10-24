@@ -3,10 +3,10 @@
 #ifndef W2N_BASIC_NULLABLEPTR_H
 #define W2N_BASIC_NULLABLEPTR_H
 
+#include <type_traits>
+#include <llvm/Support/PointerLikeTypeTraits.h>
 #include <cassert>
 #include <cstddef>
-#include <llvm/Support/PointerLikeTypeTraits.h>
-#include <type_traits>
 
 namespace w2n {
 /// NullablePtr pointer wrapper - NullablePtr is used for APIs where a

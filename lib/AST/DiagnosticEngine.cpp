@@ -6,8 +6,8 @@
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/DiagnosticEngine.h>
-#include <w2n/AST/DiagnosticSuppression.h>
 #include <w2n/AST/DiagnosticsCommon.h>
+#include <w2n/AST/DiagnosticSuppression.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/Basic/Range.h>

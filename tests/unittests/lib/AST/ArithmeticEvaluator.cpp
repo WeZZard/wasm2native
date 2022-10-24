@@ -1,5 +1,5 @@
-#include <cmath>
 #include <gtest/gtest.h>
+#include <cmath>
 #include <memory>
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/Evaluator.h>

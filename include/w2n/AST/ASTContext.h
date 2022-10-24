@@ -8,8 +8,8 @@
 #include <w2n/AST/Evaluator.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/Module.h>
-#include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/LanguageOptions.h>
+#include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/Malloc.h>
 #include <w2n/Basic/SourceManager.h>
 #include <w2n/Frontend/Frontend.h>

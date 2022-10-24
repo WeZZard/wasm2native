@@ -2,11 +2,11 @@
 #ifndef W2N_BASIC_SOURCELOC_H
 #define W2N_BASIC_SOURCELOC_H
 
-#include <functional>
 #include <llvm/ADT/DenseMapInfo.h>
 #include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/SMLoc.h>
+#include <functional>
 #include <w2n/Basic/Debug.h>
 #include <w2n/Basic/LLVM.h>
 

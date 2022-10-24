@@ -5,6 +5,19 @@
 
 using namespace w2n;
 
+const PrimarySpecificPaths&
+CompilerInvocation::getPrimarySpecificPathsForPrimary(StringRef filename
+) const {
+  return getFrontendOptions().getPrimarySpecificPathsForPrimary(filename);
+}
+
+const PrimarySpecificPaths&
+CompilerInvocation::getPrimarySpecificPathsForSourceFile(
+  const SourceFile& SF
+) const {
+  return getPrimarySpecificPathsForPrimary(SF.getFilename());
+}
+
 CompilerInstance::CompilerInstance() {}
 
 bool CompilerInstance::setup(
@@ -248,4 +261,17 @@ CompilerInstance::getWatFileParsingOptions() const {
 
 void CompilerInstance::finishTypeChecking() {
   forEachFileToTypeCheck([](SourceFile& SF) { return false; });
+}
+
+const PrimarySpecificPaths&
+CompilerInstance::getPrimarySpecificPathsForPrimary(StringRef filename
+) const {
+  return Invocation.getPrimarySpecificPathsForPrimary(filename);
+}
+
+const PrimarySpecificPaths&
+CompilerInstance::getPrimarySpecificPathsForSourceFile(
+  const SourceFile& SF
+) const {
+  return getPrimarySpecificPathsForPrimary(SF.getFilename());
 }

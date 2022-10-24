@@ -1,6 +1,6 @@
 
-#ifndef W2N_BASIC_MODULESPECIFICPATHS_H
-#define W2N_BASIC_MODULESPECIFICPATHS_H
+#ifndef W2N_BASIC_PRIMARYSPECIFICPATHS_H
+#define W2N_BASIC_PRIMARYSPECIFICPATHS_H
 
 #include <llvm/ADT/StringRef.h>
 #include <w2n/Basic/LLVM.h>
@@ -12,7 +12,7 @@ namespace w2n {
  * @brief Holds all of the output paths, and debugging-info path that are
  * specific to which module is being compiled at the moment.
  */
-class InputSpecificPaths {
+class PrimarySpecificPaths {
 public:
   /// The name of the main output file,
   /// that is, the .o file for this input (or a file specified by -o).
@@ -22,7 +22,7 @@ public:
 
   SupplementaryOutputPaths SupplementaryOutputs;
 
-  InputSpecificPaths(
+  PrimarySpecificPaths(
     std::string OutputFilename = std::string(),
     SupplementaryOutputPaths SupplementaryOutputs =
       SupplementaryOutputPaths()
@@ -33,4 +33,4 @@ public:
 
 } // namespace w2n
 
-#endif // W2N_BASIC_MODULESPECIFICPATHS_H
+#endif // W2N_BASIC_PRIMARYSPECIFICPATHS_H

@@ -4,8 +4,8 @@
 
 using namespace w2n;
 
-bool Input::deriveInputSpecificPaths(
-  InputSpecificPaths& ISPs,
+bool Input::derivePrimarySpecificPaths(
+  PrimarySpecificPaths& ISPs,
   DiagnosticEngine& Diag
 ) const {
   switch (FileID) {
@@ -31,7 +31,7 @@ bool Input::deriveInputSpecificPaths(
     SOPs.FixItsOutputPath = FilenameBody.concat("-fixit.json").str();
     SOPs.TBDPath = FilenameBody.concat(".tbd").str();
 
-    ISPs = InputSpecificPaths(FilenameBody.concat(".o").str(), SOPs);
+    ISPs = PrimarySpecificPaths(FilenameBody.concat(".o").str(), SOPs);
 
     return false;
   }

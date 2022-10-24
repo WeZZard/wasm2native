@@ -267,6 +267,11 @@ FRONTEND_STATISTIC(Sema, NumUnloadedLazyIterableDeclContexts)
 #include <w2n/AST/TypeCheckerTypeIDZone.def>
 #undef W2N_REQUEST
 
+#define W2N_REQUEST(ZONE, NAME, Sig, Caching, LocOptions)                \
+  FRONTEND_STATISTIC(IRGen, NAME)
+#include <w2n/AST/IRGenTypeIDZone.def>
+#undef W2N_REQUEST
+
 /// The next 10 statistics count kinds of LLVM entities produced
 /// during the IRGen phase: globals, functions, aliases, ifuncs,
 /// named metadata, value and comdat symbols, basic blocks,
@@ -286,5 +291,10 @@ FRONTEND_STATISTIC(IRModule, NumGOTEntries)
 /// of the frontend job, which should be the same as the size of
 /// the .o file you find on disk after the frontend exits.
 FRONTEND_STATISTIC(LLVM, NumLLVMBytesOutput)
+
+#define W2N_REQUEST(ZONE, NAME, Sig, Caching, LocOptions)                \
+  FRONTEND_STATISTIC(TBDGen, NAME)
+#include <w2n/AST/TBDGenTypeIDZone.def>
+#undef W2N_REQUEST
 
 #endif

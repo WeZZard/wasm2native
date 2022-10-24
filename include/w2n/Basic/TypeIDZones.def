@@ -7,8 +7,10 @@ W2N_TYPEID_ZONE(Parse, 8)
 W2N_TYPEID_ZONE(NameLookup, 9)
 
 W2N_TYPEID_ZONE(TypeChecker, 10)
+W2N_TYPEID_ZONE(TBDGen, 14)
 
 W2N_TYPEID_ZONE(IRGen, 20)
 
-// N.B. This is not a formal zone and exists solely to support the unit tests.
+// N.B. This is not a formal zone and exists solely to support the unit
+// tests.
 W2N_TYPEID_ZONE(ArithmeticEvaluator, 255)

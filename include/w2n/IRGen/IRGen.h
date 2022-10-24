@@ -9,7 +9,9 @@
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/IRGenOptions.h>
+#include <w2n/AST/IRGenRequests.h>
 #include <w2n/Basic/Statistic.h>
+#include <w2n/TBDGen/TBDGen.h>
 
 namespace w2n {
 
@@ -57,6 +59,31 @@ getIRTargetOptions(const IRGenOptions& Opts, ASTContext& Ctx);
 /// Creates a TargetMachine from the IRGen options and AST Context.
 std::unique_ptr<llvm::TargetMachine>
 createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx);
+
+/// Turn the given Swift module into LLVM IR and return the generated
+/// module. To compile and output the generated code, call \c performLLVM.
+GeneratedModule performIRGeneration(
+  ModuleDecl * M,
+  const IRGenOptions& Opts,
+  const TBDGenOptions& TBDOpts,
+  // std::unique_ptr<SILModule> SILMod,
+  StringRef ModuleName,
+  const PrimarySpecificPaths& PSPs,
+  ArrayRef<std::string> parallelOutputFilenames,
+  llvm::GlobalVariable ** outModuleHash = nullptr
+);
+
+/// Turn the given Swift file into LLVM IR and return the generated
+/// module. To compile and output the generated code, call \c performLLVM.
+GeneratedModule performIRGeneration(
+  FileUnit * file,
+  const IRGenOptions& Opts,
+  const TBDGenOptions& TBDOpts,
+  // std::unique_ptr<SILModule> SILMod,
+  StringRef ModuleName,
+  const PrimarySpecificPaths& PSPs,
+  llvm::GlobalVariable ** outModuleHash = nullptr
+);
 
 } // namespace w2n
 

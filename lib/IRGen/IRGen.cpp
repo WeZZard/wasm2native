@@ -272,3 +272,28 @@ w2n::createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx) {
   }
   return std::unique_ptr<llvm::TargetMachine>(TargetMachine);
 }
+
+GeneratedModule w2n::performIRGeneration(
+  ModuleDecl * M,
+  const IRGenOptions& Opts,
+  const TBDGenOptions& TBDOpts,
+  // std::unique_ptr<SILModule> SILMod,
+  StringRef ModuleName,
+  const PrimarySpecificPaths& PSPs,
+  ArrayRef<std::string> parallelOutputFilenames,
+  llvm::GlobalVariable ** outModuleHash
+) {
+  llvm_unreachable("not implemented.");
+}
+
+GeneratedModule w2n::performIRGeneration(
+  FileUnit * file,
+  const IRGenOptions& Opts,
+  const TBDGenOptions& TBDOpts,
+  // std::unique_ptr<SILModule> SILMod,
+  StringRef ModuleName,
+  const PrimarySpecificPaths& PSPs,
+  llvm::GlobalVariable ** outModuleHash
+) {
+  llvm_unreachable("not implemented.");
+}

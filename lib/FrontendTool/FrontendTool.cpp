@@ -1,5 +1,8 @@
 #include <iostream>
 #include <llvm/Target/TargetMachine.h>
+#include <w2n/AST/FileUnit.h>
+#include <w2n/AST/IRGenRequests.h>
+#include <w2n/AST/Module.h>
 #include <w2n/Frontend/Frontend.h>
 #include <w2n/FrontendTool/FrontendTool.h>
 #include <w2n/IRGen/IRGen.h>
@@ -25,6 +28,18 @@ static bool withSemanticAnalysis(
   CompilerInstance& Instance,
   llvm::function_ref<bool(CompilerInstance&)> Continuation,
   bool runDespiteErrors = false
+);
+
+using ModuleOrSourceFile = PointerUnion<ModuleDecl *, SourceFile *>;
+
+static GeneratedModule generateIR(
+  const IRGenOptions& IRGenOpts,
+  const TBDGenOptions& TBDOpts,
+  const PrimarySpecificPaths& PSPs,
+  StringRef OutputFilename,
+  ModuleOrSourceFile MSF,
+  llvm::GlobalVariable *& HashGlobal,
+  ArrayRef<std::string> parallelOutputFilenames
 );
 
 static bool
@@ -132,11 +147,57 @@ bool withSemanticAnalysis(
   return Continuation(Instance) || hadError;
 }
 
+GeneratedModule generateIR(
+  const IRGenOptions& IRGenOpts,
+  const TBDGenOptions& TBDOpts,
+  const PrimarySpecificPaths& PSPs,
+  StringRef OutputFilename,
+  ModuleOrSourceFile MSF,
+  llvm::GlobalVariable *& HashGlobal,
+  ArrayRef<std::string> parallelOutputFilenames
+) {
+  if (auto * SF = MSF.dyn_cast<SourceFile *>()) {
+    return performIRGeneration(
+      SF, IRGenOpts, TBDOpts, /* std::move(SM), */ OutputFilename, PSPs,
+      &HashGlobal
+    );
+  }
+
+  return performIRGeneration(
+    MSF.get<ModuleDecl *>(), IRGenOpts, TBDOpts, /* std::move(SM), */
+    OutputFilename, PSPs, parallelOutputFilenames, &HashGlobal
+  );
+}
+
 bool performCompileStepsPostSema(
   CompilerInstance& Instance,
   int& ReturnValue
 ) {
-  return generateCode(Instance, StringRef("a.out"), nullptr, nullptr);
+  const auto& Invocation = Instance.getInvocation();
+  const auto& opts = Invocation.getFrontendOptions();
+  if (!Instance.getPrimarySourceFiles().empty()) {
+    bool result = false;
+    for (auto * PrimaryFile : Instance.getPrimarySourceFiles()) {
+      const PrimarySpecificPaths PSPs =
+        Instance.getPrimarySpecificPathsForSourceFile(*PrimaryFile);
+      IRGenOptions IRGenOpts = Invocation.getIRGenOptions();
+      StringRef OutputFilename = PSPs.OutputFilename;
+      std::vector<std::string> ParallelOutputFilenames =
+        opts.InputsAndOutputs.copyOutputFilenames();
+      llvm::GlobalVariable * HashGlobal;
+      auto IRModule = generateIR(
+        IRGenOpts, Invocation.getTBDGenOptions(),
+        /* std::move(SM),*/ PSPs, OutputFilename, PrimaryFile, HashGlobal,
+        ParallelOutputFilenames
+      );
+      result |= generateCode(
+        Instance, OutputFilename, IRModule.getModule(), HashGlobal
+      );
+    }
+    return result;
+  }
+
+  return false;
 }
 
 /// Perform any actions that must have access to the ASTContext, and need
@@ -167,9 +228,9 @@ void freeASTContextIfPossible(CompilerInstance& Instance) {
   // 1 primary input, then freeing it after processing the last primary is
   // unlikely to reduce the peak heap size. So, only optimize the
   // single-primary-case (or WMO).
-  // if (opts.InputsAndOutputs.hasMultiplePrimaryInputs()) {
-  //   return;
-  // }
+  if (opts.InputsAndOutputs.hasMultiplePrimaryInputs()) {
+    return;
+  }
 
   // Make sure to perform the end of pipeline actions now, because they
   // need access to the ASTContext.

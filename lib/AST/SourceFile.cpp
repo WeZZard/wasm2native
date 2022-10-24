@@ -3,6 +3,23 @@
 
 using namespace w2n;
 
+void w2n::simple_display(llvm::raw_ostream& out, const FileUnit * file) {
+  if (!file) {
+    out << "(null)";
+    return;
+  }
+
+  switch (file->getKind()) {
+  case FileUnitKind::Source:
+    out << '\"' << cast<SourceFile>(file)->getFilename() << '\"';
+    return;
+  case FileUnitKind::Builtin:
+    out << "(Builtin)";
+    return;
+  }
+  llvm_unreachable("Unhandled case in switch");
+}
+
 SourceFile * SourceFile::createSourceFile(
   SourceFileKind Kind,
   const CompilerInstance& Instance,
@@ -28,6 +45,13 @@ SourceFile::SourceFile(
     BufferID(BufferID ? *BufferID : -1), Kind(Kind),
     IsPrimary(IsPrimary) {
   Module.getASTContext().addDestructorCleanup(*this);
+}
+
+StringRef SourceFile::getFilename() const {
+  if (BufferID == -1)
+    return "";
+  SourceManager& SM = getASTContext().SourceMgr;
+  return SM.getIdentifierForBuffer(BufferID);
 }
 
 WasmFile * WasmFile::create(

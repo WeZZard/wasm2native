@@ -49,6 +49,9 @@ public:
   FrontendOptions() {}
 
   static bool doesActionPerformEndOfPipelineActions(ActionType Action);
+
+  const PrimarySpecificPaths&
+  getPrimarySpecificPathsForPrimary(StringRef filename) const;
 };
 
 } // namespace w2n

@@ -16,6 +16,7 @@
 #include <w2n/Basic/Statistic.h>
 #include <w2n/Frontend/FrontendOptions.h>
 #include <w2n/Frontend/Input.h>
+#include <w2n/TBDGen/TBDGen.h>
 
 namespace w2n {
 
@@ -40,6 +41,7 @@ private:
   LanguageOptions LanguageOpts;
   SearchPathOptions_t SearchPathOpts;
   IRGenOptions IRGenOpts;
+  TBDGenOptions TBDGenOpts;
 
 public:
   CompilerInvocation();
@@ -85,6 +87,10 @@ public:
 
   const IRGenOptions& getIRGenOptions() const { return IRGenOpts; }
 
+  TBDGenOptions& getTBDGenOptions() { return TBDGenOpts; }
+
+  const TBDGenOptions& getTBDGenOptions() const { return TBDGenOpts; }
+
   const std::string& getModuleName() const {
     return getFrontendOptions().ModuleName;
   }
@@ -96,6 +102,11 @@ public:
   const std::string& getModuleLinkName() const {
     return getFrontendOptions().ModuleLinkName;
   }
+
+  const PrimarySpecificPaths&
+  getPrimarySpecificPathsForPrimary(StringRef filename) const;
+  const PrimarySpecificPaths&
+  getPrimarySpecificPathsForSourceFile(const SourceFile& SF) const;
 };
 
 class CompilerInstance {
@@ -165,6 +176,11 @@ public:
   UnifiedStatsReporter * getStatsReporter() const { return Stats.get(); }
 
   void freeASTContext();
+
+  const PrimarySpecificPaths&
+  getPrimarySpecificPathsForPrimary(StringRef filename) const;
+  const PrimarySpecificPaths&
+  getPrimarySpecificPathsForSourceFile(const SourceFile& SF) const;
 
 private:
   /// Set up the file system by loading and validating all VFS overlay

@@ -19,3 +19,9 @@ bool FrontendOptions::doesActionPerformEndOfPipelineActions(
   }
   llvm_unreachable("Unknown ActionType");
 }
+
+const PrimarySpecificPaths&
+FrontendOptions::getPrimarySpecificPathsForPrimary(StringRef filename
+) const {
+  return InputsAndOutputs.getPrimarySpecificPathsForPrimary(filename);
+}

@@ -126,9 +126,9 @@ bool parseFrontendOptions(
       // TODO: Diagnose invalid input files.
       continue;
     }
-    InputSpecificPaths ISPs;
-    EachInput.deriveInputSpecificPaths(ISPs, Diagnostic);
-    EachInput.setInputSpecificPaths(std::move(ISPs));
+    PrimarySpecificPaths ISPs;
+    EachInput.derivePrimarySpecificPaths(ISPs, Diagnostic);
+    EachInput.setPrimarySpecificPaths(std::move(ISPs));
     // Resolve input specific paths
     InputsAndOutputs.addInput(EachInput);
   }
@@ -137,7 +137,7 @@ bool parseFrontendOptions(
   // Derive ModuleName
   if (InputsAndOutputs.hasSingleInput()) {
     auto& FirstISPs =
-      InputsAndOutputs.firstInput().getInputSpecificPaths();
+      InputsAndOutputs.firstInput().getPrimarySpecificPaths();
     auto& OutputFileName = FirstISPs.OutputFilename;
     StringRef Stem = llvm::sys::path::stem(OutputFileName);
     Options.ModuleName = Stem.str();

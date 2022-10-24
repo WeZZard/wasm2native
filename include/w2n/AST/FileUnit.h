@@ -54,6 +54,8 @@ public:
   using ASTAllocated<FileUnit>::operator delete;
 };
 
+void simple_display(llvm::raw_ostream& out, const FileUnit * file);
+
 } // namespace w2n
 
 #endif // W2N_AST_FILEUNIT_H

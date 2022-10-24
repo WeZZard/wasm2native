@@ -6,7 +6,7 @@
 #include <llvm/Support/Path.h>
 #include <string>
 #include <w2n/Basic/FileTypes.h>
-#include <w2n/Basic/InputSpecificPaths.h>
+#include <w2n/Basic/PrimarySpecificPaths.h>
 
 namespace w2n {
 
@@ -16,7 +16,7 @@ class Input final {
   std::string Filename;
   file_types::ID FileID;
   llvm::PointerIntPair<llvm::MemoryBuffer *, 1, bool> BufferAndIsPrimary;
-  InputSpecificPaths ISPs;
+  PrimarySpecificPaths ISPs;
 
 public:
   /// Constructs an input file from the provided data.
@@ -95,14 +95,16 @@ public:
 
   std::string indexUnitOutputFilename() const { return outputFilename(); }
 
-  const InputSpecificPaths& getInputSpecificPaths() const { return ISPs; }
+  const PrimarySpecificPaths& getPrimarySpecificPaths() const {
+    return ISPs;
+  }
 
-  bool deriveInputSpecificPaths(
-    InputSpecificPaths& ISPs,
+  bool derivePrimarySpecificPaths(
+    PrimarySpecificPaths& ISPs,
     DiagnosticEngine& Diag
   ) const;
 
-  void setInputSpecificPaths(InputSpecificPaths&& ISPs) {
+  void setPrimarySpecificPaths(PrimarySpecificPaths&& ISPs) {
     this->ISPs = std::move(ISPs);
   }
 
@@ -112,17 +114,18 @@ public:
   // a bit shorter. Add more forwarding methods as needed.
 
   StringRef getDependenciesFilePath() const {
-    return getInputSpecificPaths()
+    return getPrimarySpecificPaths()
       .SupplementaryOutputs.DependenciesFilePath;
   }
 
   StringRef getSerializedDiagnosticsPath() const {
-    return getInputSpecificPaths()
+    return getPrimarySpecificPaths()
       .SupplementaryOutputs.SerializedDiagnosticsPath;
   }
 
   StringRef getFixItsOutputPath() const {
-    return getInputSpecificPaths().SupplementaryOutputs.FixItsOutputPath;
+    return getPrimarySpecificPaths()
+      .SupplementaryOutputs.FixItsOutputPath;
   }
 };
 

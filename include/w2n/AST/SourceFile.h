@@ -74,6 +74,10 @@ public:
   static bool classof(const DeclContext * DC) {
     return isa<FileUnit>(DC) && classof(cast<FileUnit>(DC));
   }
+
+  /// If this buffer corresponds to a file on disk, returns the path.
+  /// Otherwise, return an empty string.
+  StringRef getFilename() const;
 };
 
 class WasmFile : public SourceFile {

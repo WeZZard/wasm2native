@@ -14,6 +14,11 @@ PointerAlignment: Middle
 ReferenceAlignment: Left
 Cpp11BracedListStyle: true
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignOperands: AlignAfterOperator
+AllowShortEnumsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: None
+AllowShortLambdasOnASingleLine: Inline
 SortIncludes: CaseInsensitive
 IncludeCategories:
   - Regex:           '^(<|")(llvm|llvm-c|clang|clang-c)/'
@@ -37,5 +42,3 @@ StatementMacros:
   - W2N_NORETURN
   - W2N_UNUSED
   - W2N_CONSTEXPR
-WhitespaceSensitiveMacros:
-  - W2N_META_STRINGIFY

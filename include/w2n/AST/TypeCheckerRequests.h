@@ -28,7 +28,9 @@ private:
 
 public:
   // Cached.
-  bool isCached() const { return true; }
+  bool isCached() const {
+    return true;
+  }
 };
 
 #define W2N_TYPEID_ZONE   TypeChecker

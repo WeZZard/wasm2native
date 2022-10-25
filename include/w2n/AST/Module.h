@@ -24,13 +24,17 @@ private:
 
   bool FailedToLoad = false;
 
+  bool HasResolvedImports = false;
+
   Identifier Name;
 
   SmallVector<FileUnit *, 2> Files;
 
   ModuleDecl(Identifier Name, ASTContext& Context);
 
-  SourceLoc getLocFromSource() const { return SourceLoc(); }
+  SourceLoc getLocFromSource() const {
+    return SourceLoc();
+  }
 
 public:
   /**
@@ -38,7 +42,9 @@ public:
    */
   Identifier getName() const;
 
-  bool isMainModule() const { return IsMainModule; }
+  bool isMainModule() const {
+    return IsMainModule;
+  }
 
   /**
    * @brief For the main module, retrieves the list of primary source
@@ -75,9 +81,21 @@ public:
    * @brief Returns \c true if there was an error trying to load this
    * module.
    */
-  bool failedToLoad() const { return FailedToLoad; }
+  bool failedToLoad() const {
+    return FailedToLoad;
+  }
 
-  void setFailedToLoad(bool Failed = true) { FailedToLoad = Failed; }
+  void setFailedToLoad(bool Failed = true) {
+    FailedToLoad = Failed;
+  }
+
+  bool hasResolvedImports() const {
+    return HasResolvedImports;
+  }
+
+  void setHasResolvedImports() {
+    HasResolvedImports = true;
+  }
 
   using Decl::getASTContext;
 

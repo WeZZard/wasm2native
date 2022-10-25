@@ -18,7 +18,8 @@ CompilerInvocation::getPrimarySpecificPathsForSourceFile(
   return getPrimarySpecificPathsForPrimary(SF.getFilename());
 }
 
-CompilerInstance::CompilerInstance() {}
+CompilerInstance::CompilerInstance() {
+}
 
 bool CompilerInstance::setup(
   const CompilerInvocation& Invocation,
@@ -89,6 +90,12 @@ bool CompilerInstance::setUpASTContextIfNeeded() {
   Context.reset(ASTContext::get(
     Invocation.getLanguageOptions(), SourceMgr, Diagnostics
   ));
+
+  // registerParseRequestFunctions(Context->Eval);
+  registerTypeCheckerRequestFunctions(Context->Eval);
+  // registerTBDGenRequestFunctions(Context->Eval);
+  // registerIRGenRequestFunctions(Context->Eval);
+
   return false;
 }
 
@@ -232,7 +239,33 @@ void CompilerInstance::performSemanticAnalysis() {
 }
 
 bool CompilerInstance::performParseAndResolveImportsOnly() {
-  return false;
+  FrontendStatsTracer tracer(
+    getStatsReporter(), "parse-and-resolve-imports"
+  );
+
+  auto * mainModule = getMainModule();
+
+  // Resolve imports for all the source files.
+  for (auto * file : mainModule->getFiles()) {
+    if (auto * SF = dyn_cast<SourceFile>(file))
+      performImportResolution(*SF);
+  }
+
+  assert(
+    llvm::all_of(
+      mainModule->getFiles(),
+      [](const FileUnit * File) -> bool {
+        auto * SF = dyn_cast<SourceFile>(File);
+        if (!SF)
+          return true;
+        return SF->getASTStage() >= SourceFile::ASTStage::ImportsResolved;
+      }
+    ) &&
+    "some files have not yet had their imports resolved"
+  );
+  mainModule->setHasResolvedImports();
+
+  return Context->hadError();
 }
 
 bool CompilerInstance::forEachFileToTypeCheck(

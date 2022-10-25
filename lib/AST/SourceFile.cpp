@@ -13,9 +13,7 @@ void w2n::simple_display(llvm::raw_ostream& out, const FileUnit * file) {
   case FileUnitKind::Source:
     out << '\"' << cast<SourceFile>(file)->getFilename() << '\"';
     return;
-  case FileUnitKind::Builtin:
-    out << "(Builtin)";
-    return;
+  case FileUnitKind::Builtin: out << "(Builtin)"; return;
   }
   llvm_unreachable("Unhandled case in switch");
 }
@@ -42,8 +40,8 @@ SourceFile::SourceFile(
   bool IsPrimary
 )
   : FileUnit(FileUnitKind::Source, Module),
-    BufferID(BufferID ? *BufferID : -1), Kind(Kind),
-    IsPrimary(IsPrimary) {
+    BufferID(BufferID ? *BufferID : -1), Kind(Kind), IsPrimary(IsPrimary),
+    Stage(ASTStage::Unresolved) {
   Module.getASTContext().addDestructorCleanup(*this);
 }
 
@@ -68,6 +66,10 @@ WasmFile * WasmFile::create(
 WasmFile::ParsingOptions
 WasmFile::getDefaultParsingOptions(const LanguageOptions& Opts) {
   return WasmFile::ParsingOptions();
+}
+
+ArrayRef<Decl *> WasmFile::getTopLevelDecls() const {
+  return ArrayRef<Decl *>(); // FIXME: not implemented
 }
 
 WatFile * WatFile::create(

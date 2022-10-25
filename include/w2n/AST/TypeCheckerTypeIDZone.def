@@ -6,4 +6,5 @@ W2N_REQUEST(
   PrimarySourceFilesRequest,
   ArrayRef<SourceFile *>(ModuleDecl *),
   Cached,
-  NoLocationInfo)
+  NoLocationInfo
+)

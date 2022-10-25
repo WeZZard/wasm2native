@@ -1,3 +1,6 @@
+#include <w2n/AST/ASTContext.h>
+#include <w2n/AST/FileUnit.h>
+#include <w2n/AST/Module.h>
 #include <w2n/AST/TypeCheckerRequests.h>
 
 using namespace w2n;

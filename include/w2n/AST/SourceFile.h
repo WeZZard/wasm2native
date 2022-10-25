@@ -27,6 +27,15 @@ enum class SourceFileKind {
  */
 class SourceFile : public FileUnit {
 
+  friend void performImportResolution(SourceFile& SF);
+
+public:
+  enum class ASTStage {
+    Unresolved,
+    ImportsResolved,
+    TypeChecked,
+  };
+
 private:
   /// The ID for the memory buffer containing this file's source.
   ///
@@ -38,6 +47,8 @@ private:
   const SourceFileKind Kind;
 
   bool IsPrimary;
+
+  ASTStage Stage;
 
 public:
   static SourceFile * createSourceFile(
@@ -57,7 +68,9 @@ public:
 
   /// Whether this source file is a primary file, meaning that we're
   /// generating code for it. Note this method returns \c false in WMO.
-  bool isPrimary() const { return IsPrimary; }
+  bool isPrimary() const {
+    return IsPrimary;
+  }
 
   /// The buffer ID for the file that was imported, or None if there
   /// is no associated buffer.
@@ -66,6 +79,8 @@ public:
       return None;
     return BufferID;
   }
+
+  virtual ArrayRef<Decl *> getTopLevelDecls() const = 0;
 
   static bool classof(const FileUnit * file) {
     return file->getKind() == FileUnitKind::Source;
@@ -78,13 +93,16 @@ public:
   /// If this buffer corresponds to a file on disk, returns the path.
   /// Otherwise, return an empty string.
   StringRef getFilename() const;
+
+  ASTStage getASTStage() const {
+    return Stage;
+  }
 };
 
 class WasmFile : public SourceFile {
 public:
   /// Flags that direct how the source file is parsed.
   enum class ParsingFlags : uint8_t {
-
   };
 
   using ParsingOptions = OptionSet<ParsingFlags>;
@@ -109,25 +127,30 @@ public:
     Optional<unsigned> BufferID,
     bool IsPrimary = false
   );
+
+  ArrayRef<Decl *> getTopLevelDecls() const override;
 };
 
 class WatFile : public SourceFile {
 public:
   /// Flags that direct how the source file is parsed.
   enum class ParsingFlags : uint8_t {
-
+    SuppressWarnings
   };
 
   using ParsingOptions = OptionSet<ParsingFlags>;
 
 private:
+  ParsingOptions Opts;
+
   WatFile(
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
     bool IsPrimary
   )
-    : SourceFile(Module, SourceFileKind::Wasm, BufferID, IsPrimary){};
+    : SourceFile(Module, SourceFileKind::Wasm, BufferID, IsPrimary),
+      Opts(Opts){};
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.
@@ -140,6 +163,14 @@ public:
     Optional<unsigned> BufferID,
     bool IsPrimary = false
   );
+
+  ParsingOptions getParsingOptions() const {
+    return Opts;
+  }
+
+  ArrayRef<Decl *> getTopLevelDecls() const override {
+    llvm_unreachable("not implemented.");
+  }
 };
 
 } // namespace w2n

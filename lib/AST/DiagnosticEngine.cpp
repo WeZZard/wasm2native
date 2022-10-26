@@ -6,8 +6,8 @@
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/DiagnosticEngine.h>
-#include <w2n/AST/DiagnosticsCommon.h>
 #include <w2n/AST/DiagnosticSuppression.h>
+#include <w2n/AST/DiagnosticsCommon.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/Basic/Range.h>
@@ -63,7 +63,8 @@ struct StoredDiagnosticInfo {
   )
     : kind(k), pointsToFirstBadToken(firstBadToken), isFatal(fatal),
       isAPIDigesterBreakage(isAPIDigesterBreakage),
-      isDeprecation(deprecation), isNoUsage(noUsage) {}
+      isDeprecation(deprecation), isNoUsage(noUsage) {
+  }
 
   constexpr StoredDiagnosticInfo(DiagnosticKind k, DiagnosticOptions opts)
     : StoredDiagnosticInfo(
@@ -73,7 +74,8 @@ struct StoredDiagnosticInfo {
         opts == DiagnosticOptions::APIDigesterBreakage,
         opts == DiagnosticOptions::Deprecation,
         opts == DiagnosticOptions::NoUsage
-      ) {}
+      ) {
+  }
 };
 
 // Reproduce the DiagIDs, as we want both the size and access to the raw
@@ -559,7 +561,7 @@ static void formatDiagnosticArgument(
     assert(
       Modifier.empty() && "Improper modifier for Diagnostic argument"
     );
-    auto diagArg = Arg.getAsDiagnostic();
+    auto * diagArg = Arg.getAsDiagnostic();
     DiagnosticEngine::formatDiagnosticText(
       Out, diagArg->FormatString, diagArg->FormatArgs
     );
@@ -653,14 +655,10 @@ static DiagnosticKind toDiagnosticKind(DiagnosticBehavior behavior) {
   case DiagnosticBehavior::Ignore:
     llvm_unreachable("trying to map an ignored diagnostic");
   case DiagnosticBehavior::Error:
-  case DiagnosticBehavior::Fatal:
-    return DiagnosticKind::Error;
-  case DiagnosticBehavior::Note:
-    return DiagnosticKind::Note;
-  case DiagnosticBehavior::Warning:
-    return DiagnosticKind::Warning;
-  case DiagnosticBehavior::Remark:
-    return DiagnosticKind::Remark;
+  case DiagnosticBehavior::Fatal: return DiagnosticKind::Error;
+  case DiagnosticBehavior::Note: return DiagnosticKind::Note;
+  case DiagnosticBehavior::Warning: return DiagnosticKind::Warning;
+  case DiagnosticBehavior::Remark: return DiagnosticKind::Remark;
   }
 
   llvm_unreachable("Unhandled DiagnosticKind in switch.");
@@ -669,15 +667,12 @@ static DiagnosticKind toDiagnosticKind(DiagnosticBehavior behavior) {
 static DiagnosticBehavior
 toDiagnosticBehavior(DiagnosticKind kind, bool isFatal) {
   switch (kind) {
-  case DiagnosticKind::Note:
-    return DiagnosticBehavior::Note;
+  case DiagnosticKind::Note: return DiagnosticBehavior::Note;
   case DiagnosticKind::Error:
     return isFatal ? DiagnosticBehavior::Fatal
                    : DiagnosticBehavior::Error;
-  case DiagnosticKind::Warning:
-    return DiagnosticBehavior::Warning;
-  case DiagnosticKind::Remark:
-    return DiagnosticBehavior::Remark;
+  case DiagnosticKind::Warning: return DiagnosticBehavior::Warning;
+  case DiagnosticKind::Remark: return DiagnosticBehavior::Remark;
   }
   llvm_unreachable("Unhandled DiagnosticKind in switch.");
 }
@@ -864,7 +859,8 @@ void DiagnosticEngine::emitDiagnostic(const Diagnostic& diagnostic) {
     info->ChildDiagnosticInfo = childInfoPtrs;
 
     SmallVector<std::string, 1> educationalNotePaths;
-    auto associatedNotes = educationalNotes[(uint32_t)diagnostic.getID()];
+    const auto * associatedNotes =
+      educationalNotes[(uint32_t)diagnostic.getID()];
     while (associatedNotes && *associatedNotes) {
       SmallString<128> notePath(getDiagnosticDocumentationPath());
       llvm::sys::path::append(notePath, *associatedNotes);
@@ -894,11 +890,11 @@ llvm::StringRef DiagnosticEngine::diagnosticStringFor(
   const DiagID id,
   bool printDiagnosticNames
 ) {
-  auto defaultMessage = printDiagnosticNames
-                          ? debugDiagnosticStrings[(unsigned)id]
-                          : diagnosticStrings[(unsigned)id];
+  const auto * defaultMessage = printDiagnosticNames
+                                ? debugDiagnosticStrings[(unsigned)id]
+                                : diagnosticStrings[(unsigned)id];
 
-  if (auto producer = localization.get()) {
+  if (auto * producer = localization.get()) {
     auto localizedMessage = producer->getMessageOr(id, defaultMessage);
     return localizedMessage;
   }
@@ -940,7 +936,7 @@ DiagnosticSuppression::DiagnosticSuppression(DiagnosticEngine& diags)
 }
 
 DiagnosticSuppression::~DiagnosticSuppression() {
-  for (auto consumer : consumers)
+  for (auto * consumer : consumers)
     diags.addConsumer(*consumer);
 }
 

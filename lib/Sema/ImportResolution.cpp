@@ -18,7 +18,7 @@ void w2n::performImportResolution(SourceFile& SF) {
   // and have their imports resolved multiple times.
   auto& diags = SF.getASTContext().Diags;
   auto didSuppressWarnings = diags.getSuppressWarnings();
-  if (auto WF = dyn_cast<WatFile>(&SF)) {
+  if (auto * WF = dyn_cast<WatFile>(&SF)) {
     auto shouldSuppress = WF->getParsingOptions().contains(
       WatFile::ParsingFlags::SuppressWarnings
     );
@@ -31,8 +31,8 @@ void w2n::performImportResolution(SourceFile& SF) {
   // ImportResolver resolver(SF);
 
   // Resolve each import declaration.
-  for (auto D : SF.getTopLevelDecls())
-    auto _ = D; // resolver.visit(D);
+  for (auto * D : SF.getTopLevelDecls())
+    __unused auto * _ = D; // resolver.visit(D);
 
   // FIXME: SF.setImports(resolver.getFinishedImports());
 

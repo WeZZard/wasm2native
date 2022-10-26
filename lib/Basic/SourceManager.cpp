@@ -23,7 +23,7 @@ void SourceManager::verifyAllBuffers() const {
 
 StringRef SourceManager::getDisplayNameForLoc(SourceLoc Loc) const {
   // Respect #line first
-  if (auto VFile = getVirtualFile(Loc))
+  if (const auto * VFile = getVirtualFile(Loc))
     return VFile->Name;
 
   // Next, try the stat cache

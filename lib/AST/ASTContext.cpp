@@ -24,13 +24,14 @@ struct ASTContext::Implementation {
    */
   struct Arena {
 
-    ~Arena() {}
+    ~Arena() {
+    }
 
     size_t getTotalMemory() const {
       return sizeof(*this)
-             // Adds up sizes of seats in arena with
-             // llvm::capacity_in_bytes
-             + 0;
+           // Adds up sizes of seats in arena with
+           // llvm::capacity_in_bytes
+           + 0;
     }
   };
 
@@ -51,7 +52,8 @@ struct ASTContext::Implementation {
 
   Arena Permanent;
 
-  Implementation() : IdentifierTable(Allocator) {}
+  Implementation() : IdentifierTable(Allocator) {
+  }
 
   ~Implementation() {
     for (auto& EachCleanup : Cleanups) {
@@ -68,12 +70,16 @@ ASTContext::ASTContext(
   DiagnosticEngine& Diags
 )
   : LangOpts(LangOpts), SourceMgr(SourceMgr), Diags(Diags),
-    Eval(Diags, LangOpts) {}
+    Eval(Diags, LangOpts) {
+}
 
-ASTContext::~ASTContext() { getImpl().~Implementation(); }
+ASTContext::~ASTContext() {
+  getImpl().~Implementation();
+}
 
 ASTContext::Implementation& ASTContext::getImpl() const {
-  auto pointer = reinterpret_cast<char *>(const_cast<ASTContext *>(this));
+  auto * pointer =
+    reinterpret_cast<char *>(const_cast<ASTContext *>(this));
   auto offset = llvm::alignAddr(
     (void *)sizeof(*this), llvm::Align(alignof(Implementation))
   );
@@ -95,8 +101,8 @@ ASTContext * ASTContext::get(
   auto Align = std::max(alignof(ASTContext), alignof(Implementation));
   auto Size =
     llvm::alignTo(sizeof(ASTContext) + sizeof(Implementation), Align);
-  auto RetAddr = AlignedAlloc(Size, Align);
-  auto ImplAddr =
+  auto * RetAddr = AlignedAlloc(Size, Align);
+  auto * ImplAddr =
     reinterpret_cast<void *>((char *)RetAddr + sizeof(ASTContext));
   ImplAddr = reinterpret_cast<void *>(
     llvm::alignAddr(ImplAddr, llvm::Align(alignof(Implementation)))
@@ -108,8 +114,7 @@ ASTContext * ASTContext::get(
 llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena arena
 ) const {
   switch (arena) {
-  case AllocationArena::Permanent:
-    return getImpl().Allocator;
+  case AllocationArena::Permanent: return getImpl().Allocator;
   }
   llvm_unreachable("bad AllocationArena");
 }

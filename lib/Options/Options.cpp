@@ -1,8 +1,8 @@
 #include <w2n/Options/Options.h>
 
 #include <llvm/ADT/STLExtras.h>
-#include <llvm/Option/Option.h>
 #include <llvm/Option/OptTable.h>
+#include <llvm/Option/Option.h>
 
 using namespace w2n::options;
 using namespace llvm::opt;
@@ -28,7 +28,8 @@ namespace {
 
 class W2NOptTable : public OptTable {
 public:
-  W2NOptTable() : OptTable(InfoTable) {}
+  W2NOptTable() : OptTable(InfoTable) {
+  }
 };
 
 } // end anonymous namespace

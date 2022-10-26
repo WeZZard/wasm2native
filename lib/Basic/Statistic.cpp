@@ -16,8 +16,8 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/Process.h>
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/SaveAndRestore.h>
+#include <llvm/Support/raw_ostream.h>
 #include <chrono>
 #include <limits>
 #include <w2n/Basic/Statistic.h>
@@ -41,8 +41,8 @@
 #endif
 #if defined(_WIN32)
 #define NOMINMAX
-#include "psapi.h"
 #include "Windows.h"
+#include "psapi.h"
 #endif
 
 namespace w2n {
@@ -180,7 +180,8 @@ class StatsProfiler {
     Node * Parent;
     DenseMap<Key, std::unique_ptr<Node>> Children;
 
-    Node(Node * P = nullptr) : SelfCount(0), Parent(P) {}
+    Node(Node * P = nullptr) : SelfCount(0), Parent(P) {
+    }
 
     void print(std::vector<Key>& Context, raw_ostream& OS) const {
       StringRef delim;
@@ -227,7 +228,8 @@ class StatsProfiler {
   Node * Curr;
 
 public:
-  StatsProfiler() : Curr(&Root) {}
+  StatsProfiler() : Curr(&Root) {
+  }
 
   StatsProfiler(StatsProfiler const& Other) = delete;
   StatsProfiler& operator=(const StatsProfiler&) = delete;
@@ -297,7 +299,8 @@ struct UnifiedStatsReporter::StatsProfilers {
 #include <w2n/Basic/Statistics.def>
 #undef FRONTEND_STATISTIC
 
-  StatsProfilers() : LastUpdated(llvm::TimeRecord::getCurrentTime()) {}
+  StatsProfilers() : LastUpdated(llvm::TimeRecord::getCurrentTime()) {
+  }
 };
 
 UnifiedStatsReporter::UnifiedStatsReporter(
@@ -323,7 +326,8 @@ UnifiedStatsReporter::UnifiedStatsReporter(
       TraceEvents,
       ProfileEvents,
       ProfileEntities
-    ) {}
+    ) {
+}
 
 UnifiedStatsReporter::UnifiedStatsReporter(
   StringRef ProgramName,
@@ -637,7 +641,8 @@ void UnifiedStatsReporter::saveAnyFrontendStatsEvents(
   Last = Curr;
 }
 
-UnifiedStatsReporter::TraceFormatter::~TraceFormatter() {}
+UnifiedStatsReporter::TraceFormatter::~TraceFormatter() {
+}
 
 UnifiedStatsReporter::~UnifiedStatsReporter() {
   assert(MainThreadID == std::this_thread::get_id());

@@ -1,7 +1,5 @@
 /// This file implements the format for localized diagnostic messages.
 
-#include <system_error>
-#include <type_traits>
 #include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
@@ -14,6 +12,8 @@
 #include <llvm/Support/YAMLTraits.h>
 #include <cstdint>
 #include <string>
+#include <system_error>
+#include <type_traits>
 #include <w2n/Basic/Range.h>
 #include <w2n/Localization/LocalizationFormat.h>
 
@@ -126,10 +126,11 @@ SerializedLocalizationProducer::SerializedLocalizationProducer(
   bool printDiagnosticNames
 )
   : LocalizationProducer(printDiagnosticNames),
-    Buffer(std::move(buffer)) {}
+    Buffer(std::move(buffer)) {
+}
 
 bool SerializedLocalizationProducer::initializeImpl() {
-  auto base =
+  const auto * base =
     reinterpret_cast<const unsigned char *>(Buffer.get()->getBufferStart()
     );
   auto tableOffset = endian::read<offset_type>(base, little);
@@ -151,7 +152,8 @@ YAMLLocalizationProducer::YAMLLocalizationProducer(
   llvm::StringRef filePath,
   bool printDiagnosticNames
 )
-  : LocalizationProducer(printDiagnosticNames), filePath(filePath) {}
+  : LocalizationProducer(printDiagnosticNames), filePath(filePath) {
+}
 
 bool YAMLLocalizationProducer::initializeImpl() {
   auto FileBufOrErr = llvm::MemoryBuffer::getFileOrSTDIN(filePath);

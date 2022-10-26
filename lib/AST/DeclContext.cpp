@@ -6,15 +6,13 @@ using namespace w2n;
 
 DeclContextKind DeclContext::getContextKind() const {
   switch (ParentAndKind.getInt()) {
-  case ASTHierarchy::FileUnit:
-    return DeclContextKind::FileUnit;
+  case ASTHierarchy::FileUnit: return DeclContextKind::FileUnit;
   case ASTHierarchy::Decl: {
     // Decl shall be right after DeclContext in the inheritance list of a
     // declaration class.
     const auto * D = reinterpret_cast<const Decl *>(this + 1);
     switch (D->getKind()) {
-    case DeclKind::Module:
-      return DeclContextKind::Module;
+    case DeclKind::Module: return DeclContextKind::Module;
     }
     llvm_unreachable("Unhandled Decl kind");
   }
@@ -41,12 +39,12 @@ DeclContext * Decl::getDeclContextForModule() const {
 }
 
 DeclContext * DeclContext::getModuleScopeContext() const {
-  auto DC = const_cast<DeclContext *>(this);
+  auto * DC = const_cast<DeclContext *>(this);
 
   while (true) {
     if (DC->ParentAndKind.getInt() == ASTHierarchy::FileUnit)
       return DC;
-    if (auto NextDC = DC->getParent()) {
+    if (auto * NextDC = DC->getParent()) {
       DC = NextDC;
     } else {
       assert(isa<ModuleDecl>(DC->getAsDecl()));
@@ -57,10 +55,8 @@ DeclContext * DeclContext::getModuleScopeContext() const {
 
 SourceLoc w2n::extractNearestSourceLoc(const DeclContext * DC) {
   switch (DC->getContextKind()) {
-  case DeclContextKind::Module:
-    return SourceLoc();
-  case DeclContextKind::FileUnit:
-    return SourceLoc();
+  case DeclContextKind::Module: return SourceLoc();
+  case DeclContextKind::FileUnit: return SourceLoc();
   }
   llvm_unreachable("Unhandled DeclCopntextKind in switch");
 }

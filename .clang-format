@@ -25,7 +25,7 @@ IncludeCategories:
     Priority:        2
     SortPriority:    2
     CaseSensitive:   true
-  - Regex:           '^<[[:alnum:].]+>$'
+  - Regex:           '^<[[:alnum:]._]+>$'
     Priority:        3
     SortPriority:    3
   - Regex:           '^(<|")w2n/'

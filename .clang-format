@@ -19,7 +19,7 @@ AllowShortEnumsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: None
 AllowShortLambdasOnASingleLine: Inline
-SortIncludes: CaseInsensitive
+SortIncludes: CaseSensitive
 IncludeCategories:
   - Regex:           '^(<|")(llvm|llvm-c|clang|clang-c)/'
     Priority:        2

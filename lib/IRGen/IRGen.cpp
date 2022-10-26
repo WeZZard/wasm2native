@@ -89,7 +89,8 @@ void w2n::performLLVMOptimizations(
   const IRGenOptions& Opts,
   llvm::Module * Module,
   llvm::TargetMachine * TargetMachine
-) {}
+) {
+}
 
 bool w2n::compileAndWriteLLVM(
   llvm::Module * Module,
@@ -106,8 +107,7 @@ bool w2n::compileAndWriteLLVM(
   switch (Opts.OutputKind) {
   case IRGenOutputKind::LLVMAssemblyBeforeOptimization:
     llvm_unreachable("Should be handled earlier.");
-  case IRGenOutputKind::Module:
-    break;
+  case IRGenOutputKind::Module: break;
   case IRGenOutputKind::LLVMAssemblyAfterOptimization:
     EmitPasses.add(createPrintModulePass(Out));
     break;
@@ -216,8 +216,8 @@ w2n::getIRTargetOptions(const IRGenOptions& Opts, ASTContext& Ctx) {
 std::unique_ptr<llvm::TargetMachine>
 w2n::createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx) {
   CodeGenOpt::Level OptLevel = Opts.shouldOptimize()
-                                 ? CodeGenOpt::Default // -Os
-                                 : CodeGenOpt::None;
+                               ? CodeGenOpt::Default // -Os
+                               : CodeGenOpt::None;
 
   // Set up TargetOptions and create the target features string.
   TargetOptions TargetOpts;
@@ -277,7 +277,7 @@ GeneratedModule w2n::performIRGeneration(
   ModuleDecl * M,
   const IRGenOptions& Opts,
   const TBDGenOptions& TBDOpts,
-  // std::unique_ptr<SILModule> SILMod,
+  ModuleDecl * Mod,
   StringRef ModuleName,
   const PrimarySpecificPaths& PSPs,
   ArrayRef<std::string> parallelOutputFilenames,
@@ -290,7 +290,7 @@ GeneratedModule w2n::performIRGeneration(
   FileUnit * file,
   const IRGenOptions& Opts,
   const TBDGenOptions& TBDOpts,
-  // std::unique_ptr<SILModule> SILMod,
+  ModuleDecl * Mod,
   StringRef ModuleName,
   const PrimarySpecificPaths& PSPs,
   llvm::GlobalVariable ** outModuleHash

@@ -33,12 +33,9 @@ class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext
 
   static ASTHierarchy getASTHierarchyFromKind(DeclContextKind Kind) {
     switch (Kind) {
-    case DeclContextKind::FileUnit:
-      return ASTHierarchy::FileUnit;
-    case DeclContextKind::Module:
-      return ASTHierarchy::Decl;
-    default:
-      llvm_unreachable("Unhandled DeclContextKind");
+    case DeclContextKind::FileUnit: return ASTHierarchy::FileUnit;
+    case DeclContextKind::Module: return ASTHierarchy::Decl;
+    default: llvm_unreachable("Unhandled DeclContextKind");
     }
   }
 
@@ -46,8 +43,8 @@ public:
   LLVM_READONLY
   Decl * getAsDecl() {
     return ParentAndKind.getInt() == ASTHierarchy::Decl
-             ? reinterpret_cast<Decl *>(this + 1)
-             : nullptr;
+           ? reinterpret_cast<Decl *>(this + 1)
+           : nullptr;
   }
 
   const Decl * getAsDecl() const {
@@ -85,7 +82,9 @@ public:
 
   /// Returns the semantic parent of this context.  A context has a
   /// parent if and only if it is not a module context.
-  DeclContext * getParent() const { return ParentAndKind.getPointer(); }
+  DeclContext * getParent() const {
+    return ParentAndKind.getPointer();
+  }
 
   ModuleDecl * getParentModule() const;
 

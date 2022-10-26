@@ -66,7 +66,7 @@ GeneratedModule performIRGeneration(
   ModuleDecl * M,
   const IRGenOptions& Opts,
   const TBDGenOptions& TBDOpts,
-  // std::unique_ptr<SILModule> SILMod,
+  ModuleDecl * Mod,
   StringRef ModuleName,
   const PrimarySpecificPaths& PSPs,
   ArrayRef<std::string> parallelOutputFilenames,
@@ -79,7 +79,7 @@ GeneratedModule performIRGeneration(
   FileUnit * file,
   const IRGenOptions& Opts,
   const TBDGenOptions& TBDOpts,
-  // std::unique_ptr<SILModule> SILMod,
+  ModuleDecl * Mod,
   StringRef ModuleName,
   const PrimarySpecificPaths& PSPs,
   llvm::GlobalVariable ** outModuleHash = nullptr

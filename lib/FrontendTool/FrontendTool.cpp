@@ -35,6 +35,7 @@ using ModuleOrSourceFile = PointerUnion<ModuleDecl *, SourceFile *>;
 static GeneratedModule generateIR(
   const IRGenOptions& IRGenOpts,
   const TBDGenOptions& TBDOpts,
+  ModuleDecl * Mod,
   const PrimarySpecificPaths& PSPs,
   StringRef OutputFilename,
   ModuleOrSourceFile MSF,
@@ -108,16 +109,11 @@ bool performAction(CompilerInstance& Instance, int& ReturnValue) {
   const FrontendOptions::ActionType Action = FrontendOpts.RequestedAction;
 
   switch (Action) {
-  case FrontendOptions::ActionType::NoneAction:
-    return false;
-  case FrontendOptions::ActionType::EmitIR:
-    break;
-  case FrontendOptions::ActionType::EmitIRGen:
-    break;
-  case FrontendOptions::ActionType::EmitAssembly:
-    break;
-  case FrontendOptions::ActionType::EmitBC:
-    break;
+  case FrontendOptions::ActionType::NoneAction: return false;
+  case FrontendOptions::ActionType::EmitIR: break;
+  case FrontendOptions::ActionType::EmitIRGen: break;
+  case FrontendOptions::ActionType::EmitAssembly: break;
+  case FrontendOptions::ActionType::EmitBC: break;
   case FrontendOptions::ActionType::EmitObject:
     return withSemanticAnalysis(
       Instance,
@@ -125,8 +121,7 @@ bool performAction(CompilerInstance& Instance, int& ReturnValue) {
         return performCompileStepsPostSema(Instance, ReturnValue);
       }
     );
-  case FrontendOptions::ActionType::PrintVersion:
-    break;
+  case FrontendOptions::ActionType::PrintVersion: break;
   }
 
   return false;
@@ -150,6 +145,7 @@ bool withSemanticAnalysis(
 GeneratedModule generateIR(
   const IRGenOptions& IRGenOpts,
   const TBDGenOptions& TBDOpts,
+  ModuleDecl * Mod,
   const PrimarySpecificPaths& PSPs,
   StringRef OutputFilename,
   ModuleOrSourceFile MSF,
@@ -158,14 +154,13 @@ GeneratedModule generateIR(
 ) {
   if (auto * SF = MSF.dyn_cast<SourceFile *>()) {
     return performIRGeneration(
-      SF, IRGenOpts, TBDOpts, /* std::move(SM), */ OutputFilename, PSPs,
-      &HashGlobal
+      SF, IRGenOpts, TBDOpts, Mod, OutputFilename, PSPs, &HashGlobal
     );
   }
 
   return performIRGeneration(
-    MSF.get<ModuleDecl *>(), IRGenOpts, TBDOpts, /* std::move(SM), */
-    OutputFilename, PSPs, parallelOutputFilenames, &HashGlobal
+    MSF.get<ModuleDecl *>(), IRGenOpts, TBDOpts, Mod, OutputFilename,
+    PSPs, parallelOutputFilenames, &HashGlobal
   );
 }
 
@@ -185,10 +180,10 @@ bool performCompileStepsPostSema(
       std::vector<std::string> ParallelOutputFilenames =
         opts.InputsAndOutputs.copyOutputFilenames();
       llvm::GlobalVariable * HashGlobal;
+      auto * Mod = PrimaryFile->getModule();
       auto IRModule = generateIR(
-        IRGenOpts, Invocation.getTBDGenOptions(),
-        /* std::move(SM),*/ PSPs, OutputFilename, PrimaryFile, HashGlobal,
-        ParallelOutputFilenames
+        IRGenOpts, Invocation.getTBDGenOptions(), Mod, PSPs,
+        OutputFilename, PrimaryFile, HashGlobal, ParallelOutputFilenames
       );
       result |= generateCode(
         Instance, OutputFilename, IRModule.getModule(), HashGlobal
@@ -204,7 +199,8 @@ bool performCompileStepsPostSema(
 /// to be delayed until the w2n compile pipeline has finished. This may be
 /// called before or after LLVM depending on when the ASTContext gets
 /// freed.
-void performEndOfPipelineActions(CompilerInstance& Instance) {}
+void performEndOfPipelineActions(CompilerInstance& Instance) {
+}
 
 void freeASTContextIfPossible(CompilerInstance& Instance) {
   // If the stats reporter is installed, we need the ASTContext to live

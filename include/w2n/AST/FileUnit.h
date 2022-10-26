@@ -41,13 +41,24 @@ private:
 
 protected:
   FileUnit(FileUnitKind Kind, ModuleDecl& Module)
-    : DeclContext(DeclContextKind::FileUnit, &Module), Kind(Kind) {}
+    : DeclContext(DeclContextKind::FileUnit, &Module), Kind(Kind) {
+  }
 
 public:
-  FileUnitKind getKind() const { return Kind; }
+  FileUnitKind getKind() const {
+    return Kind;
+  }
 
   static bool classof(const DeclContext * DC) {
     return DC->getContextKind() == DeclContextKind::FileUnit;
+  }
+
+  const ModuleDecl * getModule() const {
+    return getParentModule();
+  }
+
+  ModuleDecl * getModule() {
+    return getParentModule();
   }
 
   using ASTAllocated<FileUnit>::operator new;

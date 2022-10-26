@@ -31,7 +31,8 @@ struct ModuleBuffers {
   std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer;
 
   ModuleBuffers(std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer)
-    : ModuleBuffer(std::move(ModuleBuffer)) {}
+    : ModuleBuffer(std::move(ModuleBuffer)) {
+  }
 };
 
 class CompilerInvocation {
@@ -65,31 +66,45 @@ public:
       ConfigurationFileBuffers
   );
 
-  FrontendOptions& getFrontendOptions() { return FrontendOpts; }
+  FrontendOptions& getFrontendOptions() {
+    return FrontendOpts;
+  }
 
   const FrontendOptions& getFrontendOptions() const {
     return FrontendOpts;
   }
 
-  LanguageOptions& getLanguageOptions() { return LanguageOpts; }
+  LanguageOptions& getLanguageOptions() {
+    return LanguageOpts;
+  }
 
   const LanguageOptions& getLanguageOptions() const {
     return LanguageOpts;
   }
 
-  SearchPathOptions_t& getSearchPathOptions() { return SearchPathOpts; }
+  SearchPathOptions_t& getSearchPathOptions() {
+    return SearchPathOpts;
+  }
 
   const SearchPathOptions_t& getSearchPathOptions() const {
     return SearchPathOpts;
   }
 
-  IRGenOptions& getIRGenOptions() { return IRGenOpts; }
+  IRGenOptions& getIRGenOptions() {
+    return IRGenOpts;
+  }
 
-  const IRGenOptions& getIRGenOptions() const { return IRGenOpts; }
+  const IRGenOptions& getIRGenOptions() const {
+    return IRGenOpts;
+  }
 
-  TBDGenOptions& getTBDGenOptions() { return TBDGenOpts; }
+  TBDGenOptions& getTBDGenOptions() {
+    return TBDGenOpts;
+  }
 
-  const TBDGenOptions& getTBDGenOptions() const { return TBDGenOpts; }
+  const TBDGenOptions& getTBDGenOptions() const {
+    return TBDGenOpts;
+  }
 
   const std::string& getModuleName() const {
     return getFrontendOptions().ModuleName;
@@ -153,27 +168,45 @@ public:
 
   bool setup(const CompilerInvocation& Invocation, std::string& Error);
 
-  const CompilerInvocation& getInvocation() const { return Invocation; }
+  const CompilerInvocation& getInvocation() const {
+    return Invocation;
+  }
 
-  SourceManager& getSourceMgr() { return SourceMgr; }
+  SourceManager& getSourceMgr() {
+    return SourceMgr;
+  }
 
-  const SourceManager& getSourceMgr() const { return SourceMgr; }
+  const SourceManager& getSourceMgr() const {
+    return SourceMgr;
+  }
 
-  DiagnosticEngine& getDiags() { return Diagnostics; }
+  DiagnosticEngine& getDiags() {
+    return Diagnostics;
+  }
 
-  const DiagnosticEngine& getDiags() const { return Diagnostics; }
+  const DiagnosticEngine& getDiags() const {
+    return Diagnostics;
+  }
 
   llvm::vfs::FileSystem& getFileSystem() const {
     return *SourceMgr.getFileSystem();
   }
 
-  ASTContext& getASTContext() { return *Context; }
+  ASTContext& getASTContext() {
+    return *Context;
+  }
 
-  const ASTContext& getASTContext() const { return *Context; }
+  const ASTContext& getASTContext() const {
+    return *Context;
+  }
 
-  bool hasASTContext() const { return Context != nullptr; }
+  bool hasASTContext() const {
+    return Context != nullptr;
+  }
 
-  UnifiedStatsReporter * getStatsReporter() const { return Stats.get(); }
+  UnifiedStatsReporter * getStatsReporter() const {
+    return Stats.get();
+  }
 
   void freeASTContext();
 

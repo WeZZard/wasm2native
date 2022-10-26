@@ -82,16 +82,20 @@ class DiagnosticArgument {
 
 public:
   DiagnosticArgument(StringRef S)
-    : Kind(DiagnosticArgumentKind::String), StringVal(S) {}
+    : Kind(DiagnosticArgumentKind::String), StringVal(S) {
+  }
 
   DiagnosticArgument(int I)
-    : Kind(DiagnosticArgumentKind::Integer), IntegerVal(I) {}
+    : Kind(DiagnosticArgumentKind::Integer), IntegerVal(I) {
+  }
 
   DiagnosticArgument(unsigned I)
-    : Kind(DiagnosticArgumentKind::Unsigned), UnsignedVal(I) {}
+    : Kind(DiagnosticArgumentKind::Unsigned), UnsignedVal(I) {
+  }
 
   DiagnosticArgument(DiagnosticInfo * D)
-    : Kind(DiagnosticArgumentKind::Diagnostic), DiagnosticVal(D) {}
+    : Kind(DiagnosticArgumentKind::Diagnostic), DiagnosticVal(D) {
+  }
 
   /// Initializes a diagnostic argument using the underlying type of the
   /// given enum.
@@ -102,9 +106,12 @@ public:
   DiagnosticArgument(EnumType value)
     : DiagnosticArgument(
         static_cast<typename std::underlying_type<EnumType>::type>(value)
-      ) {}
+      ) {
+  }
 
-  DiagnosticArgumentKind getKind() const { return Kind; }
+  DiagnosticArgumentKind getKind() const {
+    return Kind;
+  }
 
   StringRef getAsString() const {
     assert(Kind == DiagnosticArgumentKind::String);
@@ -154,12 +161,14 @@ struct DiagnosticFormatOptions {
     : OpeningQuotationMark(OpeningQuotationMark),
       ClosingQuotationMark(ClosingQuotationMark),
       AKAFormatString(AKAFormatString),
-      OpaqueResultFormatString(OpaqueResultFormatString) {}
+      OpaqueResultFormatString(OpaqueResultFormatString) {
+  }
 
   DiagnosticFormatOptions()
     : OpeningQuotationMark("'"), ClosingQuotationMark("'"),
       AKAFormatString("'%s' (aka '%s')"),
-      OpaqueResultFormatString("'%s' (%s of '%s')") {}
+      OpaqueResultFormatString("'%s' (%s of '%s')") {
+  }
 
   /// When formatting fix-it arguments, don't include quotes or other
   /// additions which would result in invalid code.
@@ -213,32 +222,57 @@ public:
   }
 
   /*implicit*/ Diagnostic(DiagID ID, ArrayRef<DiagnosticArgument> Args)
-    : ID(ID), Args(Args.begin(), Args.end()) {}
+    : ID(ID), Args(Args.begin(), Args.end()) {
+  }
 
   // Accessors.
-  DiagID getID() const { return ID; }
+  DiagID getID() const {
+    return ID;
+  }
 
-  ArrayRef<DiagnosticArgument> getArgs() const { return Args; }
+  ArrayRef<DiagnosticArgument> getArgs() const {
+    return Args;
+  }
 
-  ArrayRef<CharSourceRange> getRanges() const { return Ranges; }
+  ArrayRef<CharSourceRange> getRanges() const {
+    return Ranges;
+  }
 
-  ArrayRef<FixIt> getFixIts() const { return FixIts; }
+  ArrayRef<FixIt> getFixIts() const {
+    return FixIts;
+  }
 
-  ArrayRef<Diagnostic> getChildNotes() const { return ChildNotes; }
+  ArrayRef<Diagnostic> getChildNotes() const {
+    return ChildNotes;
+  }
 
-  bool isChildNote() const { return IsChildNote; }
+  bool isChildNote() const {
+    return IsChildNote;
+  }
 
-  SourceLoc getLoc() const { return Loc; }
+  SourceLoc getLoc() const {
+    return Loc;
+  }
 
-  const class Decl * getDecl() const { return Decl; }
+  const class Decl * getDecl() const {
+    return Decl;
+  }
 
-  DiagnosticBehavior getBehaviorLimit() const { return BehaviorLimit; }
+  DiagnosticBehavior getBehaviorLimit() const {
+    return BehaviorLimit;
+  }
 
-  void setLoc(SourceLoc loc) { Loc = loc; }
+  void setLoc(SourceLoc loc) {
+    Loc = loc;
+  }
 
-  void setIsChildNote(bool isChildNote) { IsChildNote = isChildNote; }
+  void setIsChildNote(bool isChildNote) {
+    IsChildNote = isChildNote;
+  }
 
-  void setDecl(const class Decl * decl) { Decl = decl; }
+  void setDecl(const class Decl * decl) {
+    Decl = decl;
+  }
 
   void setBehaviorLimit(DiagnosticBehavior limit) {
     BehaviorLimit = limit;
@@ -254,10 +288,14 @@ public:
     return ID == Other.ID;
   }
 
-  void addRange(CharSourceRange R) { Ranges.push_back(R); }
+  void addRange(CharSourceRange R) {
+    Ranges.push_back(R);
+  }
 
   // Avoid copying the fix-it text more than necessary.
-  void addFixIt(FixIt&& F) { FixIts.push_back(std::move(F)); }
+  void addFixIt(FixIt&& F) {
+    FixIts.push_back(std::move(F));
+  }
 
   void addChildNote(Diagnostic&& D);
 };
@@ -279,7 +317,8 @@ class InFlightDiagnostic {
   ///
   /// This constructor is only available to the DiagnosticEngine.
   InFlightDiagnostic(DiagnosticEngine& Engine)
-    : Engine(&Engine), IsActive(true) {}
+    : Engine(&Engine), IsActive(true) {
+  }
 
   InFlightDiagnostic(const InFlightDiagnostic&) = delete;
   InFlightDiagnostic& operator=(const InFlightDiagnostic&) = delete;
@@ -291,7 +330,8 @@ public:
   /// The resulting diagnostic can be used as a dummy, accepting the
   /// syntax to add additional information to a diagnostic without
   /// actually emitting a diagnostic.
-  InFlightDiagnostic() : Engine(0), IsActive(true) {}
+  InFlightDiagnostic() : Engine(0), IsActive(true) {
+  }
 
   /// Transfer an in-flight diagnostic to a new object, which is
   /// typically used when returning in-flight diagnostics.
@@ -526,9 +566,13 @@ public:
   /// state such as fatality into account.
   DiagnosticBehavior determineBehavior(const Diagnostic& diag);
 
-  bool hadAnyError() const { return anyErrorOccurred; }
+  bool hadAnyError() const {
+    return anyErrorOccurred;
+  }
 
-  bool hasFatalErrorOccurred() const { return fatalErrorOccurred; }
+  bool hasFatalErrorOccurred() const {
+    return fatalErrorOccurred;
+  }
 
   void setShowDiagnosticsAfterFatalError(bool val = true) {
     showDiagnosticsAfterFatalError = val;
@@ -539,14 +583,22 @@ public:
   }
 
   /// Whether to skip emitting warnings
-  void setSuppressWarnings(bool val) { suppressWarnings = val; }
+  void setSuppressWarnings(bool val) {
+    suppressWarnings = val;
+  }
 
-  bool getSuppressWarnings() const { return suppressWarnings; }
+  bool getSuppressWarnings() const {
+    return suppressWarnings;
+  }
 
   /// Whether to treat warnings as errors
-  void setWarningsAsErrors(bool val) { warningsAsErrors = val; }
+  void setWarningsAsErrors(bool val) {
+    warningsAsErrors = val;
+  }
 
-  bool getWarningsAsErrors() const { return warningsAsErrors; }
+  bool getWarningsAsErrors() const {
+    return warningsAsErrors;
+  }
 
   void resetHadAnyError() {
     anyErrorOccurred = false;
@@ -652,11 +704,14 @@ private:
 public:
   explicit DiagnosticEngine(SourceManager& SourceMgr)
     : SourceMgr(SourceMgr), ActiveDiagnostic(),
-      TransactionStrings(TransactionAllocator) {}
+      TransactionStrings(TransactionAllocator) {
+  }
 
   /// hadAnyError - return true if any *error* diagnostics have been
   /// emitted.
-  bool hadAnyError() const { return state.hadAnyError(); }
+  bool hadAnyError() const {
+    return state.hadAnyError();
+  }
 
   bool hasFatalErrorOccurred() const {
     return state.hasFatalErrorOccurred();
@@ -676,19 +731,31 @@ public:
   }
 
   /// Whether to skip emitting warnings
-  void setSuppressWarnings(bool val) { state.setSuppressWarnings(val); }
+  void setSuppressWarnings(bool val) {
+    state.setSuppressWarnings(val);
+  }
 
-  bool getSuppressWarnings() const { return state.getSuppressWarnings(); }
+  bool getSuppressWarnings() const {
+    return state.getSuppressWarnings();
+  }
 
   /// Whether to treat warnings as errors
-  void setWarningsAsErrors(bool val) { state.setWarningsAsErrors(val); }
+  void setWarningsAsErrors(bool val) {
+    state.setWarningsAsErrors(val);
+  }
 
-  bool getWarningsAsErrors() const { return state.getWarningsAsErrors(); }
+  bool getWarningsAsErrors() const {
+    return state.getWarningsAsErrors();
+  }
 
   /// Whether to print diagnostic names after their messages
-  void setPrintDiagnosticNames(bool val) { printDiagnosticNames = val; }
+  void setPrintDiagnosticNames(bool val) {
+    printDiagnosticNames = val;
+  }
 
-  bool getPrintDiagnosticNames() const { return printDiagnosticNames; }
+  bool getPrintDiagnosticNames() const {
+    return printDiagnosticNames;
+  }
 
   void setDiagnosticDocumentationPath(std::string path) {
     diagnosticDocumentationPath = path;
@@ -698,9 +765,13 @@ public:
     return diagnosticDocumentationPath;
   }
 
-  bool isPrettyPrintingDecl() const { return IsPrettyPrintingDecl; }
+  bool isPrettyPrintingDecl() const {
+    return IsPrettyPrintingDecl;
+  }
 
-  void setLanguageVersion(version::Version v) { languageVersion = v; }
+  void setLanguageVersion(version::Version v) {
+    languageVersion = v;
+  }
 
   void setLocalization(StringRef locale, StringRef path) {
     assert(!locale.empty());
@@ -714,7 +785,9 @@ public:
     state.setIgnoredDiagnostic(id, true);
   }
 
-  void resetHadAnyError() { state.resetHadAnyError(); }
+  void resetHadAnyError() {
+    state.resetHadAnyError();
+  }
 
   /// Add an additional DiagnosticConsumer to receive diagnostics.
   void addConsumer(DiagnosticConsumer& Consumer) {
@@ -908,7 +981,9 @@ private:
   void flushActiveDiagnostic();
 
   /// Retrieve the active diagnostic.
-  Diagnostic& getActiveDiagnostic() { return *ActiveDiagnostic; }
+  Diagnostic& getActiveDiagnostic() {
+    return *ActiveDiagnostic;
+  }
 
   /// Generate DiagnosticInfo for a Diagnostic to be passed to consumers.
   Optional<DiagnosticInfo>
@@ -976,9 +1051,11 @@ class DiagnosticStateRAII {
 
 public:
   DiagnosticStateRAII(DiagnosticEngine& diags)
-    : previousBehavior(diags.state.previousBehavior) {}
+    : previousBehavior(diags.state.previousBehavior) {
+  }
 
-  ~DiagnosticStateRAII() {}
+  ~DiagnosticStateRAII() {
+  }
 };
 
 class BufferIndirectlyCausingDiagnosticRAII {
@@ -1091,7 +1168,8 @@ private:
 class CompoundDiagnosticTransaction : public DiagnosticTransaction {
 public:
   explicit CompoundDiagnosticTransaction(DiagnosticEngine& engine)
-    : DiagnosticTransaction(engine) {}
+    : DiagnosticTransaction(engine) {
+  }
 
   ~CompoundDiagnosticTransaction() {
     if (IsOpen) {
@@ -1178,7 +1256,9 @@ public:
   }
 
   /// Retrieve the engine which may be used to enqueue diagnostics.
-  DiagnosticEngine& getDiags() { return QueueEngine; }
+  DiagnosticEngine& getDiags() {
+    return QueueEngine;
+  }
 
   /// Retrieve the underlying engine which will receive the diagnostics.
   DiagnosticEngine& getUnderlyingDiags() const {

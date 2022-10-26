@@ -1,13 +1,13 @@
 #ifndef W2N_AST_EVALUATOR_H
 #define W2N_AST_EVALUATOR_H
 
-#include <type_traits>
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SetVector.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/PrettyStackTrace.h>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 #include <w2n/AST/AnyRequest.h>
 #include <w2n/AST/EvaluatorDependencies.h>
@@ -44,7 +44,8 @@ class PrettyStackTraceRequest : public llvm::PrettyStackTraceEntry {
   const Request& request;
 
 public:
-  PrettyStackTraceRequest(const Request& request) : request(request) {}
+  PrettyStackTraceRequest(const Request& request) : request(request) {
+  }
 
   void print(llvm::raw_ostream& out) const override {
     out << "While evaluating request ";
@@ -64,7 +65,8 @@ public:
   const Evaluator& evaluator;
 
   CyclicalRequestError(const Request& request, const Evaluator& evaluator)
-    : request(request), evaluator(evaluator) {}
+    : request(request), evaluator(evaluator) {
+  }
 
   virtual void log(llvm::raw_ostream& out) const override;
 
@@ -107,7 +109,8 @@ template <typename Request>
 void reportEvaluatedRequest(
   UnifiedStatsReporter& stats,
   const Request& request
-) {}
+) {
+}
 
 /// Evaluation engine that evaluates and caches "requests", checking for
 /// cyclic dependencies along the way.
@@ -324,7 +327,9 @@ public:
   ///
   /// Note that this does not clear the caches of requests that use
   /// external caching.
-  void clearCache() { cache.clear(); }
+  void clearCache() {
+    cache.clear();
+  }
 
   /// Is the given request, or an equivalent, currently being evaluated?
   template <typename Request>
@@ -443,7 +448,8 @@ private:
   void handleDependencySinkRequest(
     const Request& r,
     const typename Request::OutputType& o
-  ) {}
+  ) {
+  }
 
   template <
     typename Request,
@@ -460,7 +466,8 @@ private:
     typename Request,
     typename std::enable_if<!Request::isDependencySource>::type * =
       nullptr>
-  void handleDependencySourceRequest(const Request& r) {}
+  void handleDependencySourceRequest(const Request& r) {
+  }
 
   template <
     typename Request,

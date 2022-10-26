@@ -230,8 +230,7 @@ FileSpecificDiagnosticConsumer::findSubconsumer(
     SubconsumerForSubsequentNotes = subconsumer;
     return subconsumer;
   }
-  case DiagnosticKind::Note:
-    return SubconsumerForSubsequentNotes;
+  case DiagnosticKind::Note: return SubconsumerForSubsequentNotes;
   }
   llvm_unreachable("covered switch");
 }
@@ -296,7 +295,8 @@ void NullDiagnosticConsumer::handleDiagnostic(
 ForwardingDiagnosticConsumer::ForwardingDiagnosticConsumer(
   DiagnosticEngine& Target
 )
-  : TargetEngine(Target) {}
+  : TargetEngine(Target) {
+}
 
 void ForwardingDiagnosticConsumer::handleDiagnostic(
   SourceManager& SM,

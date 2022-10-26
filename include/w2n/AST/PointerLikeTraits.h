@@ -42,9 +42,13 @@ namespace llvm {
 /// TODO: LLVM should provide this.
 template <class T, size_t AlignInBits>
 struct MoreAlignedPointerTraits {
-  enum { NumLowBitsAvailable = AlignInBits };
+  enum {
+    NumLowBitsAvailable = AlignInBits
+  };
 
-  static inline void * getAsVoidPointer(T * ptr) { return ptr; }
+  static inline void * getAsVoidPointer(T * ptr) {
+    return ptr;
+  }
 
   static inline T * getFromVoidPointer(void * ptr) {
     return static_cast<T *>(ptr);

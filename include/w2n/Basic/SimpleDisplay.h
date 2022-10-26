@@ -6,10 +6,10 @@
 #ifndef W2N_BASIC_SIMPLEDISPLAY_H
 #define W2N_BASIC_SIMPLEDISPLAY_H
 
-#include <type_traits>
 #include <llvm/ADT/TinyPtrVector.h>
 #include <llvm/Support/raw_ostream.h>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 namespace w2n {

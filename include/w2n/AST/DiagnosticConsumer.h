@@ -17,7 +17,12 @@ enum class DiagID : uint32_t;
 
 /// Describes the kind of diagnostic.
 ///
-enum class DiagnosticKind : uint8_t { Error, Warning, Remark, Note };
+enum class DiagnosticKind : uint8_t {
+  Error,
+  Warning,
+  Remark,
+  Note
+};
 
 /// Information about a diagnostic passed to DiagnosticConsumers.
 struct DiagnosticInfo {
@@ -58,11 +63,17 @@ struct DiagnosticInfo {
       ArrayRef<DiagnosticArgument> Args
     );
 
-    CharSourceRange& getRange() { return Range; }
+    CharSourceRange& getRange() {
+      return Range;
+    }
 
-    const CharSourceRange& getRange() const { return Range; }
+    const CharSourceRange& getRange() const {
+      return Range;
+    }
 
-    StringRef getText() const { return Text; }
+    StringRef getText() const {
+      return Text;
+    }
   };
 
   /// Extra source ranges that are attached to the diagnostic.
@@ -74,7 +85,8 @@ struct DiagnosticInfo {
   /// This is a note which has a parent error or warning
   bool IsChildNote = false;
 
-  DiagnosticInfo() {}
+  DiagnosticInfo() {
+  }
 
   DiagnosticInfo(
     DiagID ID,
@@ -94,7 +106,8 @@ struct DiagnosticInfo {
       BufferIndirectlyCausingDiagnostic(BufferIndirectlyCausingDiagnostic
       ),
       ChildDiagnosticInfo(ChildDiagnosticInfo), Ranges(Ranges),
-      FixIts(FixIts), IsChildNote(IsChildNote) {}
+      FixIts(FixIts), IsChildNote(IsChildNote) {
+  }
 };
 
 /// Abstract interface for classes that present diagnostics to the user.
@@ -125,10 +138,13 @@ public:
   handleDiagnostic(SourceManager& SM, const DiagnosticInfo& Info) = 0;
 
   /// \returns true if an error occurred while finishing-up.
-  virtual bool finishProcessing() { return false; }
+  virtual bool finishProcessing() {
+    return false;
+  }
 
   /// Flush any in-flight diagnostics.
-  virtual void flush() {}
+  virtual void flush() {
+  }
 
   /// In batch mode, any error causes failure for all primary files, but
   /// anyone consulting .dia files will only see an error for a particular
@@ -137,7 +153,8 @@ public:
   /// driver what happened. This is only meaningful for
   /// SerializedDiagnosticConsumers, so here's a placeholder.
 
-  virtual void informDriverOfIncompleteBatchModeCompilation() {}
+  virtual void informDriverOfIncompleteBatchModeCompilation() {
+  }
 };
 
 /// DiagnosticConsumer that discards all diagnostics.
@@ -212,15 +229,20 @@ public:
     bool hasAnErrorBeenConsumed = false;
 
   public:
-    std::string getInputFileName() const { return inputFileName; }
+    std::string getInputFileName() const {
+      return inputFileName;
+    }
 
-    DiagnosticConsumer * getConsumer() const { return consumer.get(); }
+    DiagnosticConsumer * getConsumer() const {
+      return consumer.get();
+    }
 
     Subconsumer(
       std::string inputFileName,
       std::unique_ptr<DiagnosticConsumer> consumer
     )
-      : inputFileName(inputFileName), consumer(std::move(consumer)) {}
+      : inputFileName(inputFileName), consumer(std::move(consumer)) {
+    }
 
     void handleDiagnostic(SourceManager& SM, const DiagnosticInfo& Info) {
       if (!getConsumer())
@@ -252,13 +274,16 @@ public:
     /*const*/ unsigned subconsumerIndex;
 
   public:
-    unsigned getSubconsumerIndex() const { return subconsumerIndex; }
+    unsigned getSubconsumerIndex() const {
+      return subconsumerIndex;
+    }
 
     ConsumerAndRange(
       const CharSourceRange range,
       unsigned subconsumerIndex
     )
-      : range(range), subconsumerIndex(subconsumerIndex) {}
+      : range(range), subconsumerIndex(subconsumerIndex) {
+    }
 
     /// Compare according to range:
     bool operator<(const ConsumerAndRange& right) const {

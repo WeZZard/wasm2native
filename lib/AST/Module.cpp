@@ -11,7 +11,9 @@ ModuleDecl::ModuleDecl(Identifier Name, ASTContext& Context)
   Context.addDestructorCleanup(*this);
 }
 
-Identifier ModuleDecl::getName() const { return Name; }
+Identifier ModuleDecl::getName() const {
+  return Name;
+}
 
 void ModuleDecl::addFile(FileUnit& NewFile) {
   Files.push_back(&NewFile);

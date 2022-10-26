@@ -57,7 +57,9 @@ class TBDGenDescriptor final {
 
 public:
   /// Returns the file or module we're emitting TBD for.
-  FileOrModule getFileOrModule() const { return Input; }
+  FileOrModule getFileOrModule() const {
+    return Input;
+  }
 
   /// If the input is a single file, returns that file. Otherwise returns
   /// \c nullptr.
@@ -67,9 +69,13 @@ public:
   ModuleDecl * getParentModule() const;
 
   /// Returns the TBDGen options.
-  const TBDGenOptions& getOptions() const { return Opts; }
+  const TBDGenOptions& getOptions() const {
+    return Opts;
+  }
 
-  TBDGenOptions& getOptions() { return Opts; }
+  TBDGenOptions& getOptions() {
+    return Opts;
+  }
 
   const StringRef getDataLayoutString() const;
   const llvm::Triple& getTarget() const;
@@ -183,9 +189,13 @@ public:
     return SymbolSource{Kind::LinkerDirective};
   }
 
-  static SymbolSource forUnknown() { return SymbolSource{Kind::Unknown}; }
+  static SymbolSource forUnknown() {
+    return SymbolSource{Kind::Unknown};
+  }
 
-  bool isLinkerDirective() const { return kind == Kind::LinkerDirective; }
+  bool isLinkerDirective() const {
+    return kind == Kind::LinkerDirective;
+  }
 
   irgen::LinkEntity getIRLinkEntity() const {
     assert(kind == Kind::IR);
@@ -245,7 +255,9 @@ private:
 
 public:
   // Cached.
-  bool isCached() const { return true; }
+  bool isCached() const {
+    return true;
+  }
 };
 
 /// Report that a request of the given kind is being evaluated, so it

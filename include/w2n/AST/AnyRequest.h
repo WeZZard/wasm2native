@@ -34,7 +34,7 @@ struct AnyRequestVTable {
 
     static bool isEqual(const void * lhs, const void * rhs) {
       return *static_cast<const Request *>(lhs) ==
-             *static_cast<const Request *>(rhs);
+           *static_cast<const Request *>(rhs);
     }
 
     static void simpleDisplay(const void * ptr, llvm::raw_ostream& out) {
@@ -90,17 +90,17 @@ protected:
   llvm::PointerIntPair<const AnyRequestVTable *, 2, StorageKind>
     vtableAndKind;
 
-  StorageKind getStorageKind() const { return vtableAndKind.getInt(); }
+  StorageKind getStorageKind() const {
+    return vtableAndKind.getInt();
+  }
 
   /// Whether this object is storing a value, and is not empty or a
   /// tombstone.
   bool hasStorage() const {
     switch (getStorageKind()) {
     case StorageKind::Empty:
-    case StorageKind::Tombstone:
-      return false;
-    case StorageKind::Normal:
-      return true;
+    case StorageKind::Tombstone: return false;
+    case StorageKind::Normal: return true;
     }
     llvm_unreachable("Unhandled case in switch");
   }
@@ -133,7 +133,9 @@ protected:
   }
 
 private:
-  Derived& asDerived() { return *static_cast<Derived *>(this); }
+  Derived& asDerived() {
+    return *static_cast<Derived *>(this);
+  }
 
   const Derived& asDerived() const {
     return *static_cast<const Derived *>(this);
@@ -243,9 +245,12 @@ class ActiveRequest final : public AnyRequestBase<ActiveRequest> {
 
   /// Creates an \c ActiveRequest without storage.
   explicit ActiveRequest(StorageKind storageKind)
-    : AnyRequestBase(/*vtable*/ nullptr, storageKind) {}
+    : AnyRequestBase(/*vtable*/ nullptr, storageKind) {
+  }
 
-  const void * getRawStorage() const { return storage; }
+  const void * getRawStorage() const {
+    return storage;
+  }
 
 public:
   /// Creates a new \c ActiveRequest referencing a concrete request on the

@@ -50,9 +50,12 @@ public:
     llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> FS =
       llvm::vfs::getRealFileSystem()
   )
-    : FileSystem(FS) {}
+    : FileSystem(FS) {
+  }
 
-  llvm::SourceMgr& getLLVMSourceMgr() { return LLVMSourceMgr; }
+  llvm::SourceMgr& getLLVMSourceMgr() {
+    return LLVMSourceMgr;
+  }
 
   const llvm::SourceMgr& getLLVMSourceMgr() const {
     return LLVMSourceMgr;

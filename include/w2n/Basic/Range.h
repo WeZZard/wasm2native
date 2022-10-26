@@ -11,11 +11,11 @@
 #ifndef W2N_BASIC_RANGE_H
 #define W2N_BASIC_RANGE_H
 
-#include <type_traits>
 #include <llvm/ADT/ArrayRef.h>
-#include <llvm/ADT/iterator_range.h>
 #include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/iterator_range.h>
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 namespace w2n {
@@ -79,9 +79,11 @@ class IntRange {
   using difference_type = typename Traits::difference_type;
 
 public:
-  IntRange() : Begin(0), End(0) {}
+  IntRange() : Begin(0), End(0) {
+  }
 
-  IntRange(T end) : Begin(0), End(end) {}
+  IntRange(T end) : Begin(0), End(end) {
+  }
 
   IntRange(T begin, T end) : Begin(begin), End(end) {
     assert(begin <= end);
@@ -91,7 +93,8 @@ public:
     friend class IntRange<T>;
     T Value;
 
-    iterator(T value) : Value(value) {}
+    iterator(T value) : Value(value) {
+    }
 
   public:
     using value_type = T;
@@ -100,9 +103,13 @@ public:
     using difference_type = typename std::make_signed<T>::type;
     using iterator_category = std::random_access_iterator_tag;
 
-    T operator*() const { return Value; }
+    T operator*() const {
+      return Value;
+    }
 
-    iterator& operator++() { return *this += 1; }
+    iterator& operator++() {
+      return *this += 1;
+    }
 
     iterator operator++(int) {
       auto copy = *this;
@@ -110,7 +117,9 @@ public:
       return copy;
     }
 
-    iterator& operator--() { return *this -= 1; }
+    iterator& operator--() {
+      return *this -= 1;
+    }
 
     iterator operator--(int) {
       auto copy = *this;
@@ -118,9 +127,13 @@ public:
       return copy;
     }
 
-    bool operator==(iterator rhs) const { return Value == rhs.Value; }
+    bool operator==(iterator rhs) const {
+      return Value == rhs.Value;
+    }
 
-    bool operator!=(iterator rhs) const { return Value != rhs.Value; }
+    bool operator!=(iterator rhs) const {
+      return Value != rhs.Value;
+    }
 
     iterator& operator+=(difference_type i) {
       Value = Traits::addOffset(Value, i);
@@ -152,18 +165,30 @@ public:
       return Traits::addOffset(Value, i);
     }
 
-    bool operator<(iterator rhs) const { return Value < rhs.Value; }
+    bool operator<(iterator rhs) const {
+      return Value < rhs.Value;
+    }
 
-    bool operator<=(iterator rhs) const { return Value <= rhs.Value; }
+    bool operator<=(iterator rhs) const {
+      return Value <= rhs.Value;
+    }
 
-    bool operator>(iterator rhs) const { return Value > rhs.Value; }
+    bool operator>(iterator rhs) const {
+      return Value > rhs.Value;
+    }
 
-    bool operator>=(iterator rhs) const { return Value >= rhs.Value; }
+    bool operator>=(iterator rhs) const {
+      return Value >= rhs.Value;
+    }
   };
 
-  iterator begin() const { return iterator(Begin); }
+  iterator begin() const {
+    return iterator(Begin);
+  }
 
-  iterator end() const { return iterator(End); }
+  iterator end() const {
+    return iterator(End);
+  }
 
   std::reverse_iterator<iterator> rbegin() const {
     return std::reverse_iterator<iterator>(end());
@@ -173,9 +198,13 @@ public:
     return std::reverse_iterator<iterator>(begin());
   }
 
-  bool empty() const { return Begin == End; }
+  bool empty() const {
+    return Begin == End;
+  }
 
-  size_t size() const { return size_t(Traits::distance(Begin, End)); }
+  size_t size() const {
+    return size_t(Traits::distance(Begin, End));
+  }
 
   T operator[](size_t i) const {
     assert(i < size());
@@ -214,7 +243,9 @@ public:
     return Begin == other.Begin && End == other.End;
   }
 
-  bool operator!=(IntRange other) const { return !(operator==(other)); }
+  bool operator!=(IntRange other) const {
+    return !(operator==(other));
+  }
 };
 
 /// indices - Given a type that's subscriptable with integers, return

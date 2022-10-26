@@ -14,7 +14,6 @@ class ASTContext;
 enum class DeclKind {
 
   Module
-
 };
 
 /// Fine-grained declaration kind that provides a description of the
@@ -49,12 +48,15 @@ protected:
     DeclKind Kind,
     llvm::PointerUnion<DeclContext *, ASTContext *> Context
   )
-    : Kind(Kind), Context(Context) {}
+    : Kind(Kind), Context(Context) {
+  }
 
   DeclContext * getDeclContextForModule() const;
 
 public:
-  DeclKind getKind() const { return Kind; }
+  DeclKind getKind() const {
+    return Kind;
+  }
 
   DescriptiveDeclKind getDescriptiveKind() const;
 
@@ -80,10 +82,14 @@ public:
   }
 
   /// Returns the starting location of the entire declaration.
-  SourceLoc getStartLoc() const { return getSourceRange().Start; }
+  SourceLoc getStartLoc() const {
+    return getSourceRange().Start;
+  }
 
   /// Returns the end location of the entire declaration.
-  SourceLoc getEndLoc() const { return getSourceRange().End; }
+  SourceLoc getEndLoc() const {
+    return getSourceRange().End;
+  }
 
   /// Returns the preferred location when referring to declarations
   /// in diagnostics.

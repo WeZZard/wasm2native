@@ -4,11 +4,11 @@
 #ifndef W2N_AST_SIMPLEREQUEST_H
 #define W2N_AST_SIMPLEREQUEST_H
 
-#include <type_traits>
 #include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Support/Error.h>
 #include <tuple>
+#include <type_traits>
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/DiagnosticsCommon.h>
 #include <w2n/Basic/SimpleDisplay.h>
@@ -64,10 +64,13 @@ operator|(RequestFlags lhs, RequestFlags rhs) {
 namespace detail {
 /// Dummy extract function used to detect when we can call
 /// extractNearestSourceLoc() safely.
-inline void extractNearestSourceLoc(...) {}
+inline void extractNearestSourceLoc(...) {
+}
 
 /// Metaprogram to determine whether any input is true.
-constexpr bool anyTrue() { return false; }
+constexpr bool anyTrue() {
+  return false;
+}
 
 template <typename... Rest>
 constexpr bool anyTrue(bool current, Rest... rest) {
@@ -257,7 +260,9 @@ template <
 class SimpleRequest<Derived, Output(Inputs...), Caching> {
   std::tuple<Inputs...> storage;
 
-  Derived& asDerived() { return *static_cast<Derived *>(this); }
+  Derived& asDerived() {
+    return *static_cast<Derived *>(this);
+  }
 
   const Derived& asDerived() const {
     return *static_cast<const Derived *>(this);
@@ -275,7 +280,9 @@ class SimpleRequest<Derived, Output(Inputs...), Caching> {
 
 protected:
   /// Retrieve the storage value directly.
-  const std::tuple<Inputs...>& getStorage() const { return storage; }
+  const std::tuple<Inputs...>& getStorage() const {
+    return storage;
+  }
 
 public:
   constexpr static bool isEverCached = detail::isEverCached(Caching);
@@ -290,7 +297,8 @@ public:
 
   using OutputType = Output;
 
-  explicit SimpleRequest(const Inputs&... inputs) : storage(inputs...) {}
+  explicit SimpleRequest(const Inputs&... inputs) : storage(inputs...) {
+  }
 
   /// Request evaluation function that will be registered with the
   /// evaluator.

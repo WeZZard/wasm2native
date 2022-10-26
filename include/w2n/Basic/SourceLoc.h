@@ -25,25 +25,35 @@ class SourceLoc {
   llvm::SMLoc Value;
 
 public:
-  SourceLoc() {}
+  SourceLoc() {
+  }
 
-  explicit SourceLoc(llvm::SMLoc Value) : Value(Value) {}
+  explicit SourceLoc(llvm::SMLoc Value) : Value(Value) {
+  }
 
-  bool isValid() const { return Value.isValid(); }
+  bool isValid() const {
+    return Value.isValid();
+  }
 
-  bool isInvalid() const { return !isValid(); }
+  bool isInvalid() const {
+    return !isValid();
+  }
 
   /// An explicit bool operator so one can check if a SourceLoc is valid
   /// in an if statement:
   ///
   /// if (auto x = getSourceLoc()) { ... }
-  explicit operator bool() const { return isValid(); }
+  explicit operator bool() const {
+    return isValid();
+  }
 
   bool operator==(const SourceLoc& RHS) const {
     return RHS.Value == Value;
   }
 
-  bool operator!=(const SourceLoc& RHS) const { return !operator==(RHS); }
+  bool operator!=(const SourceLoc& RHS) const {
+    return !operator==(RHS);
+  }
 
   /// Return a source location advanced a specified number of bytes.
   SourceLoc getAdvancedLoc(int ByteOffset) const {
@@ -101,9 +111,11 @@ class SourceRange {
 public:
   SourceLoc Start, End;
 
-  SourceRange() {}
+  SourceRange() {
+  }
 
-  SourceRange(SourceLoc Loc) : Start(Loc), End(Loc) {}
+  SourceRange(SourceLoc Loc) : Start(Loc), End(Loc) {
+  }
 
   SourceRange(SourceLoc Start, SourceLoc End) : Start(Start), End(End) {
     assert(
@@ -112,15 +124,21 @@ public:
     );
   }
 
-  bool isValid() const { return Start.isValid(); }
+  bool isValid() const {
+    return Start.isValid();
+  }
 
-  bool isInvalid() const { return !isValid(); }
+  bool isInvalid() const {
+    return !isValid();
+  }
 
   /// An explicit bool operator so one can check if a SourceRange is valid
   /// in an if statement:
   ///
   /// if (auto x = getSourceRange()) { ... }
-  explicit operator bool() const { return isValid(); }
+  explicit operator bool() const {
+    return isValid();
+  }
 
   /// Extend this SourceRange to the smallest continuous SourceRange that
   /// includes both this range and the other one.
@@ -174,7 +192,8 @@ public:
   CharSourceRange() = default;
 
   CharSourceRange(SourceLoc Start, unsigned ByteLength)
-    : Start(Start), ByteLength(ByteLength) {}
+    : Start(Start), ByteLength(ByteLength) {
+  }
 
   /// Constructs a character range which starts and ends at the
   /// specified character locations.
@@ -187,9 +206,13 @@ public:
   /// Use Lexer::getCharSourceRangeFromSourceRange() instead.
   CharSourceRange(const SourceManager& SM, SourceRange Range) = delete;
 
-  bool isValid() const { return Start.isValid(); }
+  bool isValid() const {
+    return Start.isValid();
+  }
 
-  bool isInvalid() const { return !isValid(); }
+  bool isInvalid() const {
+    return !isValid();
+  }
 
   bool operator==(const CharSourceRange& other) const {
     return Start == other.Start && ByteLength == other.ByteLength;
@@ -199,7 +222,9 @@ public:
     return !operator==(other);
   }
 
-  SourceLoc getStart() const { return Start; }
+  SourceLoc getStart() const {
+    return Start;
+  }
 
   SourceLoc getEnd() const {
     return Start.getAdvancedLocOrInvalid(ByteLength);

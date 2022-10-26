@@ -43,10 +43,16 @@ class RequestKey {
     Request Req;
   };
 
-  enum class StorageKind : uint8_t { Normal, Empty, Tombstone };
+  enum class StorageKind : uint8_t {
+    Normal,
+    Empty,
+    Tombstone
+  };
   StorageKind Kind;
 
-  static RequestKey getEmpty() { return RequestKey(StorageKind::Empty); }
+  static RequestKey getEmpty() {
+    return RequestKey(StorageKind::Empty);
+  }
 
   static RequestKey getTombstone() {
     return RequestKey(StorageKind::Tombstone);
@@ -58,7 +64,8 @@ class RequestKey {
 
 public:
   explicit RequestKey(Request req)
-    : Req(std::move(req)), Kind(StorageKind::Normal) {}
+    : Req(std::move(req)), Kind(StorageKind::Normal) {
+  }
 
   RequestKey(const RequestKey& other) : Empty(), Kind(other.Kind) {
     if (Kind == StorageKind::Normal)
@@ -135,9 +142,12 @@ class RequestKey<
   }
 
 public:
-  explicit RequestKey(Request req) : Req(std::move(req)) {}
+  explicit RequestKey(Request req) : Req(std::move(req)) {
+  }
 
-  bool isStorageEqual(const Request& req) const { return Req == req; }
+  bool isStorageEqual(const Request& req) const {
+    return Req == req;
+  }
 
   friend bool operator==(const RequestKey& lhs, const RequestKey& rhs) {
     return lhs.Req == rhs.Req;
@@ -160,10 +170,12 @@ class PerRequestCache {
   std::function<void(void *)> Deleter;
 
   PerRequestCache(void * storage, std::function<void(void *)> deleter)
-    : Storage(storage), Deleter(deleter) {}
+    : Storage(storage), Deleter(deleter) {
+  }
 
 public:
-  PerRequestCache() : Storage(nullptr), Deleter([](void *) {}) {}
+  PerRequestCache() : Storage(nullptr), Deleter([](void *) {}) {
+  }
 
   PerRequestCache(PerRequestCache&& other)
     : Storage(other.Storage), Deleter(std::move(other.Deleter)) {
@@ -199,7 +211,9 @@ public:
     return static_cast<Map *>(Storage);
   }
 
-  bool isNull() const { return !Storage; }
+  bool isNull() const {
+    return !Storage;
+  }
 
   ~PerRequestCache() {
     if (Storage)
@@ -288,10 +302,12 @@ class PerRequestReferences {
     void * storage,
     std::function<void(void *)> deleter
   )
-    : Storage(storage), Deleter(deleter) {}
+    : Storage(storage), Deleter(deleter) {
+  }
 
 public:
-  PerRequestReferences() : Storage(nullptr), Deleter([](void *) {}) {}
+  PerRequestReferences() : Storage(nullptr), Deleter([](void *) {}) {
+  }
 
   PerRequestReferences(PerRequestReferences&& other)
     : Storage(other.Storage), Deleter(std::move(other.Deleter)) {
@@ -329,7 +345,9 @@ public:
     return static_cast<Map *>(Storage);
   }
 
-  bool isNull() const { return !Storage; }
+  bool isNull() const {
+    return !Storage;
+  }
 
   ~PerRequestReferences() {
     if (Storage)

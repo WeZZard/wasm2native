@@ -18,7 +18,8 @@ public:
     ExpectationDiagnosticConsumer * previous,
     ArrayRef<ExpectedDiagnostic> expected
   )
-    : previous(previous), expected(expected.begin(), expected.end()) {}
+    : previous(previous), expected(expected.begin(), expected.end()) {
+  }
 
   ~ExpectationDiagnosticConsumer() override {
     EXPECT_TRUE(hasFinished);

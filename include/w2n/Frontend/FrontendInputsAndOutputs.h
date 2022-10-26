@@ -38,24 +38,38 @@ public:
 #pragma mark Inputs
 
 public:
-  ArrayRef<Input> getAllInputs() const { return AllInputs; }
+  ArrayRef<Input> getAllInputs() const {
+    return AllInputs;
+  }
 
   std::vector<std::string> getInputFilenames() const;
 
   /// \return nullptr if not a primary input file.
   const Input * primaryInputNamed(StringRef name) const;
 
-  unsigned inputCount() const { return AllInputs.size(); }
+  unsigned inputCount() const {
+    return AllInputs.size();
+  }
 
-  bool hasInputs() const { return !AllInputs.empty(); }
+  bool hasInputs() const {
+    return !AllInputs.empty();
+  }
 
-  bool hasSingleInput() const { return inputCount() == 1; }
+  bool hasSingleInput() const {
+    return inputCount() == 1;
+  }
 
-  const Input& firstInput() const { return AllInputs[0]; }
+  const Input& firstInput() const {
+    return AllInputs[0];
+  }
 
-  Input& firstInput() { return AllInputs[0]; }
+  Input& firstInput() {
+    return AllInputs[0];
+  }
 
-  const Input& lastInput() const { return AllInputs.back(); }
+  const Input& lastInput() const {
+    return AllInputs.back();
+  }
 
   const std::string& getFilenameOfFirstInput() const;
 
@@ -88,9 +102,13 @@ public:
 
   // Primary count readers:
 
-  bool hasUniquePrimaryInput() const { return primaryInputCount() == 1; }
+  bool hasUniquePrimaryInput() const {
+    return primaryInputCount() == 1;
+  }
 
-  bool hasPrimaryInputs() const { return primaryInputCount() > 0; }
+  bool hasPrimaryInputs() const {
+    return primaryInputCount() > 0;
+  }
 
   bool hasMultiplePrimaryInputs() const {
     return primaryInputCount() > 1;
@@ -110,9 +128,13 @@ public:
     llvm::MemoryBuffer * buffer = nullptr
   );
 
-  bool isSingleThreadedWMO() const { return IsSingleThreadedWMO; }
+  bool isSingleThreadedWMO() const {
+    return IsSingleThreadedWMO;
+  }
 
-  void setIsSingleThreadedWMO(bool istw) { IsSingleThreadedWMO = istw; }
+  void setIsSingleThreadedWMO(bool istw) {
+    IsSingleThreadedWMO = istw;
+  }
 
   const PrimarySpecificPaths& getPrimarySpecificPathsForPrimary(StringRef
   ) const;

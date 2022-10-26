@@ -23,8 +23,7 @@ inline TwoChars checkSourceRangeType(SourceRange (Decl::*)() const);
 
 DescriptiveDeclKind Decl::getDescriptiveKind() const {
 #define TRIVIAL_KIND(Kind)                                               \
-  case DeclKind::Kind:                                                   \
-    return DescriptiveDeclKind::Kind
+  case DeclKind::Kind: return DescriptiveDeclKind::Kind
 
   switch (getKind()) { TRIVIAL_KIND(Module); }
 
@@ -34,14 +33,15 @@ DescriptiveDeclKind Decl::getDescriptiveKind() const {
 
 StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) const {
 #define ENTRY(Kind, String)                                              \
-  case DescriptiveDeclKind::Kind:                                        \
-    return String
+  case DescriptiveDeclKind::Kind: return String
   switch (K) { ENTRY(Module, "module"); }
 #undef ENTRY
   llvm_unreachable("bad DescriptiveDeclKind");
 }
 
-void Decl::setDeclContext(DeclContext * DC) { Context = DC; }
+void Decl::setDeclContext(DeclContext * DC) {
+  Context = DC;
+}
 
 SourceLoc Decl::getLoc(bool SerializedOK) const {
 #define DECL(ID, X)                                                      \
@@ -60,10 +60,8 @@ SourceLoc Decl::getLoc(bool SerializedOK) const {
   if (!File)
     return getLocFromSource();
   switch (File->getKind()) {
-  case FileUnitKind::Source:
-    return getLocFromSource();
-  case FileUnitKind::Builtin:
-    return SourceLoc();
+  case FileUnitKind::Source: return getLocFromSource();
+  case FileUnitKind::Builtin: return SourceLoc();
   }
   llvm_unreachable("invalid file kind");
 }

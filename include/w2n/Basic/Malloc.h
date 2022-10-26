@@ -19,7 +19,9 @@ inline void * AlignedAlloc(size_t size, size_t align) {
   return r;
 }
 
-inline void AlignedFree(void * p) { free(p); }
+inline void AlignedFree(void * p) {
+  free(p);
+}
 
 } // end namespace w2n
 

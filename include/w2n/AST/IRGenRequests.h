@@ -72,8 +72,8 @@ private:
   std::unique_ptr<llvm::Module> Module;
   std::unique_ptr<llvm::TargetMachine> Target;
 
-  GeneratedModule()
-    : Context(nullptr), Module(nullptr), Target(nullptr) {}
+  GeneratedModule() : Context(nullptr), Module(nullptr), Target(nullptr) {
+  }
 
   GeneratedModule(GeneratedModule const&) = delete;
   GeneratedModule& operator=(GeneratedModule const&) = delete;
@@ -100,7 +100,9 @@ public:
 
 public:
   /// Construct a \c GeneratedModule that does not own any resources.
-  static GeneratedModule null() { return GeneratedModule{}; }
+  static GeneratedModule null() {
+    return GeneratedModule{};
+  }
 
 public:
   explicit operator bool() const {
@@ -108,19 +110,29 @@ public:
   }
 
 public:
-  const llvm::Module * getModule() const { return Module.get(); }
+  const llvm::Module * getModule() const {
+    return Module.get();
+  }
 
-  llvm::Module * getModule() { return Module.get(); }
+  llvm::Module * getModule() {
+    return Module.get();
+  }
 
-  const llvm::LLVMContext * getContext() const { return Context.get(); }
+  const llvm::LLVMContext * getContext() const {
+    return Context.get();
+  }
 
-  llvm::LLVMContext * getContext() { return Context.get(); }
+  llvm::LLVMContext * getContext() {
+    return Context.get();
+  }
 
   const llvm::TargetMachine * getTargetMachine() const {
     return Target.get();
   }
 
-  llvm::TargetMachine * getTargetMachine() { return Target.get(); }
+  llvm::TargetMachine * getTargetMachine() {
+    return Target.get();
+  }
 
 public:
   /// Release ownership of the context and module to the caller, consuming
@@ -296,7 +308,9 @@ private:
 
 public:
   // Caching.
-  bool isCached() const { return true; }
+  bool isCached() const {
+    return true;
+  }
 };
 
 /// The zone number for IRGen.

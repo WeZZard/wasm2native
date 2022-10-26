@@ -38,7 +38,9 @@ public:
   );
   ~Driver();
 
-  DriverKind getDriverKind() const { return TheKind; }
+  DriverKind getDriverKind() const {
+    return TheKind;
+  }
 };
 
 } // namespace driver

@@ -82,7 +82,9 @@ public:
   /// llvm::Module may need to access private symbols defined in the
   /// expression's context. This flag ensures that private accessors are
   /// forward-declared as public external in the expression's module.
-  bool forcePublicDecls() const { return ForcePublicDecls; }
+  bool forcePublicDecls() const {
+    return ForcePublicDecls;
+  }
 };
 
 /// A link entity is some sort of named declaration, combined with all
@@ -111,12 +113,13 @@ class LinkEntity {
   ((value & field##Mask) >> field##Shift)
 
   enum class Kind {
-
   };
 
   friend struct llvm::DenseMapInfo<LinkEntity>;
 
-  Kind getKind() const { return Kind(LINKENTITY_GET_FIELD(Data, Kind)); }
+  Kind getKind() const {
+    return Kind(LINKENTITY_GET_FIELD(Data, Kind));
+  }
 
   LinkEntity() = default;
 
@@ -147,7 +150,8 @@ class ApplyIRLinkage {
   IRLinkage IRL;
 
 public:
-  ApplyIRLinkage(IRLinkage IRL) : IRL(IRL) {}
+  ApplyIRLinkage(IRLinkage IRL) : IRL(IRL) {
+  }
 
   void to(llvm::GlobalValue * GV, bool definition = true) const {
     llvm::Module * M = GV->getParent();
@@ -203,7 +207,9 @@ public:
   //   bool isWeakImported
   // );
 
-  StringRef getName() const { return Name.str(); }
+  StringRef getName() const {
+    return Name.str();
+  }
 
   llvm::GlobalValue::LinkageTypes getLinkage() const {
     return IRL.Linkage;
@@ -217,9 +223,13 @@ public:
     return IRL.DLLStorage;
   }
 
-  bool isForDefinition() const { return ForDefinition; }
+  bool isForDefinition() const {
+    return ForDefinition;
+  }
 
-  bool isUsed() const { return ForDefinition && isUsed(IRL); }
+  bool isUsed() const {
+    return ForDefinition && isUsed(IRL);
+  }
 
   static bool isUsed(IRLinkage IRL);
 };

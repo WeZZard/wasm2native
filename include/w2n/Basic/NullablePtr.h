@@ -3,10 +3,10 @@
 #ifndef W2N_BASIC_NULLABLEPTR_H
 #define W2N_BASIC_NULLABLEPTR_H
 
-#include <type_traits>
 #include <llvm/Support/PointerLikeTypeTraits.h>
 #include <cassert>
 #include <cstddef>
+#include <type_traits>
 
 namespace w2n {
 /// NullablePtr pointer wrapper - NullablePtr is used for APIs where a
@@ -21,7 +21,8 @@ class NullablePtr {
   struct PlaceHolder {};
 
 public:
-  NullablePtr(T * P = 0) : Ptr(P) {}
+  NullablePtr(T * P = 0) : Ptr(P) {
+  }
 
   template <typename OtherT>
   NullablePtr(
@@ -30,11 +31,16 @@ public:
       std::is_convertible<OtherT *, T *>::value,
       PlaceHolder>::type = PlaceHolder()
   )
-    : Ptr(Other.getPtrOrNull()) {}
+    : Ptr(Other.getPtrOrNull()) {
+  }
 
-  bool isNull() const { return Ptr == 0; }
+  bool isNull() const {
+    return Ptr == 0;
+  }
 
-  bool isNonNull() const { return Ptr != 0; }
+  bool isNonNull() const {
+    return Ptr != 0;
+  }
 
   /// get - Return the pointer if it is non-null.
   const T * get() const {
@@ -48,17 +54,25 @@ public:
     return Ptr;
   }
 
-  T * getPtrOrNull() { return getPtrOr(nullptr); }
+  T * getPtrOrNull() {
+    return getPtrOr(nullptr);
+  }
 
-  const T * getPtrOrNull() const { return getPtrOr(nullptr); }
+  const T * getPtrOrNull() const {
+    return getPtrOr(nullptr);
+  }
 
-  T * getPtrOr(T * defaultValue) { return Ptr ? Ptr : defaultValue; }
+  T * getPtrOr(T * defaultValue) {
+    return Ptr ? Ptr : defaultValue;
+  }
 
   const T * getPtrOr(const T * defaultValue) const {
     return Ptr ? Ptr : defaultValue;
   }
 
-  explicit operator bool() const { return Ptr; }
+  explicit operator bool() const {
+    return Ptr;
+  }
 
   bool operator==(const NullablePtr<T>& other) const {
     return other.Ptr == Ptr;
@@ -68,9 +82,13 @@ public:
     return !(*this == other);
   }
 
-  bool operator==(const T * other) const { return other == Ptr; }
+  bool operator==(const T * other) const {
+    return other == Ptr;
+  }
 
-  bool operator!=(const T * other) const { return !(*this == other); }
+  bool operator!=(const T * other) const {
+    return !(*this == other);
+  }
 };
 
 } // end namespace w2n

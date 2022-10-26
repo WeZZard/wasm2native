@@ -78,7 +78,8 @@ class DependencyRecorder {
 #endif
 
 public:
-  DependencyRecorder(bool shouldRecord) : shouldRecord(shouldRecord) {}
+  DependencyRecorder(bool shouldRecord) : shouldRecord(shouldRecord) {
+  }
 
   /// Push a new empty set onto the activeRequestReferences stack.
   template <typename Request>

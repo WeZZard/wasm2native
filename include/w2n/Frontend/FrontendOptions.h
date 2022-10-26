@@ -46,7 +46,8 @@ public:
   bool ReuseFrontendForMultipleCompilations = false;
 
 public:
-  FrontendOptions() {}
+  FrontendOptions() {
+  }
 
   static bool doesActionPerformEndOfPipelineActions(ActionType Action);
 

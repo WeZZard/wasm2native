@@ -24,9 +24,11 @@ struct Located {
   /// The original source location from which the item was parsed.
   SourceLoc Loc;
 
-  Located() : Item(), Loc() {}
+  Located() : Item(), Loc() {
+  }
 
-  Located(T Item, SourceLoc loc) : Item(Item), Loc(loc) {}
+  Located(T Item, SourceLoc loc) : Item(Item), Loc(loc) {
+  }
 
   W2N_DEBUG_DUMP;
   void dump(raw_ostream& os) const;

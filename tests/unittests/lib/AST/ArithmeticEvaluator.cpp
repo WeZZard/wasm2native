@@ -21,14 +21,16 @@ public:
   Optional<double> cachedValue;
 
 protected:
-  ArithmeticExpr(Kind kind) : kind(kind) {}
+  ArithmeticExpr(Kind kind) : kind(kind) {
+  }
 };
 
 class Literal : public ArithmeticExpr {
 public:
   const double value;
 
-  Literal(double value) : ArithmeticExpr(Kind::Literal), value(value) {}
+  Literal(double value) : ArithmeticExpr(Kind::Literal), value(value) {
+  }
 };
 
 class Binary : public ArithmeticExpr {
@@ -47,7 +49,8 @@ public:
     ArithmeticExpr * rhs
   )
     : ArithmeticExpr(Kind::Binary), operatorKind(operatorKind), lhs(lhs),
-      rhs(rhs) {}
+      rhs(rhs) {
+  }
 };
 
 void simple_display(llvm::raw_ostream& out, ArithmeticExpr * expr) {
@@ -59,13 +62,9 @@ void simple_display(llvm::raw_ostream& out, ArithmeticExpr * expr) {
   case ArithmeticExpr::Kind::Binary:
     out << "Binary: ";
     switch (static_cast<Binary *>(expr)->operatorKind) {
-    case Binary::OperatorKind::Sum:
-      out << "sum";
-      break;
+    case Binary::OperatorKind::Sum: out << "sum"; break;
 
-    case Binary::OperatorKind::Product:
-      out << "product";
-      break;
+    case Binary::OperatorKind::Product: out << "product"; break;
     }
     break;
   }
@@ -107,17 +106,17 @@ struct EvaluationRule
       }
 
       switch (binary->operatorKind) {
-      case Binary::OperatorKind::Sum:
-        return lhsValue + rhsValue;
+      case Binary::OperatorKind::Sum: return lhsValue + rhsValue;
 
-      case Binary::OperatorKind::Product:
-        return lhsValue * rhsValue;
+      case Binary::OperatorKind::Product: return lhsValue * rhsValue;
       }
     }
     }
   }
 
-  SourceLoc getNearestLoc() const { return SourceLoc(); }
+  SourceLoc getNearestLoc() const {
+    return SourceLoc();
+  }
 };
 
 template <typename Derived, RequestFlags Caching>
@@ -130,11 +129,9 @@ struct InternallyCachedEvaluationRule
   bool isCached() const {
     auto * expr = std::get<0>(getStorage());
     switch (expr->kind) {
-    case ArithmeticExpr::Kind::Literal:
-      return false;
+    case ArithmeticExpr::Kind::Literal: return false;
 
-    case ArithmeticExpr::Kind::Binary:
-      return true;
+    case ArithmeticExpr::Kind::Binary: return true;
     }
   }
 };
@@ -154,11 +151,9 @@ struct ExternallyCachedEvaluationRule
     auto * expr = std::get<0>(getStorage());
 
     switch (expr->kind) {
-    case ArithmeticExpr::Kind::Literal:
-      return false;
+    case ArithmeticExpr::Kind::Literal: return false;
 
-    case ArithmeticExpr::Kind::Binary:
-      return true;
+    case ArithmeticExpr::Kind::Binary: return true;
     }
   }
 

@@ -44,7 +44,8 @@ void Evaluator::registerRequestFunctions(
 
 Evaluator::Evaluator(DiagnosticEngine& diags, const LanguageOptions& opts)
   : diags(diags), debugDumpCycles(opts.DebugDumpCycles),
-    recorder(opts.RecordRequestReferences) {}
+    recorder(opts.RecordRequestReferences) {
+}
 
 bool Evaluator::checkDependency(const ActiveRequest& request) {
   // Record this as an active request.
@@ -177,8 +178,7 @@ void evaluator::DependencyRecorder::enumerateReferencesInFile(
     case DependencyCollector::Reference::Kind::UsedMember:
     case DependencyCollector::Reference::Kind::PotentialMember:
     case DependencyCollector::Reference::Kind::TopLevel:
-    case DependencyCollector::Reference::Kind::Dynamic:
-      f(ref);
+    case DependencyCollector::Reference::Kind::Dynamic: f(ref);
     }
   }
 }

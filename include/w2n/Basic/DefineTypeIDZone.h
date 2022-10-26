@@ -53,7 +53,9 @@ struct TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE> {
                                                                          \
     static const uint64_t value = formTypeID(zoneID, localID);           \
                                                                          \
-    static llvm::StringRef getName() { return #Name; }                   \
+    static llvm::StringRef getName() {                                   \
+      return #Name;                                                      \
+    }                                                                    \
   };
 
 #define W2N_TYPEID_TEMPLATE1_NAMED(Template, Name, Param1, Arg1)         \

@@ -41,7 +41,8 @@ struct DependencyCollector {
 
   private:
     Reference(Kind kind, DeclContext * subject, DeclBaseName name)
-      : kind(kind), subject(subject), name(name) {}
+      : kind(kind), subject(subject), name(name) {
+    }
 
   public:
     static Reference empty() {
@@ -77,7 +78,9 @@ struct DependencyCollector {
 
   public:
     struct Info {
-      static inline Reference getEmptyKey() { return Reference::empty(); }
+      static inline Reference getEmptyKey() {
+        return Reference::empty();
+      }
 
       static inline Reference getTombstoneKey() {
         return Reference::tombstone();
@@ -145,7 +148,9 @@ public:
 public:
   /// Retrieves the dependency recorder that created this dependency
   /// collector.
-  const DependencyRecorder& getRecorder() const { return parent; }
+  const DependencyRecorder& getRecorder() const {
+    return parent;
+  }
 };
 
 } // end namespace evaluator

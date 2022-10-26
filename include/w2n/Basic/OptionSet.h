@@ -1,10 +1,10 @@
 #ifndef W2N_BASIC_OPTIONSET_H
 #define W2N_BASIC_OPTIONSET_H
 
-#include <initializer_list>
-#include <type_traits>
 #include <llvm/ADT/None.h>
 #include <cstdint>
+#include <initializer_list>
+#include <type_traits>
 
 namespace w2n {
 
@@ -34,27 +34,36 @@ class OptionSet {
 
 public:
   /// Create an empty option set.
-  constexpr OptionSet() : Storage() {}
+  constexpr OptionSet() : Storage() {
+  }
 
   /// Create an empty option set.
-  constexpr OptionSet(llvm::NoneType) : Storage() {}
+  constexpr OptionSet(llvm::NoneType) : Storage() {
+  }
 
   /// Create an option set with only the given option set.
   constexpr OptionSet(Flags flag)
-    : Storage(static_cast<StorageType>(flag)) {}
+    : Storage(static_cast<StorageType>(flag)) {
+  }
 
   /// Create an option set containing the given options.
   constexpr OptionSet(std::initializer_list<Flags> flags)
-    : Storage(combineFlags(flags)) {}
+    : Storage(combineFlags(flags)) {
+  }
 
   /// Create an option set from raw storage.
-  explicit constexpr OptionSet(StorageType storage) : Storage(storage) {}
+  explicit constexpr OptionSet(StorageType storage) : Storage(storage) {
+  }
 
   /// Check whether an option set is non-empty.
-  explicit constexpr operator bool() const { return Storage != 0; }
+  explicit constexpr operator bool() const {
+    return Storage != 0;
+  }
 
   /// Explicitly convert an option set to its underlying storage.
-  explicit constexpr operator StorageType() const { return Storage; }
+  explicit constexpr operator StorageType() const {
+    return Storage;
+  }
 
   /// Explicitly convert an option set to intptr_t, for use in
   /// llvm::PointerIntPair.
@@ -69,7 +78,9 @@ public:
   }
 
   /// Retrieve the "raw" representation of this option set.
-  StorageType toRaw() const { return Storage; }
+  StorageType toRaw() const {
+    return Storage;
+  }
 
   /// Determine whether this option set contains all of the options in the
   /// given set.
@@ -126,7 +137,8 @@ private:
     return T();
   }
 
-  static void _checkResultTypeOperatorOr(...) {}
+  static void _checkResultTypeOperatorOr(...) {
+  }
 
   static constexpr StorageType
   combineFlags(const std::initializer_list<Flags>& flags) {

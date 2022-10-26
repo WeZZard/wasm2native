@@ -46,7 +46,8 @@ public:
   Version() = default;
 
   /// Create a literal version from a list of components.
-  Version(std::initializer_list<unsigned> Values) : Components(Values) {}
+  Version(std::initializer_list<unsigned> Values) : Components(Values) {
+  }
 
   /// Create a version from a string in source code.
   ///
@@ -72,12 +73,18 @@ public:
   ) const;
 
   /// Return the ith version component.
-  unsigned operator[](size_t i) const { return Components[i]; }
+  unsigned operator[](size_t i) const {
+    return Components[i];
+  }
 
   /// Return the number of version components.
-  size_t size() const { return Components.size(); }
+  size_t size() const {
+    return Components.size();
+  }
 
-  bool empty() const { return Components.empty(); }
+  bool empty() const {
+    return Components.empty();
+  }
 
   /// Convert to a (maximum-4-element) llvm::VersionTuple, truncating
   /// away any 5th component that might be in this version.
@@ -97,8 +104,7 @@ public:
   /// version number.
   bool isVersionAtLeast(unsigned major, unsigned minor = 0) const {
     switch (size()) {
-    case 0:
-      return false;
+    case 0: return false;
     case 1:
       return (
         (Components[0] == major && 0 == minor) || (Components[0] > major)

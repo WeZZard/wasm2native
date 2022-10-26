@@ -38,7 +38,8 @@ public:
         file_types::lookupTypeForExtension(
           llvm::sys::path::extension(Filename)
         )
-      ) {}
+      ) {
+  }
 
   /// Constructs an input file from the provided data.
   Input(
@@ -56,11 +57,15 @@ public:
 
 public:
   /// Retrieves the type of this input file.
-  file_types::ID getType() const { return FileID; };
+  file_types::ID getType() const {
+    return FileID;
+  };
 
   /// Retrieves whether this input file was passed as a primary to the
   /// frontend.
-  bool isPrimary() const { return BufferAndIsPrimary.getInt(); }
+  bool isPrimary() const {
+    return BufferAndIsPrimary.getInt();
+  }
 
   /// Retrieves the backing buffer for this input file, if any.
   llvm::MemoryBuffer * getBuffer() const {
@@ -91,9 +96,13 @@ public:
   /// If there is no such corresponding file, the result is the empty
   /// string. If there the resulting output should be directed to the
   /// standard output stream, the result is "-".
-  std::string outputFilename() const { return ISPs.OutputFilename; }
+  std::string outputFilename() const {
+    return ISPs.OutputFilename;
+  }
 
-  std::string indexUnitOutputFilename() const { return outputFilename(); }
+  std::string indexUnitOutputFilename() const {
+    return outputFilename();
+  }
 
   const PrimarySpecificPaths& getPrimarySpecificPaths() const {
     return ISPs;

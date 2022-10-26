@@ -26,7 +26,9 @@ static const TypeInfo& getInfo(unsigned Id) {
   return TypeInfos[Id];
 }
 
-StringRef file_types::getTypeName(ID Id) { return getInfo(Id).Name; }
+StringRef file_types::getTypeName(ID Id) {
+  return getInfo(Id).Name;
+}
 
 StringRef file_types::getExtension(ID Id) {
   return getInfo(Id).Extension;
@@ -51,15 +53,13 @@ ID file_types::lookupTypeForName(StringRef Name) {
 
 bool file_types::isInputType(ID Id) {
   switch (Id) {
-  case file_types::TY_Wasm:
-    return true;
+  case file_types::TY_Wasm: return true;
   case file_types::TY_Image:
   case file_types::TY_Object:
   case file_types::TY_Assembly:
   case file_types::TY_LLVM_IR:
   case file_types::TY_LLVM_BC:
   case file_types::TY_TBD:
-  case file_types::TY_INVALID:
-    return false;
+  case file_types::TY_INVALID: return false;
   }
 }

@@ -47,15 +47,21 @@ template <>
 struct DenseMapInfo<w2n::file_types::ID> {
   using ID = w2n::file_types::ID;
 
-  static inline ID getEmptyKey() { return ID::TY_INVALID; }
+  static inline ID getEmptyKey() {
+    return ID::TY_INVALID;
+  }
 
   static inline ID getTombstoneKey() {
     return static_cast<ID>(ID::TY_INVALID + 1);
   }
 
-  static unsigned getHashValue(ID Val) { return (unsigned)Val * 37U; }
+  static unsigned getHashValue(ID Val) {
+    return (unsigned)Val * 37U;
+  }
 
-  static bool isEqual(ID LHS, ID RHS) { return LHS == RHS; }
+  static bool isEqual(ID LHS, ID RHS) {
+    return LHS == RHS;
+  }
 };
 } // end namespace llvm
 

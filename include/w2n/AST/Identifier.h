@@ -46,18 +46,25 @@ private:
   );
 
 public:
-  explicit Identifier() : Pointer(nullptr) {}
+  explicit Identifier() : Pointer(nullptr) {
+  }
 
-  const char * get() const { return Pointer; }
+  const char * get() const {
+    return Pointer;
+  }
 
-  StringRef str() const { return Pointer; }
+  StringRef str() const {
+    return Pointer;
+  }
 
   /**
    * @brief Forbids implicit \c std::string conversion.
    *
    * @return std::string
    */
-  explicit operator std::string() const { return std::string(Pointer); }
+  explicit operator std::string() const {
+    return std::string(Pointer);
+  }
 
   unsigned getLength() const {
     assert(
@@ -66,9 +73,13 @@ public:
     return ::strlen(Pointer);
   }
 
-  bool empty() const { return Pointer == nullptr; }
+  bool empty() const {
+    return Pointer == nullptr;
+  }
 
-  bool is(StringRef string) const { return str().equals(string); }
+  bool is(StringRef string) const {
+    return str().equals(string);
+  }
 
   const void * getAsOpaquePointer() const {
     return static_cast<const void *>(Pointer);
@@ -94,11 +105,17 @@ public:
     return llvm::hash_value(ident.getAsOpaquePointer());
   }
 
-  bool operator==(Identifier RHS) const { return Pointer == RHS.Pointer; }
+  bool operator==(Identifier RHS) const {
+    return Pointer == RHS.Pointer;
+  }
 
-  bool operator!=(Identifier RHS) const { return !(*this == RHS); }
+  bool operator!=(Identifier RHS) const {
+    return !(*this == RHS);
+  }
 
-  bool operator<(Identifier RHS) const { return Pointer < RHS.Pointer; }
+  bool operator<(Identifier RHS) const {
+    return Pointer < RHS.Pointer;
+  }
 
   static Identifier getEmptyKey() {
     uintptr_t Val = static_cast<uintptr_t>(-1);
@@ -155,7 +172,9 @@ public:
     return w2n::Identifier::getFromOpaquePointer(P);
   }
 
-  enum { NumLowBitsAvailable = w2n::Identifier::NumLowBitsAvailable };
+  enum {
+    NumLowBitsAvailable = w2n::Identifier::NumLowBitsAvailable
+  };
 };
 
 } // namespace llvm

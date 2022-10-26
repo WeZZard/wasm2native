@@ -3,7 +3,6 @@
 #ifndef W2N_LOCALIZATIONFORMAT_H
 #define W2N_LOCALIZATIONFORMAT_H
 
-#include <type_traits>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/Optional.h>
@@ -13,13 +12,14 @@
 #include <llvm/Support/EndianStream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/OnDiskHashTable.h>
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/StringSaver.h>
 #include <llvm/Support/YAMLParser.h>
 #include <llvm/Support/YAMLTraits.h>
+#include <llvm/Support/raw_ostream.h>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -175,7 +175,8 @@ class LocalizationProducer {
 public:
   LocalizationProducer(bool printDiagnosticNames = false)
     : localizationSaver(localizationAllocator),
-      printDiagnosticNames(printDiagnosticNames) {}
+      printDiagnosticNames(printDiagnosticNames) {
+  }
 
   /// If the  message isn't available/localized in current context
   /// return the fallback default message.
@@ -192,7 +193,8 @@ public:
     bool printDiagnosticNames
   );
 
-  virtual ~LocalizationProducer() {}
+  virtual ~LocalizationProducer() {
+  }
 
 protected:
   LocalizationProducerState getState() const;

@@ -8,14 +8,12 @@ bool FrontendOptions::doesActionPerformEndOfPipelineActions(
 ) {
   switch (action) {
   case ActionType::NoneAction:
-  case ActionType::PrintVersion:
-    return false;
+  case ActionType::PrintVersion: return false;
   case ActionType::EmitAssembly:
   case ActionType::EmitIRGen:
   case ActionType::EmitIR:
   case ActionType::EmitBC:
-  case ActionType::EmitObject:
-    return true;
+  case ActionType::EmitObject: return true;
   }
   llvm_unreachable("Unknown ActionType");
 }

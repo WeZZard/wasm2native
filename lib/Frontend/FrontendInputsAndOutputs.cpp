@@ -147,7 +147,7 @@ bool FrontendInputsAndOutputs::forEachInputProducingAMainOutputFile(
   llvm::function_ref<bool(const Input&)> fn
 ) const {
   return isSingleThreadedWMO() ? fn(firstInput())
-         : hasPrimaryInputs()  ? forEachPrimaryInput(fn)
+       : hasPrimaryInputs()    ? forEachPrimaryInput(fn)
                                : forEachInput(fn);
 }
 

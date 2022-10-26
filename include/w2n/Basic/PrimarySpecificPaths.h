@@ -28,7 +28,8 @@ public:
       SupplementaryOutputPaths()
   )
     : OutputFilename(OutputFilename),
-      SupplementaryOutputs(SupplementaryOutputs) {}
+      SupplementaryOutputs(SupplementaryOutputs) {
+  }
 };
 
 } // namespace w2n

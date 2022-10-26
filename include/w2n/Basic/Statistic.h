@@ -360,14 +360,16 @@ inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
   StringRef S
 )
-  : FrontendStatsTracer(R, S, nullptr, nullptr) {}
+  : FrontendStatsTracer(R, S, nullptr, nullptr) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
   StringRef S,
   const Decl * D
 )
-  : FrontendStatsTracer(R, S, D, getTraceFormatter<const Decl *>()) {}
+  : FrontendStatsTracer(R, S, D, getTraceFormatter<const Decl *>()) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
@@ -379,7 +381,8 @@ inline FrontendStatsTracer::FrontendStatsTracer(
       S,
       P,
       getTraceFormatter<const ProtocolConformance *>()
-    ) {}
+    ) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
@@ -391,14 +394,16 @@ inline FrontendStatsTracer::FrontendStatsTracer(
       S,
       D,
       getTraceFormatter<const clang::Decl *>()
-    ) {}
+    ) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
   StringRef S,
   const Expr * E
 )
-  : FrontendStatsTracer(R, S, E, getTraceFormatter<const Expr *>()) {}
+  : FrontendStatsTracer(R, S, E, getTraceFormatter<const Expr *>()) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
@@ -410,7 +415,8 @@ inline FrontendStatsTracer::FrontendStatsTracer(
       S,
       F,
       getTraceFormatter<const SILFunction *>()
-    ) {}
+    ) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
@@ -422,21 +428,24 @@ inline FrontendStatsTracer::FrontendStatsTracer(
       S,
       SF,
       getTraceFormatter<const SourceFile *>()
-    ) {}
+    ) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
   StringRef S,
   const Stmt * ST
 )
-  : FrontendStatsTracer(R, S, ST, getTraceFormatter<const Stmt *>()) {}
+  : FrontendStatsTracer(R, S, ST, getTraceFormatter<const Stmt *>()) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,
   StringRef S,
   const Pattern * P
 )
-  : FrontendStatsTracer(R, S, P, getTraceFormatter<const Pattern *>()) {}
+  : FrontendStatsTracer(R, S, P, getTraceFormatter<const Pattern *>()) {
+}
 
 inline FrontendStatsTracer::FrontendStatsTracer(
   UnifiedStatsReporter * R,

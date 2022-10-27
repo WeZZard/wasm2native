@@ -23,6 +23,12 @@
 
 namespace w2n {
 
+class Decl;
+class ModuleDecl;
+class SourceFile;
+class WasmFile;
+class WatFile;
+
 // Define the AST type zone (zone 1)
 #define W2N_TYPEID_ZONE   AST
 #define W2N_TYPEID_HEADER <w2n/AST/ASTTypeIDZone.def>

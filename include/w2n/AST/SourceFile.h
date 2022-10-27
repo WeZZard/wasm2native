@@ -30,6 +30,13 @@ class SourceFile : public FileUnit {
   friend void performImportResolution(SourceFile& SF);
 
 public:
+  /// Flags that direct how the source file is parsed.
+  enum class ParsingFlags : uint8_t {
+    SuppressWarnings,
+  };
+
+  using ParsingOptions = OptionSet<ParsingFlags>;
+
   enum class ASTStage {
     Unresolved,
     ImportsResolved,
@@ -48,14 +55,26 @@ private:
 
   bool IsPrimary;
 
+  ParsingOptions ParsingOpts;
+
   ASTStage Stage;
 
+  Optional<std::vector<Decl *>> Decls;
+
 public:
+  /// Retrieve the parsing options specified in the \c LanguageOptions for
+  /// specific \c SourceFileKind .
+  static ParsingOptions getDefaultParsingOptions(
+    SourceFileKind Kind,
+    const LanguageOptions& Opts
+  );
+
   static SourceFile * createSourceFile(
     SourceFileKind Kind,
     const CompilerInstance& Instance,
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
+    ParsingOptions Opts,
     bool IsPrimary
   );
 
@@ -63,14 +82,9 @@ public:
     ModuleDecl& M,
     SourceFileKind K,
     Optional<unsigned> BufferID,
+    ParsingOptions Opts,
     bool IsPrimary
   );
-
-  /// Whether this source file is a primary file, meaning that we're
-  /// generating code for it. Note this method returns \c false in WMO.
-  bool isPrimary() const {
-    return IsPrimary;
-  }
 
   /// The buffer ID for the file that was imported, or None if there
   /// is no associated buffer.
@@ -80,14 +94,33 @@ public:
     return BufferID;
   }
 
-  virtual ArrayRef<Decl *> getTopLevelDecls() const = 0;
-
-  static bool classof(const FileUnit * file) {
-    return file->getKind() == FileUnitKind::Source;
+  ParsingOptions getParsingOptions() const {
+    return ParsingOpts;
   }
 
-  static bool classof(const DeclContext * DC) {
-    return isa<FileUnit>(DC) && classof(cast<FileUnit>(DC));
+  /// Whether this source file is a primary file, meaning that we're
+  /// generating code for it. Note this method returns \c false in WMO.
+  bool isPrimary() const {
+    return IsPrimary;
+  }
+
+  virtual ArrayRef<Decl *> getTopLevelDecls() const = 0;
+
+  /// Retrieves an immutable view of the top-level decls if they have
+  /// already been parsed, or \c None if they haven't. Should only be used
+  /// for dumping.
+  Optional<ArrayRef<Decl *>> getCachedTopLevelDecls() const {
+    if (!Decls)
+      return None;
+    return llvm::makeArrayRef(*Decls);
+  }
+
+  bool hasCachedTopLevelDecls() const {
+    return Decls.has_value();
+  }
+
+  void setCachedTopLevelDecls(Optional<std::vector<Decl *>> Decls) {
+    this->Decls = Decls;
   }
 
   /// If this buffer corresponds to a file on disk, returns the path.
@@ -97,15 +130,17 @@ public:
   ASTStage getASTStage() const {
     return Stage;
   }
+
+  static bool classof(const FileUnit * file) {
+    return file->getKind() == FileUnitKind::Source;
+  }
+
+  static bool classof(const DeclContext * DC) {
+    return isa<FileUnit>(DC) && classof(cast<FileUnit>(DC));
+  }
 };
 
 class WasmFile : public SourceFile {
-public:
-  /// Flags that direct how the source file is parsed.
-  enum class ParsingFlags : uint8_t {
-  };
-
-  using ParsingOptions = OptionSet<ParsingFlags>;
 
 private:
   WasmFile(
@@ -114,7 +149,13 @@ private:
     ParsingOptions Opts,
     bool IsPrimary
   )
-    : SourceFile(Module, SourceFileKind::Wasm, BufferID, IsPrimary){};
+    : SourceFile(
+        Module,
+        SourceFileKind::Wasm,
+        BufferID,
+        Opts,
+        IsPrimary
+      ){};
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.
@@ -125,6 +166,7 @@ public:
     const CompilerInstance& Instance,
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
+    ParsingOptions Opts,
     bool IsPrimary = false
   );
 
@@ -132,25 +174,21 @@ public:
 };
 
 class WatFile : public SourceFile {
-public:
-  /// Flags that direct how the source file is parsed.
-  enum class ParsingFlags : uint8_t {
-    SuppressWarnings
-  };
-
-  using ParsingOptions = OptionSet<ParsingFlags>;
 
 private:
-  ParsingOptions Opts;
-
   WatFile(
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
     bool IsPrimary
   )
-    : SourceFile(Module, SourceFileKind::Wasm, BufferID, IsPrimary),
-      Opts(Opts){};
+    : SourceFile(
+        Module,
+        SourceFileKind::Wasm,
+        BufferID,
+        Opts,
+        IsPrimary
+      ){};
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.
@@ -161,12 +199,9 @@ public:
     const CompilerInstance& Instance,
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
+    ParsingOptions Opts,
     bool IsPrimary = false
   );
-
-  ParsingOptions getParsingOptions() const {
-    return Opts;
-  }
 
   ArrayRef<Decl *> getTopLevelDecls() const override {
     llvm_unreachable("not implemented.");

@@ -1,5 +1,6 @@
 add_w2n_host_library(w2nParse STATIC
-  Parser.cpp)
+  Parser.cpp
+  ParseRequests.cpp)
 
 target_link_libraries(w2nParse PRIVATE
   w2nAST

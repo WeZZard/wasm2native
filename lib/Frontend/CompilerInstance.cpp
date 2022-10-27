@@ -216,8 +216,10 @@ SourceFile * CompilerInstance::createSourceFileForMainModule(
   bool IsMainBuffer
 ) const {
   auto IsPrimary = BufferID && isPrimaryInput(*BufferID);
+  auto& LangOpts = this->getInvocation().getLanguageOptions();
+  auto ParsingOpts = SourceFile::getDefaultParsingOptions(Kind, LangOpts);
   auto * InputFile = SourceFile::createSourceFile(
-    Kind, *this, *Module, BufferID, IsPrimary
+    Kind, *this, *Module, BufferID, ParsingOpts, IsPrimary
   );
 
   // if (IsMainBuffer)

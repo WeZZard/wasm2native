@@ -18,18 +18,31 @@ void w2n::simple_display(llvm::raw_ostream& out, const FileUnit * file) {
   llvm_unreachable("Unhandled case in switch");
 }
 
+SourceFile::ParsingOptions SourceFile::getDefaultParsingOptions(
+  SourceFileKind Kind,
+  const LanguageOptions& Opts
+) {
+  switch (Kind) {
+  case SourceFileKind::Wasm:
+    return WasmFile::getDefaultParsingOptions(Opts);
+  case SourceFileKind::Wat:
+    return WatFile::getDefaultParsingOptions(Opts);
+  }
+}
+
 SourceFile * SourceFile::createSourceFile(
   SourceFileKind Kind,
   const CompilerInstance& Instance,
   ModuleDecl& Module,
   Optional<unsigned> BufferID,
+  ParsingOptions Opts,
   bool IsPrimary
 ) {
   switch (Kind) {
   case SourceFileKind::Wasm:
-    return WasmFile::create(Instance, Module, BufferID, IsPrimary);
+    return WasmFile::create(Instance, Module, BufferID, Opts, IsPrimary);
   case SourceFileKind::Wat:
-    return WatFile::create(Instance, Module, BufferID, IsPrimary);
+    return WatFile::create(Instance, Module, BufferID, Opts, IsPrimary);
   }
 }
 
@@ -37,11 +50,12 @@ SourceFile::SourceFile(
   ModuleDecl& Module,
   SourceFileKind Kind,
   Optional<unsigned> BufferID,
+  ParsingOptions Opts,
   bool IsPrimary
 )
   : FileUnit(FileUnitKind::Source, Module),
     BufferID(BufferID ? *BufferID : -1), Kind(Kind), IsPrimary(IsPrimary),
-    Stage(ASTStage::Unresolved) {
+    ParsingOpts(Opts), Stage(ASTStage::Unresolved) {
   Module.getASTContext().addDestructorCleanup(*this);
 }
 
@@ -56,9 +70,9 @@ WasmFile * WasmFile::create(
   const CompilerInstance& Instance,
   ModuleDecl& Module,
   Optional<unsigned> BufferID,
+  ParsingOptions Opts,
   bool IsPrimary
 ) {
-  ParsingOptions Opts = Instance.getWasmFileParsingOptions();
   return new (Instance.getASTContext())
     WasmFile(Module, BufferID, Opts, IsPrimary);
 }
@@ -76,9 +90,9 @@ WatFile * WatFile::create(
   const CompilerInstance& Instance,
   ModuleDecl& Module,
   Optional<unsigned> BufferID,
+  ParsingOptions Opts,
   bool IsPrimary
 ) {
-  ParsingOptions Opts = Instance.getWatFileParsingOptions();
   return new (Instance.getASTContext())
     WatFile(Module, BufferID, Opts, IsPrimary);
 }

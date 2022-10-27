@@ -177,7 +177,7 @@ FRONTEND_STATISTIC(Parse, NumIterableDeclContextParsed)
 
 #define W2N_REQUEST(ZONE, NAME, SIG, CACHE, LocOptions)                  \
   FRONTEND_STATISTIC(Parse, NAME)
-// #include <w2n/AST/ParseTypeIDZone.def>
+#include <w2n/AST/ParseTypeIDZone.def>
 #undef W2N_REQUEST
 
 /// Number of conformances that were deserialized by this frontend job.

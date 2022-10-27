@@ -1,4 +1,7 @@
+#include <llvm/ADT/ArrayRef.h>
 #include <w2n/AST/ASTContext.h>
+#include <w2n/AST/ASTTypeIDs.h>
+#include <w2n/AST/Evaluator.h>
 #include <w2n/AST/ParseRequests.h>
 #include <w2n/Basic/Defer.h>
 #include <w2n/Parse/Parser.h>
@@ -35,18 +38,18 @@ WasmFileParsingResult ParseWasmFileRequest::evaluate(
   auto& diags = ctx.Diags;
   auto didSuppressWarnings = diags.getSuppressWarnings();
   auto shouldSuppress = SF->getParsingOptions().contains(
-    WasmFile::ParsingFlags::SuppressWarnings
+    SourceFile::ParsingFlags::SuppressWarnings
   );
   diags.setSuppressWarnings(didSuppressWarnings || shouldSuppress);
   W2N_DEFER {
     diags.setSuppressWarnings(didSuppressWarnings);
   };
 
-  WasmParser parser(*bufferID, *SF, &diags);
+  // FIXME: WasmParser parser(*bufferID, *SF, &diags);
   // PrettyStackTraceParser StackTrace(parser);
 
   SmallVector<Decl *, 128> decls;
-  parser.parseTopLevel(decls);
+  // FIXME: parser.parseTopLevel(decls);
 
   return WasmFileParsingResult{ctx.AllocateCopy(decls)};
 }
@@ -70,8 +73,8 @@ ParseWasmFileRequest::getCachedResult() const {
 void ParseWasmFileRequest::cacheResult(WasmFileParsingResult result
 ) const {
   auto * SF = std::get<0>(getStorage());
-  assert(!SF->Decls);
-  SF->Decls = result.TopLevelDecls;
+  assert(!SF->hasCachedTopLevelDecls());
+  SF->setCachedTopLevelDecls(std::vector<Decl *>(result.TopLevelDecls));
 
   // Verify the parsed source file.
   // FIXME: verify(*SF);

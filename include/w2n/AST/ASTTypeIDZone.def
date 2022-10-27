@@ -16,5 +16,8 @@
 //
 //===----------------------------------------------------------------===//
 
-// W2N_TYPEID(Id)
-// W2N_TYPEID_NAMED(Id *, Id)
+W2N_TYPEID_NAMED(Decl *, Decl)
+W2N_TYPEID_NAMED(ModuleDecl *, ModuleDecl)
+W2N_TYPEID_NAMED(SourceFile *, SourceFile)
+W2N_TYPEID_NAMED(WasmFile *, WasmFile)
+W2N_TYPEID_NAMED(WatFile *, WatFile)

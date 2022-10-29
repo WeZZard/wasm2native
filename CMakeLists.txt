@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.23)
-project(wasm2native)
 
 # ${W2N_MONOREPO_ROOT}: w2n monorepo root. The parent directory of the git repo.
 
@@ -11,9 +10,7 @@ option(W2N_INCLUDE_TOOLS
 list(APPEND CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 list(APPEND CMAKE_MODULE_PATH
-  "${W2N_MONOREPO_ROOT}/llvm-project/llvm/cmake/modules"
-  "${W2N_MONOREPO_ROOT}/../../../../cmake/modules"
-  "${W2N_MONOREPO_ROOT}/../../../cmake/modules")
+  "${W2N_MONOREPO_ROOT}/llvm-project/llvm/cmake/modules")
 
 # G-test
 
@@ -42,10 +39,24 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 include(W2NSharedCMakeConfig)
 include(AddW2N)
 
-# Standalone build configs
-w2n_common_standalone_build_config(W2N)
+set(W2N_BUILT_STANDALONE FALSE)
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+  set(W2N_BUILT_STANDALONE TRUE)
+endif()
+
+if(W2N_BUILT_STANDALONE)
+  project(wasm2native C CXX ASM)
+endif()
+
+if(W2N_BUILT_STANDALONE)
+  w2n_common_standalone_build_config(W2N)
+else()
+  w2n_common_unified_build_config(W2N)
+endif()
 
 set(W2N_LIBRARY_OUTPUT_INTDIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(SYSTEM "${W2N_SOURCE_ROOT}/include")
 include_directories(SYSTEM "${W2N_BUILD_ROOT}/include")

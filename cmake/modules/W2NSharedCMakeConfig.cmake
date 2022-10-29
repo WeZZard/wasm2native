@@ -187,6 +187,20 @@ macro(w2n_common_standalone_build_config_llvm product)
   endif()
 endmacro()
 
+macro(w2n_common_standalone_build_config_clang product)
+  find_package(Clang CONFIG REQUIRED NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+
+  if (NOT CMAKE_CROSSCOMPILING AND NOT SWIFT_PREBUILT_CLANG)
+    set(${product}_NATIVE_CLANG_TOOLS_PATH "${LLVM_TOOLS_BINARY_DIR}")
+  endif()
+
+  if(XCODE)
+    fix_imported_targets_for_xcode("${CLANG_EXPORTED_TARGETS}")
+  endif()
+
+  include_directories(${CLANG_INCLUDE_DIRS})
+endmacro()
+
 # Common cmake project config for standalone builds.
 #
 # Parameters:
@@ -196,6 +210,9 @@ endmacro()
 macro(w2n_common_standalone_build_config product)
   w2n_common_standalone_build_config_llvm(${product})
 
+  if(W2N_INCLUDE_TOOLS)
+    w2n_common_standalone_build_config_clang(${product})
+  endif()
   # Enable groups for IDE generators (Xcode and MSVC).
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endmacro()

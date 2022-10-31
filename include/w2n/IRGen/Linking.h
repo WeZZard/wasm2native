@@ -23,7 +23,7 @@
 
 namespace llvm {
 class Triple;
-}
+} // namespace llvm
 
 namespace w2n {
 class AvailabilityContext;

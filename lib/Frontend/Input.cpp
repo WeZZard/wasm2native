@@ -31,7 +31,8 @@ bool Input::derivePrimarySpecificPaths(
     SOPs.FixItsOutputPath = FilenameBody.concat("-fixit.json").str();
     SOPs.TBDPath = FilenameBody.concat(".tbd").str();
 
-    ISPs = PrimarySpecificPaths(FilenameBody.concat(".o").str(), SOPs);
+    ISPs =
+      PrimarySpecificPaths(FilenameBody.concat(".o").str(), "", SOPs);
 
     return false;
   }

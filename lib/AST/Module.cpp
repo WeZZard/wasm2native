@@ -1,3 +1,4 @@
+#include "llvm/Support/ErrorHandling.h"
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Module.h>
@@ -42,4 +43,22 @@ ArrayRef<SourceFile *> ModuleDecl::getPrimarySourceFiles() const {
   auto& Eval = getASTContext().Eval;
   auto * Mutable = const_cast<ModuleDecl *>(this);
   return evaluateOrDefault(Eval, PrimarySourceFilesRequest{Mutable}, {});
+}
+
+// FIXME: Forwards to synthesized file if needed.
+#define FORWARD(name, args)                                              \
+  for (const FileUnit * file : getFiles()) {                             \
+    file->name args;                                                     \
+  }
+
+void ModuleDecl::collectLinkLibraries(LinkLibraryCallback callback
+) const {
+  // FIXME: The proper way to do this depends on the decls used.
+  FORWARD(collectLinkLibraries, (callback));
+}
+
+void SourceFile::collectLinkLibraries(
+  ModuleDecl::LinkLibraryCallback callback
+) const {
+  llvm_unreachable("not implemented.");
 }

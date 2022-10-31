@@ -25,7 +25,11 @@ enum class SourceFileKind {
  * @brief Represents a .wasm file or .wat file.
  *
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+
 class SourceFile : public FileUnit {
+#pragma clang diagnostic pop
 
   friend void performImportResolution(SourceFile& SF);
 
@@ -65,8 +69,7 @@ public:
   /// Retrieve the parsing options specified in the \c LanguageOptions for
   /// specific \c SourceFileKind .
   static ParsingOptions getDefaultParsingOptions(
-    SourceFileKind Kind,
-    const LanguageOptions& Opts
+    SourceFileKind Kind, const LanguageOptions& Opts
   );
 
   static SourceFile * createSourceFile(
@@ -79,12 +82,19 @@ public:
   );
 
   SourceFile(
-    ModuleDecl& M,
-    SourceFileKind K,
+    ModuleDecl& Module,
+    SourceFileKind Kind,
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
     bool IsPrimary
-  );
+  )
+    : FileUnit(FileUnitKind::Source, Module),
+      BufferID(BufferID ? *BufferID : -1),
+      Kind(Kind),
+      IsPrimary(IsPrimary),
+      ParsingOpts(Opts),
+      Stage(ASTStage::Unresolved) {
+  }
 
   /// The buffer ID for the file that was imported, or None if there
   /// is no associated buffer.
@@ -131,6 +141,10 @@ public:
     return Stage;
   }
 
+  virtual void
+  collectLinkLibraries(ModuleDecl::LinkLibraryCallback callback
+  ) const override;
+
   static bool classof(const FileUnit * file) {
     return file->getKind() == FileUnitKind::Source;
   }
@@ -140,7 +154,11 @@ public:
   }
 };
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+
 class WasmFile : public SourceFile {
+#pragma clang diagnostic pop
 
 private:
   WasmFile(
@@ -148,14 +166,7 @@ private:
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
     bool IsPrimary
-  )
-    : SourceFile(
-        Module,
-        SourceFileKind::Wasm,
-        BufferID,
-        Opts,
-        IsPrimary
-      ){};
+  );
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.
@@ -173,7 +184,11 @@ public:
   ArrayRef<Decl *> getTopLevelDecls() const override;
 };
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+
 class WatFile : public SourceFile {
+#pragma clang diagnostic pop
 
 private:
   WatFile(
@@ -181,14 +196,7 @@ private:
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
     bool IsPrimary
-  )
-    : SourceFile(
-        Module,
-        SourceFileKind::Wasm,
-        BufferID,
-        Opts,
-        IsPrimary
-      ){};
+  );
 
 public:
   /// Retrieve the parsing options specified in the LanguageOptions.

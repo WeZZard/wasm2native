@@ -22,13 +22,18 @@ public:
 
   SupplementaryOutputPaths SupplementaryOutputs;
 
+  /// The name of the "main" input file, used by the debug info.
+  std::string MainInputFilenameForDebugInfo;
+
   PrimarySpecificPaths(
     std::string OutputFilename = std::string(),
+    StringRef MainInputFilenameForDebugInfo = StringRef(),
     SupplementaryOutputPaths SupplementaryOutputs =
       SupplementaryOutputPaths()
   )
     : OutputFilename(OutputFilename),
-      SupplementaryOutputs(SupplementaryOutputs) {
+      SupplementaryOutputs(SupplementaryOutputs),
+      MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo) {
   }
 };
 

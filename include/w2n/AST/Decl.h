@@ -64,8 +64,8 @@ public:
 
   LLVM_READONLY
   DeclContext * getDeclContext() const {
-    if (auto dc = Context.dyn_cast<DeclContext *>())
-      return dc;
+    if (auto * DC = Context.dyn_cast<DeclContext *>())
+      return DC;
 
     return getDeclContextForModule();
   }
@@ -75,8 +75,8 @@ public:
   /// getASTContext - Return the ASTContext that this decl lives in.
   LLVM_READONLY
   ASTContext& getASTContext() const {
-    if (auto dc = Context.dyn_cast<DeclContext *>())
-      return dc->getASTContext();
+    if (auto * DC = Context.dyn_cast<DeclContext *>())
+      return DC->getASTContext();
 
     return *Context.get<ASTContext *>();
   }

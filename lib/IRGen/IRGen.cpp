@@ -6,6 +6,7 @@
 #include <llvm/IR/PassManager.h>
 #include <llvm/MC/SubtargetFeature.h>
 #include <llvm/MC/TargetRegistry.h>
+#include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/IPO/AlwaysInliner.h>
@@ -19,9 +20,16 @@
 #include <llvm/Transforms/Scalar.h>
 #include <w2n/AST/DiagnosticsCommon.h>
 #include <w2n/AST/DiagnosticsIRGen.h>
+#include <w2n/AST/FileUnit.h>
+#include <w2n/AST/IRGenRequests.h>
+#include <w2n/AST/Module.h>
+#include <w2n/AST/SourceFile.h>
+#include <w2n/Basic/Defer.h>
 #include <w2n/IRGen/IRGen.h>
+#include <w2n/IRGen/IRGenModule.h>
 
 using namespace w2n;
+using namespace w2n::irgen;
 using namespace llvm;
 
 template <typename... ArgTypes>
@@ -61,8 +69,12 @@ bool w2n::performLLVM(
 
     if (RawOS->has_error() || EC) {
       diagnoseSync(
-        Diags, DiagMutex, SourceLoc(), diag::error_opening_output,
-        OutputFilename, EC.message()
+        Diags,
+        DiagMutex,
+        SourceLoc(),
+        diag::error_opening_output,
+        OutputFilename,
+        EC.message()
       );
       RawOS->clear_error();
       return true;
@@ -137,7 +149,9 @@ bool w2n::compileAndWriteLLVM(
         );
       }
       EmitPasses.add(createBitcodeWriterPass(
-        Out, /*ShouldPreserveUseListOrder*/ false, EmitRegularLTOSummary
+        Out,
+        /*ShouldPreserveUseListOrder*/ false,
+        EmitRegularLTOSummary
       ));
     }
     break;
@@ -260,12 +274,19 @@ w2n::createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx) {
 
   // Create a target machine.
   llvm::TargetMachine * TargetMachine = Target->createTargetMachine(
-    EffectiveTriple.str(), CPU, targetFeatures, TargetOpts, Reloc::PIC_,
-    cmodel, OptLevel
+    EffectiveTriple.str(),
+    CPU,
+    targetFeatures,
+    TargetOpts,
+    Reloc::PIC_,
+    cmodel,
+    OptLevel
   );
   if (!TargetMachine) {
     Ctx.Diags.diagnose(
-      SourceLoc(), diag::no_llvm_target, EffectiveTriple.str(),
+      SourceLoc(),
+      diag::no_llvm_target,
+      EffectiveTriple.str(),
       "no LLVM target machine"
     );
     return nullptr;
@@ -295,5 +316,199 @@ GeneratedModule w2n::performIRGeneration(
   const PrimarySpecificPaths& PSPs,
   llvm::GlobalVariable ** outModuleHash
 ) {
+  auto desc = IRGenDescriptor::forFile(
+    file,
+    Opts,
+    TBDOpts,
+    file->getModule(),
+    ModuleName,
+    PSPs,
+    /*symsToEmit*/ None,
+    outModuleHash
+  );
+  return llvm::cantFail(file->getASTContext().Eval(IRGenRequest{desc}));
+}
+
+static void initLLVMModule(const IRGenModule& IGM, ModuleDecl& ModDecl) {
+  auto * Module = IGM.getModule();
+  assert(Module && "Expected llvm:Module for IR generation!");
+
+  auto& TargetMachine = *IGM.TargetMachine;
+
+  Module->setTargetTriple(TargetMachine.getTargetTriple().getTriple());
+
+  if (IGM.Context.LangOpts.SDKVersion) {
+    if (Module->getSDKVersion().empty())
+      Module->setSDKVersion(*IGM.Context.LangOpts.SDKVersion);
+    else
+      assert(Module->getSDKVersion() == *IGM.Context.LangOpts.SDKVersion);
+  }
+
+  // Set the module's string representation.
+  Module->setDataLayout(TargetMachine.createDataLayout());
+
+  __unused auto * MDNode =
+    IGM.getModule()->getOrInsertNamedMetadata("wasm2native.module.flags");
+  // FIXME: Swift inserts a flag here to show if it is stdlib
+}
+
+/// Run the IRGen preparation AST pipeline. Passes have access to the
+/// \c IRGenModule.
+static void
+runIRGenPreparePasses(ModuleDecl& Module, irgen::IRGenModule& IRModule) {
   llvm_unreachable("not implemented.");
+}
+
+static void setModuleFlags(IRGenModule& IGM) {
+
+  auto * Module = IGM.getModule();
+
+  // These module flags don't affect code generation; they just let us
+  // error during LTO if the user tries to combine files across ABIs.
+  Module->addModuleFlag(
+    llvm::Module::Error, "WebAssembly Version", IRGenModule::wasmVersion
+  );
+
+  // FIXME: Virtual Function Elimation Flag
+}
+
+std::unique_ptr<llvm::TargetMachine> IRGenerator::createTargetMachine() {
+  return ::createTargetMachine(Opts, Module.getASTContext());
+}
+
+// With -embed-bitcode, save a copy of the llvm IR as data in the
+// __LLVM,__bitcode section and save the command-line options in the
+// __LLVM,__swift_cmdline section.
+static void embedBitcode(llvm::Module * M, const IRGenOptions& Opts) {
+  if (Opts.EmbedMode == IRGenEmbedMode::None)
+    return;
+
+  llvm_unreachable("not implemented.");
+}
+
+/// Generates LLVM IR, runs the LLVM passes and produces the output file.
+/// All this is done in a single thread.
+GeneratedModule
+IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
+  const auto& Opts = desc.Opts;
+  const auto& PSPs = desc.PSPs;
+  auto * M = desc.getParentModule();
+  auto& Ctx = M->getASTContext();
+  assert(!Ctx.hadError());
+
+  // FIXME: getSymbolSourcesToEmit()
+
+  // If we've been provided a SILModule, use it. Otherwise request the
+  // lowered SIL for the file or module.
+  auto * SILMod = desc.Mod;
+
+  auto filesToEmit = desc.getFilesToEmit();
+  auto * primaryFile =
+    dyn_cast_or_null<SourceFile>(desc.Ctx.dyn_cast<FileUnit *>());
+
+  IRGenerator irgen(Opts, *SILMod);
+
+  auto targetMachine = irgen.createTargetMachine();
+  if (!targetMachine)
+    return GeneratedModule::null();
+
+  // Create the IR emitter.
+  IRGenModule IGM(
+    irgen,
+    std::move(targetMachine),
+    primaryFile,
+    desc.ModuleName,
+    PSPs.OutputFilename,
+    PSPs.MainInputFilenameForDebugInfo
+  );
+
+  initLLVMModule(IGM, *SILMod);
+
+  // Run SIL level IRGen preparation passes.
+  runIRGenPreparePasses(*SILMod, IGM);
+
+  {
+    FrontendStatsTracer tracer(Ctx.Stats, "IRGen");
+
+    // Emit the module contents.
+    irgen.emitGlobalTopLevel(desc.getLinkerDirectives());
+
+    for (auto * file : filesToEmit) {
+      if (auto * nextSF = dyn_cast<SourceFile>(file)) {
+        IGM.emitSourceFile(*nextSF);
+        // FIXME: file->getSynthesizedFile() : IGM.emitSynthesizedFileUnit
+      } else {
+        file->collectLinkLibraries([&IGM](LinkLibrary LinkLib) {
+          IGM.addLinkLibrary(LinkLib);
+        });
+      }
+    }
+
+    // Okay, emit any definitions that we suddenly need.
+    irgen.emitLazyDefinitions();
+
+    // TODO: emiting IR using IGM or irgen
+
+    // Emit coverage mapping info. This needs to happen after we've
+    // emitted any lazy definitions, as we need to know whether or not we
+    // emitted a profiler increment for a given coverage map.
+    IGM.emitCoverageMapping();
+
+    // TODO: Emit symbols for eliminated dead methods.
+
+    // TODO: Verify type layout if we were asked to.
+
+    std::for_each(
+      Opts.LinkLibraries.begin(),
+      Opts.LinkLibraries.end(),
+      [&](LinkLibrary linkLib) { IGM.addLinkLibrary(linkLib); }
+    );
+
+    if (!IGM.finalize())
+      return GeneratedModule::null();
+
+    setModuleFlags(IGM);
+  }
+
+  // Bail out if there are any errors.
+  if (Ctx.hadError())
+    return GeneratedModule::null();
+
+  embedBitcode(IGM.getModule(), Opts);
+
+  // TODO: Turn the module hash into an actual output.
+  if (auto ** outModuleHash = desc.outModuleHash) {
+    *outModuleHash = IGM.ModuleHash;
+  }
+  return std::move(IGM).intoGeneratedModule();
+}
+
+GeneratedModule OptimizedIRRequest::evaluate(
+  Evaluator& evaluator, IRGenDescriptor desc
+) const {
+  llvm_unreachable("not implemented.");
+}
+
+StringRef SymbolObjectCodeRequest::evaluate(
+  Evaluator& evaluator, IRGenDescriptor desc
+) const {
+  auto& ctx = desc.getParentModule()->getASTContext();
+  auto mod = cantFail(evaluator(OptimizedIRRequest{desc}));
+  auto * targetMachine = mod.getTargetMachine();
+
+  // Add the passes to emit the LLVM module as object code.
+  // TODO: Use compileAndWriteLLVM.
+  legacy::PassManager emitPasses;
+  emitPasses.add(createTargetTransformInfoWrapperPass(
+    targetMachine->getTargetIRAnalysis()
+  ));
+
+  SmallString<0> output;
+  raw_svector_ostream os(output);
+  targetMachine->addPassesToEmitFile(
+    emitPasses, os, nullptr, CGFT_ObjectFile
+  );
+  emitPasses.run(*mod.getModule());
+  os << '\0';
+  return ctx.AllocateCopy(output.str());
 }

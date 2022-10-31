@@ -1,4 +1,5 @@
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/FileUnit.h>
@@ -6,8 +7,10 @@
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/AST/TBDGenRequests.h>
+#include <w2n/TBDGen/TBDGen.h>
 
 using namespace w2n;
+using namespace llvm;
 
 namespace w2n {
 // Implement the IRGen type zone (zone 20).

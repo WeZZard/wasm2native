@@ -10,6 +10,7 @@
 namespace w2n {
 class Decl;
 class ModuleDecl;
+class SourceFile;
 
 enum class DeclContextKind {
   FileUnit,
@@ -88,6 +89,11 @@ public:
 
   ModuleDecl * getParentModule() const;
 
+  /// Returns the source file that contains this context, or null if this
+  /// is not within a source file.
+  LLVM_READONLY
+  SourceFile * getParentSourceFile() const;
+
   /**
    * @brief Returns the module scope context that contains this context.
    *
@@ -95,6 +101,12 @@ public:
    */
   LLVM_READONLY
   DeclContext * getModuleScopeContext() const;
+
+  /// \returns true if this is a context with module-wide scope, e.g. a
+  /// module or a source file.
+  /// \see \file <w2n/AST/Module.h>
+  LLVM_READONLY
+  bool isModuleScopeContext() const;
 
   /**
    * @brief Some \c Decl are of \c DeclContext, but not all.

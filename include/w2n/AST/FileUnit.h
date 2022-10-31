@@ -61,6 +61,12 @@ public:
     return getParentModule();
   }
 
+  /// Generates the list of libraries needed to link this file, based on
+  /// its imports.
+  virtual void
+  collectLinkLibraries(ModuleDecl::LinkLibraryCallback callback) const {
+  }
+
   using ASTAllocated<FileUnit>::operator new;
   using ASTAllocated<FileUnit>::operator delete;
 };

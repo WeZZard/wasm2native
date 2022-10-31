@@ -1,6 +1,10 @@
 #ifndef W2N_AST_IRGENOPTIONS_H
 #define W2N_AST_IRGENOPTIONS_H
 
+#include <llvm/ADT/SmallVector.h>
+#include <string>
+#include <vector>
+#include <w2n/AST/LinkLibrary.h>
 #include <w2n/Basic/OptimizationMode.h>
 
 namespace w2n {
@@ -32,14 +36,33 @@ enum class IRGenLLVMLTOKind : unsigned {
   Full,
 };
 
+enum class IRGenEmbedMode : unsigned {
+  None,
+  EmbedMarker,
+  EmbedBitcode
+};
+
 class IRGenOptions {
 public:
+  /// The libraries and frameworks specified on the command line.
+  SmallVector<LinkLibrary, 4> LinkLibraries;
+
+  /// The public dependent libraries specified on the command line.
+  std::vector<std::string> PublicLinkLibraries;
+
+  /// If non-empty, the (unmangled) name of a dummy symbol to emit that
+  /// can be used to force-load this module.
+  std::string ForceLoadSymbolName;
+
   /// The kind of compilation we should do.
   IRGenOutputKind OutputKind : 3;
 
   /// Should we spend time verifying that the IR we produce is
   /// well-formed?
   unsigned Verify : 1;
+
+  /// Whether we should embed the bitcode file.
+  IRGenEmbedMode EmbedMode : 2;
 
   IRGenLLVMLTOKind LLVMLTOKind : 2;
 

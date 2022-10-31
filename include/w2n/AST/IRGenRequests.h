@@ -18,13 +18,13 @@
 #ifndef W2N_AST_IRGENREQUESTS_H
 #define W2N_AST_IRGENREQUESTS_H
 
-#include <llvm/ADT/DenseMapInfo.h>
 #include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Target/TargetMachine.h>
 #include <w2n/AST/ASTTypeIDs.h>
 #include <w2n/AST/EvaluatorDependencies.h>
 #include <w2n/AST/SimpleRequest.h>
+#include <w2n/Basic/AnyValue.h>
 #include <w2n/Basic/PrimarySpecificPaths.h>
 #include <w2n/Basic/Statistic.h>
 
@@ -37,10 +37,6 @@ class TBDGenDescriptor;
 
 namespace irgen {
 class IRGenModule;
-}
-
-namespace Lowering {
-class TypeConverter;
 }
 
 } // namespace w2n
@@ -159,11 +155,11 @@ struct IRGenDescriptor {
   const IRGenOptions& Opts;
   const TBDGenOptions& TBDOpts;
 
-  Lowering::TypeConverter& Conv;
+  ModuleDecl * Mod;
 
   StringRef ModuleName;
   const PrimarySpecificPaths& PSPs;
-  StringRef PrivateDiscriminator;
+
   ArrayRef<std::string> parallelOutputFilenames;
   llvm::GlobalVariable ** outModuleHash;
 
@@ -186,23 +182,21 @@ public:
     FileUnit * file,
     const IRGenOptions& Opts,
     const TBDGenOptions& TBDOpts,
-    Lowering::TypeConverter& Conv,
+    ModuleDecl * Mod,
     StringRef ModuleName,
     const PrimarySpecificPaths& PSPs,
-    StringRef PrivateDiscriminator,
     SymsToEmit symsToEmit = None,
     llvm::GlobalVariable ** outModuleHash = nullptr
   ) {
-    return IRGenDescriptor{file, symsToEmit,   Opts, TBDOpts,
-                           Conv, ModuleName,   PSPs, PrivateDiscriminator,
-                           {},   outModuleHash};
+    return IRGenDescriptor{file,    symsToEmit, Opts,
+                           TBDOpts, Mod,        ModuleName,
+                           PSPs,    {},         outModuleHash};
   }
 
   static IRGenDescriptor forWholeModule(
     ModuleDecl * M,
     const IRGenOptions& Opts,
     const TBDGenOptions& TBDOpts,
-    Lowering::TypeConverter& Conv,
     StringRef ModuleName,
     const PrimarySpecificPaths& PSPs,
     SymsToEmit symsToEmit = None,
@@ -214,10 +208,9 @@ public:
       symsToEmit,
       Opts,
       TBDOpts,
-      Conv,
+      M, // FIXME: verify this usage
       ModuleName,
       PSPs,
-      "",
       parallelOutputFilenames,
       outModuleHash};
   }

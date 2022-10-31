@@ -19,8 +19,7 @@ void w2n::simple_display(llvm::raw_ostream& out, const FileUnit * file) {
 }
 
 SourceFile::ParsingOptions SourceFile::getDefaultParsingOptions(
-  SourceFileKind Kind,
-  const LanguageOptions& Opts
+  SourceFileKind Kind, const LanguageOptions& Opts
 ) {
   switch (Kind) {
   case SourceFileKind::Wasm:
@@ -46,25 +45,22 @@ SourceFile * SourceFile::createSourceFile(
   }
 }
 
-SourceFile::SourceFile(
-  ModuleDecl& Module,
-  SourceFileKind Kind,
-  Optional<unsigned> BufferID,
-  ParsingOptions Opts,
-  bool IsPrimary
-)
-  : FileUnit(FileUnitKind::Source, Module),
-    BufferID(BufferID ? *BufferID : -1), Kind(Kind), IsPrimary(IsPrimary),
-    ParsingOpts(Opts), Stage(ASTStage::Unresolved) {
-  Module.getASTContext().addDestructorCleanup(*this);
-}
-
 StringRef SourceFile::getFilename() const {
   if (BufferID == -1)
     return "";
   SourceManager& SM = getASTContext().SourceMgr;
   return SM.getIdentifierForBuffer(BufferID);
 }
+
+WasmFile::WasmFile(
+  ModuleDecl& Module,
+  Optional<unsigned> BufferID,
+  ParsingOptions Opts,
+  bool IsPrimary
+)
+  : SourceFile(Module, SourceFileKind::Wasm, BufferID, Opts, IsPrimary) {
+  Module.getASTContext().addDestructorCleanup(*this);
+};
 
 WasmFile * WasmFile::create(
   const CompilerInstance& Instance,
@@ -85,6 +81,16 @@ WasmFile::getDefaultParsingOptions(const LanguageOptions& Opts) {
 ArrayRef<Decl *> WasmFile::getTopLevelDecls() const {
   return ArrayRef<Decl *>(); // FIXME: not implemented
 }
+
+WatFile::WatFile(
+  ModuleDecl& Module,
+  Optional<unsigned> BufferID,
+  ParsingOptions Opts,
+  bool IsPrimary
+)
+  : SourceFile(Module, SourceFileKind::Wasm, BufferID, Opts, IsPrimary) {
+  Module.getASTContext().addDestructorCleanup(*this);
+};
 
 WatFile * WatFile::create(
   const CompilerInstance& Instance,

@@ -1,10 +1,12 @@
 #ifndef W2N_AST_MODULE_H
 #define W2N_AST_MODULE_H
 
+#include "llvm/Support/ErrorHandling.h"
 #include <llvm/ADT/ArrayRef.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Identifier.h>
+#include <w2n/AST/LinkLibrary.h>
 #include <w2n/Basic/LLVM.h>
 
 namespace w2n {
@@ -99,8 +101,14 @@ public:
 
   using Decl::getASTContext;
 
+  using LinkLibraryCallback = llvm::function_ref<void(LinkLibrary)>;
+
+  /// Generate the list of libraries needed to link this module, based on
+  /// its imports.
+  void collectLinkLibraries(LinkLibraryCallback callback) const;
+
   static bool classof(const DeclContext * DC) {
-    if (auto D = DC->getAsDecl())
+    if (const auto * D = DC->getAsDecl())
       return classof(D);
     return false;
   }
@@ -114,9 +122,15 @@ public:
 };
 
 inline bool DeclContext::isModuleContext() const {
-  if (auto D = getAsDecl())
+  if (const auto * D = getAsDecl())
     return ModuleDecl::classof(D);
   return false;
+}
+
+inline bool DeclContext::isModuleScopeContext() const {
+  if (ParentAndKind.getInt() == ASTHierarchy::FileUnit)
+    return true;
+  return isModuleContext();
 }
 
 /// Extract the source location from the given module declaration.

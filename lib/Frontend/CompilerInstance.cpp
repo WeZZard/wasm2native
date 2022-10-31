@@ -1,4 +1,8 @@
+#include <w2n/AST/IRGenRequests.h>
 #include <w2n/AST/Identifier.h>
+#include <w2n/AST/ParseRequests.h>
+#include <w2n/AST/TBDGenRequests.h>
+#include <w2n/AST/TypeCheckerRequests.h>
 #include <w2n/Basic/Filesystem.h>
 #include <w2n/Frontend/Frontend.h>
 #include <w2n/Sema/Sema.h>
@@ -22,8 +26,7 @@ CompilerInstance::CompilerInstance() {
 }
 
 bool CompilerInstance::setup(
-  const CompilerInvocation& Invocation,
-  std::string& Error
+  const CompilerInvocation& Invocation, std::string& Error
 ) {
   this->Invocation = Invocation;
 
@@ -91,18 +94,16 @@ bool CompilerInstance::setUpASTContextIfNeeded() {
     Invocation.getLanguageOptions(), SourceMgr, Diagnostics
   ));
 
-  // registerParseRequestFunctions(Context->Eval);
+  registerParseRequestFunctions(Context->Eval);
   registerTypeCheckerRequestFunctions(Context->Eval);
-  // registerTBDGenRequestFunctions(Context->Eval);
-  // registerIRGenRequestFunctions(Context->Eval);
+  registerTBDGenRequestFunctions(Context->Eval);
+  registerIRGenRequestFunctions(Context->Eval);
 
   return false;
 }
 
 Optional<unsigned> CompilerInstance::getRecordedBufferID(
-  const Input& I,
-  bool ShouldRecover,
-  bool& Failed
+  const Input& I, bool ShouldRecover, bool& Failed
 ) {
   if (!I.getBuffer()) {
     if (Optional<unsigned> existingBufferID = SourceMgr.getIDForBufferIdentifier(I.getFileName())) {
@@ -143,7 +144,8 @@ CompilerInstance::getInputBuffersIfPresent(const Input& I) {
   // or have some kind of FileManager.
   using FileOrError = llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>>;
   FileOrError inputFileOrErr = w2n::vfs::getFileOrSTDIN(
-    getFileSystem(), I.getFileName(),
+    getFileSystem(),
+    I.getFileName(),
     /*FileSize*/ -1,
     /*RequiresNullTerminator*/ true,
     /*IsVolatile*/ false,
@@ -185,8 +187,7 @@ ModuleDecl * CompilerInstance::getMainModule() const {
 }
 
 bool CompilerInstance::createFilesForMainModule(
-  ModuleDecl * Module,
-  SmallVectorImpl<FileUnit *>& Files
+  ModuleDecl * Module, SmallVectorImpl<FileUnit *>& Files
 ) const {
   // Try to pull out the main source file, if any. This ensures that it
   // is at the start of the list of files.

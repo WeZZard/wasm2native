@@ -1,6 +1,7 @@
 #include <llvm/Support/Casting.h>
 #include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/SourceFile.h>
 
 using namespace w2n;
 
@@ -36,6 +37,13 @@ DeclContext * Decl::getDeclContextForModule() const {
     return const_cast<ModuleDecl *>(module);
 
   return nullptr;
+}
+
+SourceFile * DeclContext::getParentSourceFile() const {
+  const DeclContext * DC = this;
+  while (!DC->isModuleScopeContext())
+    DC = DC->getParent();
+  return const_cast<SourceFile *>(dyn_cast<SourceFile>(DC));
 }
 
 DeclContext * DeclContext::getModuleScopeContext() const {

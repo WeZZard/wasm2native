@@ -25,6 +25,7 @@ class raw_ostream;
 
 namespace w2n {
 
+class Evaluator;
 class FileUnit;
 class ModuleDecl;
 class TBDGenDescriptor;
@@ -111,7 +112,7 @@ struct TBDGenOptions {
   }
 };
 
-std::vector<std::string> getPublicSymbols(TBDGenDescriptor desc);
+std::vector<std::string> getPublicSymbols(TBDGenDescriptor Desc);
 
 void writeTBDFile(
   ModuleDecl * M,
@@ -124,6 +125,10 @@ void writeAPIJSONFile(
   llvm::raw_ostream& os,
   bool PrettyPrint
 );
+
+/// Clients that form an ASTContext and will perform any TBD generation
+/// should call this functions after forming the ASTContext.
+void registerTBDGenRequestFunctions(Evaluator& evaluator);
 
 } // namespace w2n
 

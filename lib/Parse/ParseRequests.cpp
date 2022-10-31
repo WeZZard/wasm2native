@@ -50,7 +50,7 @@ WasmFileParsingResult ParseWasmFileRequest::evaluate(
   SmallVector<Decl *, 128> decls;
   // FIXME: parser.parseTopLevel(decls);
 
-  return WasmFileParsingResult{ctx.AllocateCopy(decls)};
+  return WasmFileParsingResult{ctx.AllocateCopy(decls), None, None};
 }
 
 evaluator::DependencySource ParseWasmFileRequest::readDependencySource(
@@ -66,7 +66,7 @@ ParseWasmFileRequest::getCachedResult() const {
   if (!Decls)
     return None;
 
-  return WasmFileParsingResult{*Decls};
+  return WasmFileParsingResult{*Decls, None, None};
 }
 
 void ParseWasmFileRequest::cacheResult(WasmFileParsingResult result

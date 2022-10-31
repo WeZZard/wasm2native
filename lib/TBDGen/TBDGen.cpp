@@ -41,6 +41,7 @@
 
 #include "APIGen.h"
 #include "TBDGenVisitor.h"
+#include <sys/cdefs.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
@@ -49,7 +50,7 @@ using namespace llvm::yaml;
 using StringSet = llvm::StringSet<>;
 using SymbolKind = llvm::MachO::SymbolKind;
 
-static StringRef getLinkerPlatformName(uint8_t Id) {
+__unused static StringRef getLinkerPlatformName(uint8_t Id) {
 #define LD_PLATFORM(Name, Id)                                            \
   case Id: return #Name;
   switch (Id) {
@@ -69,8 +70,7 @@ StringRef InstallNameStore::getInstallName(LinkerPlatformId Id) const {
   auto It = PlatformInstallName.find((uint8_t)Id);
   if (It == PlatformInstallName.end())
     return InstallName;
-  else
-    return It->second;
+  return It->second;
 }
 
 static std::string getScalaNodeText(Node * N) {
@@ -78,7 +78,7 @@ static std::string getScalaNodeText(Node * N) {
   return cast<ScalarNode>(N)->getValue(Buffer).str();
 }
 
-static std::set<int8_t>
+__unused static std::set<int8_t>
 getSequenceNodePlatformList(ASTContext& Ctx, Node * N) {
   std::set<int8_t> Results;
   for (auto& E : *cast<SequenceNode>(N)) {
@@ -117,7 +117,7 @@ enum DylibVersionKind_t : unsigned {
 /// be represented in its alloted space, it will be truncated to the
 /// maximum value that fits in the alloted space, which matches the
 /// behavior of the linker.
-static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
+__unused static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
   DylibVersionKind_t kind, StringRef versionString, ASTContext& ctx
 ) {
   if (versionString.empty())

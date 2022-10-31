@@ -20,7 +20,7 @@ bool Input::derivePrimarySpecificPaths(
     );
     path::append(FilenameBodyBuf, path::begin(Stem), path::end(Stem));
 
-    Twine FilenameBody(FilenameBodyBuf);
+    Twine FilenameBody(FilenameBodyBuf); // NOLINT(llvm-twine-local)
 
     // Supplementary output paths
     SupplementaryOutputPaths SOPs;

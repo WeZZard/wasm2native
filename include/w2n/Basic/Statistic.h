@@ -254,13 +254,10 @@ public:
   /// active or inert depending on whether the provided \p Reporter is
   /// null (nullptr means "tracing is disabled").
   FrontendStatsTracer(
-    UnifiedStatsReporter * Reporter,
-    StringRef EventName
+    UnifiedStatsReporter * Reporter, StringRef EventName
   );
   FrontendStatsTracer(
-    UnifiedStatsReporter * Reporter,
-    StringRef EventName,
-    const Decl * D
+    UnifiedStatsReporter * Reporter, StringRef EventName, const Decl * D
   );
   FrontendStatsTracer(
     UnifiedStatsReporter * Reporter,
@@ -273,9 +270,7 @@ public:
     const clang::Decl * D
   );
   FrontendStatsTracer(
-    UnifiedStatsReporter * Reporter,
-    StringRef EventName,
-    const Expr * E
+    UnifiedStatsReporter * Reporter, StringRef EventName, const Expr * E
   );
   FrontendStatsTracer(
     UnifiedStatsReporter * Reporter,
@@ -288,9 +283,7 @@ public:
     const SourceFile * F
   );
   FrontendStatsTracer(
-    UnifiedStatsReporter * Reporter,
-    StringRef EventName,
-    const Stmt * S
+    UnifiedStatsReporter * Reporter, StringRef EventName, const Stmt * S
   );
   FrontendStatsTracer(
     UnifiedStatsReporter * Reporter,
@@ -357,100 +350,69 @@ FrontendStatsTracer::getTraceFormatter<const TypeRepr *>();
 // scope (the nested name specifier scope cannot be used to declare them).
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S
+  UnifiedStatsReporter * R, StringRef S
 )
   : FrontendStatsTracer(R, S, nullptr, nullptr) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const Decl * D
+  UnifiedStatsReporter * R, StringRef S, const Decl * D
 )
   : FrontendStatsTracer(R, S, D, getTraceFormatter<const Decl *>()) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const ProtocolConformance * P
+  UnifiedStatsReporter * R, StringRef S, const ProtocolConformance * P
 )
   : FrontendStatsTracer(
-      R,
-      S,
-      P,
-      getTraceFormatter<const ProtocolConformance *>()
+      R, S, P, getTraceFormatter<const ProtocolConformance *>()
     ) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const clang::Decl * D
+  UnifiedStatsReporter * R, StringRef S, const clang::Decl * D
 )
   : FrontendStatsTracer(
-      R,
-      S,
-      D,
-      getTraceFormatter<const clang::Decl *>()
+      R, S, D, getTraceFormatter<const clang::Decl *>()
     ) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const Expr * E
+  UnifiedStatsReporter * R, StringRef S, const Expr * E
 )
   : FrontendStatsTracer(R, S, E, getTraceFormatter<const Expr *>()) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const SILFunction * F
+  UnifiedStatsReporter * R, StringRef S, const SILFunction * F
 )
   : FrontendStatsTracer(
-      R,
-      S,
-      F,
-      getTraceFormatter<const SILFunction *>()
+      R, S, F, getTraceFormatter<const SILFunction *>()
     ) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const SourceFile * SF
+  UnifiedStatsReporter * R, StringRef S, const SourceFile * SF
 )
   : FrontendStatsTracer(
-      R,
-      S,
-      SF,
-      getTraceFormatter<const SourceFile *>()
+      R, S, SF, getTraceFormatter<const SourceFile *>()
     ) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const Stmt * ST
+  UnifiedStatsReporter * R, StringRef S, const Stmt * ST
 )
   : FrontendStatsTracer(R, S, ST, getTraceFormatter<const Stmt *>()) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const Pattern * P
+  UnifiedStatsReporter * R, StringRef S, const Pattern * P
 )
   : FrontendStatsTracer(R, S, P, getTraceFormatter<const Pattern *>()) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R,
-  StringRef S,
-  const TypeRepr * TR
+  UnifiedStatsReporter * R, StringRef S, const TypeRepr * TR
 )
   : FrontendStatsTracer(R, S, TR, getTraceFormatter<const TypeRepr *>()) {
 }
@@ -467,9 +429,7 @@ typename std::enable_if<
     const T *>::value,
   FrontendStatsTracer>::type
 make_tracer_direct(
-  UnifiedStatsReporter * Reporter,
-  StringRef Name,
-  T * Value
+  UnifiedStatsReporter * Reporter, StringRef Name, T * Value
 ) {
   return FrontendStatsTracer(
     Reporter, Name, static_cast<const T *>(Value)
@@ -485,9 +445,7 @@ typename std::enable_if<
     const T *>::value,
   FrontendStatsTracer>::type
 make_tracer_direct(
-  UnifiedStatsReporter * Reporter,
-  StringRef Name,
-  const T * Value
+  UnifiedStatsReporter * Reporter, StringRef Name, const T * Value
 ) {
   return FrontendStatsTracer(Reporter, Name, Value);
 }
@@ -501,9 +459,7 @@ typename std::enable_if<
     const T *>::value,
   FrontendStatsTracer>::type
 make_tracer_direct(
-  UnifiedStatsReporter * Reporter,
-  StringRef Name,
-  T * Value
+  UnifiedStatsReporter * Reporter, StringRef Name, T * Value
 ) {
   return FrontendStatsTracer(Reporter, Name);
 }
@@ -512,9 +468,7 @@ template <typename T>
 typename std::enable_if<!std::is_pointer<T>::value, FrontendStatsTracer>::
   type
   make_tracer_direct(
-    UnifiedStatsReporter * Reporter,
-    StringRef Name,
-    T Value
+    UnifiedStatsReporter * Reporter, StringRef Name, T Value
   ) {
   return FrontendStatsTracer(Reporter, Name);
 }
@@ -541,9 +495,7 @@ template <typename T>
 typename std::enable_if<!is_pointerunion<T>::value, FrontendStatsTracer>::
   type
   make_tracer_pointerunion(
-    UnifiedStatsReporter * Reporter,
-    StringRef Name,
-    T Value
+    UnifiedStatsReporter * Reporter, StringRef Name, T Value
   ) {
   return make_tracer_direct(Reporter, Name, Value);
 }

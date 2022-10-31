@@ -99,10 +99,16 @@ struct TBDGenOptions {
   friend llvm::hash_code hash_value(const TBDGenOptions& opts) {
     using namespace llvm;
     return hash_combine(
-      opts.HasMultipleIGMs, opts.IsInstallAPI, opts.LinkerDirectivesOnly,
-      opts.PublicSymbolsOnly, opts.VirtualFunctionElimination,
-      opts.WitnessMethodElimination, opts.InstallName,
-      opts.ModuleLinkName, opts.CurrentVersion, opts.CompatibilityVersion,
+      opts.HasMultipleIGMs,
+      opts.IsInstallAPI,
+      opts.LinkerDirectivesOnly,
+      opts.PublicSymbolsOnly,
+      opts.VirtualFunctionElimination,
+      opts.WitnessMethodElimination,
+      opts.InstallName,
+      opts.ModuleLinkName,
+      opts.CurrentVersion,
+      opts.CompatibilityVersion,
       opts.ModuleInstallNameMapPath,
       hash_combine_range(
         opts.embedSymbolsFromModules.begin(),
@@ -115,15 +121,11 @@ struct TBDGenOptions {
 std::vector<std::string> getPublicSymbols(TBDGenDescriptor Desc);
 
 void writeTBDFile(
-  ModuleDecl * M,
-  llvm::raw_ostream& os,
-  const TBDGenOptions& opts
+  ModuleDecl * M, llvm::raw_ostream& os, const TBDGenOptions& opts
 );
 
 void writeAPIJSONFile(
-  ModuleDecl * M,
-  llvm::raw_ostream& os,
-  bool PrettyPrint
+  ModuleDecl * M, llvm::raw_ostream& os, bool PrettyPrint
 );
 
 /// Clients that form an ASTContext and will perform any TBD generation

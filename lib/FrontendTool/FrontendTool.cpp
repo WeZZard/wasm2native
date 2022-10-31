@@ -64,9 +64,7 @@ static void performEndOfPipelineActions(CompilerInstance& Instance);
 #pragma mark - Implementations
 
 int w2n::performFrontend(
-  llvm::ArrayRef<const char *> Args,
-  const char * Argv0,
-  void * MainAddr
+  llvm::ArrayRef<const char *> Args, const char * Argv0, void * MainAddr
 ) {
   CompilerInvocation Invocation;
   CompilerInstance Instance;
@@ -159,14 +157,19 @@ GeneratedModule generateIR(
   }
 
   return performIRGeneration(
-    MSF.get<ModuleDecl *>(), IRGenOpts, TBDOpts, Mod, OutputFilename,
-    PSPs, parallelOutputFilenames, &HashGlobal
+    MSF.get<ModuleDecl *>(),
+    IRGenOpts,
+    TBDOpts,
+    Mod,
+    OutputFilename,
+    PSPs,
+    parallelOutputFilenames,
+    &HashGlobal
   );
 }
 
 bool performCompileStepsPostSema(
-  CompilerInstance& Instance,
-  int& ReturnValue
+  CompilerInstance& Instance, int& ReturnValue
 ) {
   const auto& Invocation = Instance.getInvocation();
   const auto& opts = Invocation.getFrontendOptions();
@@ -182,8 +185,14 @@ bool performCompileStepsPostSema(
       llvm::GlobalVariable * HashGlobal;
       auto * Mod = PrimaryFile->getModule();
       auto IRModule = generateIR(
-        IRGenOpts, Invocation.getTBDGenOptions(), Mod, PSPs,
-        OutputFilename, PrimaryFile, HashGlobal, ParallelOutputFilenames
+        IRGenOpts,
+        Invocation.getTBDGenOptions(),
+        Mod,
+        PSPs,
+        OutputFilename,
+        PrimaryFile,
+        HashGlobal,
+        ParallelOutputFilenames
       );
       result |= generateCode(
         Instance, OutputFilename, IRModule.getModule(), HashGlobal
@@ -255,7 +264,13 @@ bool generateCode(
 
   // Now that we have a single IR Module, hand it over to performLLVM.
   return performLLVM(
-    Opts, Instance.getDiags(), nullptr, HashGlobal, IRModule,
-    TargetMachine.get(), OutputFilename, Instance.getStatsReporter()
+    Opts,
+    Instance.getDiags(),
+    nullptr,
+    HashGlobal,
+    IRModule,
+    TargetMachine.get(),
+    OutputFilename,
+    Instance.getStatsReporter()
   );
 }

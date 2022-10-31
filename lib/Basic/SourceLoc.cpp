@@ -7,9 +7,7 @@
 using namespace w2n;
 
 void SourceLoc::printLineAndColumn(
-  raw_ostream& OS,
-  const SourceManager& SM,
-  unsigned BufferID
+  raw_ostream& OS, const SourceManager& SM, unsigned BufferID
 ) const {
   if (isInvalid()) {
     OS << "<invalid loc>";
@@ -21,9 +19,7 @@ void SourceLoc::printLineAndColumn(
 }
 
 void SourceLoc::print(
-  raw_ostream& OS,
-  const SourceManager& SM,
-  unsigned& LastBufferID
+  raw_ostream& OS, const SourceManager& SM, unsigned& LastBufferID
 ) const {
   if (isInvalid()) {
     OS << "<invalid loc>";
@@ -47,9 +43,7 @@ void SourceLoc::dump(const SourceManager& SM) const {
 }
 
 CharSourceRange::CharSourceRange(
-  const SourceManager& SM,
-  SourceLoc Start,
-  SourceLoc End
+  const SourceManager& SM, SourceLoc Start, SourceLoc End
 )
   : Start(Start) {
   assert(

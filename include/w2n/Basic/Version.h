@@ -53,9 +53,7 @@ public:
   ///
   /// Must include only groups of digits separated by a dot.
   Version(
-    StringRef VersionString,
-    SourceLoc Loc,
-    DiagnosticEngine * Diags
+    StringRef VersionString, SourceLoc Loc, DiagnosticEngine * Diags
   );
 
   /// Return a string to be used as an internal preprocessor define.
@@ -68,8 +66,7 @@ public:
   /// The resulting string will have the form "-DMACRO_NAME=XYYZZ".
   /// The combined value must fit in a uint64_t.
   std::string preprocessorDefinition(
-    StringRef macroName,
-    ArrayRef<uint64_t> componentWeights
+    StringRef macroName, ArrayRef<uint64_t> componentWeights
   ) const;
 
   /// Return the ith version component.
@@ -128,18 +125,14 @@ public:
   /// Parse a version in the form used by the _compiler_version \#if
   /// condition.
   static Optional<Version> parseCompilerVersionString(
-    StringRef VersionString,
-    SourceLoc Loc,
-    DiagnosticEngine * Diags
+    StringRef VersionString, SourceLoc Loc, DiagnosticEngine * Diags
   );
 
   /// Parse a generic version string of the format [0-9]+(.[0-9]+)*
   ///
   /// Version components can be any unsigned 64-bit number.
   static Optional<Version> parseVersionString(
-    StringRef VersionString,
-    SourceLoc Loc,
-    DiagnosticEngine * Diags
+    StringRef VersionString, SourceLoc Loc, DiagnosticEngine * Diags
   );
 
   /// Returns a version from the currently defined W2N_COMPILER_VERSION.

@@ -58,9 +58,7 @@ struct DiagnosticInfo {
 
   public:
     FixIt(
-      CharSourceRange R,
-      StringRef Str,
-      ArrayRef<DiagnosticArgument> Args
+      CharSourceRange R, StringRef Str, ArrayRef<DiagnosticArgument> Args
     );
 
     CharSourceRange& getRange() {
@@ -101,12 +99,18 @@ struct DiagnosticInfo {
     ArrayRef<FixIt> FixIts,
     bool IsChildNote
   )
-    : ID(ID), Loc(Loc), Kind(Kind), FormatString(FormatString),
-      FormatArgs(FormatArgs), Category(Category),
+    : ID(ID),
+      Loc(Loc),
+      Kind(Kind),
+      FormatString(FormatString),
+      FormatArgs(FormatArgs),
+      Category(Category),
       BufferIndirectlyCausingDiagnostic(BufferIndirectlyCausingDiagnostic
       ),
-      ChildDiagnosticInfo(ChildDiagnosticInfo), Ranges(Ranges),
-      FixIts(FixIts), IsChildNote(IsChildNote) {
+      ChildDiagnosticInfo(ChildDiagnosticInfo),
+      Ranges(Ranges),
+      FixIts(FixIts),
+      IsChildNote(IsChildNote) {
   }
 };
 
@@ -241,7 +245,8 @@ public:
       std::string inputFileName,
       std::unique_ptr<DiagnosticConsumer> consumer
     )
-      : inputFileName(inputFileName), consumer(std::move(consumer)) {
+      : inputFileName(inputFileName),
+        consumer(std::move(consumer)) {
     }
 
     void handleDiagnostic(SourceManager& SM, const DiagnosticInfo& Info) {
@@ -279,10 +284,10 @@ public:
     }
 
     ConsumerAndRange(
-      const CharSourceRange range,
-      unsigned subconsumerIndex
+      const CharSourceRange range, unsigned subconsumerIndex
     )
-      : range(range), subconsumerIndex(subconsumerIndex) {
+      : range(range),
+        subconsumerIndex(subconsumerIndex) {
     }
 
     /// Compare according to range:
@@ -375,8 +380,7 @@ private:
 
   Optional<FileSpecificDiagnosticConsumer::Subconsumer *>
   findSubconsumerForNonNote(
-    SourceManager& SM,
-    const DiagnosticInfo& Info
+    SourceManager& SM, const DiagnosticInfo& Info
   );
 };
 

@@ -51,7 +51,8 @@ public:
     : Filename(convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions(
         Filename
       )),
-      FileID(FileID), BufferAndIsPrimary(Buffer, IsPrimary) {
+      FileID(FileID),
+      BufferAndIsPrimary(Buffer, IsPrimary) {
     assert(!Filename.empty());
   }
 
@@ -109,8 +110,7 @@ public:
   }
 
   bool derivePrimarySpecificPaths(
-    PrimarySpecificPaths& ISPs,
-    DiagnosticEngine& Diag
+    PrimarySpecificPaths& ISPs, DiagnosticEngine& Diag
   ) const;
 
   void setPrimarySpecificPaths(PrimarySpecificPaths&& ISPs) {

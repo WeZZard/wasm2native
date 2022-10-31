@@ -7,8 +7,7 @@ using namespace w2n;
 using namespace w2n::driver;
 
 void w2n::driver::ExpandResponseFilesWithRetry(
-  llvm::StringSaver& Saver,
-  llvm::SmallVectorImpl<const char *>& Args
+  llvm::StringSaver& Saver, llvm::SmallVectorImpl<const char *>& Args
 ) {
   const unsigned MAX_COUNT = 30;
   for (unsigned I = 0; I != MAX_COUNT; ++I) {

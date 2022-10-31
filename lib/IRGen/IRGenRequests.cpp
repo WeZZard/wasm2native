@@ -26,8 +26,7 @@ llvm::orc::ThreadSafeModule GeneratedModule::intoThreadSafeContext() && {
 }
 
 void w2n::simple_display(
-  llvm::raw_ostream& out,
-  const IRGenDescriptor& desc
+  llvm::raw_ostream& out, const IRGenDescriptor& desc
 ) {
   auto * MD = desc.Ctx.dyn_cast<ModuleDecl *>();
   if (MD) {

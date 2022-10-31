@@ -106,15 +106,13 @@ void FrontendInputsAndOutputs::addInput(const Input& input) {
 }
 
 void FrontendInputsAndOutputs::addInputFile(
-  StringRef file,
-  llvm::MemoryBuffer * buffer
+  StringRef file, llvm::MemoryBuffer * buffer
 ) {
   addInput(Input(file, false, buffer));
 }
 
 void FrontendInputsAndOutputs::addPrimaryInputFile(
-  StringRef file,
-  llvm::MemoryBuffer * buffer
+  StringRef file, llvm::MemoryBuffer * buffer
 ) {
   addInput(Input(file, true, buffer));
 }

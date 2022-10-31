@@ -33,8 +33,7 @@ hash_code hash_value(const llvm::PointerUnion<PT1, PT2>& ptr) {
 
 template <typename T>
 bool operator==(
-  const TinyPtrVector<T>& lhs,
-  const TinyPtrVector<T>& rhs
+  const TinyPtrVector<T>& lhs, const TinyPtrVector<T>& rhs
 ) {
   if (lhs.size() != rhs.size())
     return false;
@@ -49,8 +48,7 @@ bool operator==(
 
 template <typename T>
 bool operator!=(
-  const TinyPtrVector<T>& lhs,
-  const TinyPtrVector<T>& rhs
+  const TinyPtrVector<T>& lhs, const TinyPtrVector<T>& rhs
 ) {
   return !(lhs == rhs);
 }

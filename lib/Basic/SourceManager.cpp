@@ -60,8 +60,7 @@ unsigned SourceManager::addMemBufferCopy(llvm::MemoryBuffer * Buffer) {
 }
 
 unsigned SourceManager::addMemBufferCopy(
-  StringRef InputData,
-  StringRef BufIdentifier
+  StringRef InputData, StringRef BufIdentifier
 ) {
   auto Buffer = std::unique_ptr<llvm::MemoryBuffer>(
     llvm::MemoryBuffer::getMemBufferCopy(InputData, BufIdentifier)
@@ -70,10 +69,7 @@ unsigned SourceManager::addMemBufferCopy(
 }
 
 void SourceManager::createVirtualFile(
-  SourceLoc Loc,
-  StringRef Name,
-  int LineOffset,
-  unsigned Length
+  SourceLoc Loc, StringRef Name, int LineOffset, unsigned Length
 ) {
   CharSourceRange Range = CharSourceRange(Loc, Length);
 
@@ -98,9 +94,7 @@ void SourceManager::createVirtualFile(
 }
 
 bool SourceManager::openVirtualFile(
-  SourceLoc loc,
-  StringRef name,
-  int lineOffset
+  SourceLoc loc, StringRef name, int lineOffset
 ) {
   CharSourceRange fullRange =
     getRangeForBuffer(findBufferContainingLoc(loc));
@@ -197,8 +191,7 @@ CharSourceRange SourceManager::getRangeForBuffer(unsigned bufferID
 }
 
 unsigned SourceManager::getLocOffsetInBuffer(
-  SourceLoc Loc,
-  unsigned BufferID
+  SourceLoc Loc, unsigned BufferID
 ) const {
   assert(Loc.isValid() && "location should be valid");
   auto * Buffer = LLVMSourceMgr.getMemoryBuffer(BufferID);
@@ -251,8 +244,7 @@ StringRef SourceManager::getEntireTextForBuffer(unsigned BufferID) const {
 }
 
 StringRef SourceManager::extractText(
-  CharSourceRange Range,
-  Optional<unsigned> BufferID
+  CharSourceRange Range, Optional<unsigned> BufferID
 ) const {
   assert(Range.isValid() && "range should be valid");
 
@@ -330,8 +322,7 @@ void SourceRange::dump(const SourceManager& SM) const {
 }
 
 llvm::Optional<unsigned> SourceManager::resolveOffsetForEndOfLine(
-  unsigned BufferId,
-  unsigned Line
+  unsigned BufferId, unsigned Line
 ) const {
   return resolveFromLineCol(BufferId, Line, ~0u);
 }
@@ -347,9 +338,7 @@ SourceManager::getLineLength(unsigned BufferId, unsigned Line) const {
 }
 
 llvm::Optional<unsigned> SourceManager::resolveFromLineCol(
-  unsigned BufferId,
-  unsigned Line,
-  unsigned Col
+  unsigned BufferId, unsigned Line, unsigned Col
 ) const {
   if (Line == 0) {
     return None;
@@ -393,9 +382,7 @@ unsigned SourceManager::getExternalSourceBufferID(StringRef Path) {
 }
 
 SourceLoc SourceManager::getLocFromExternalSource(
-  StringRef Path,
-  unsigned Line,
-  unsigned Col
+  StringRef Path, unsigned Line, unsigned Col
 ) {
   auto BufferId = getExternalSourceBufferID(Path);
   if (BufferId == 0u) {
@@ -409,8 +396,7 @@ SourceLoc SourceManager::getLocFromExternalSource(
 }
 
 SourceLoc SourceManager::getLocForForeignLoc(
-  SourceLoc otherLoc,
-  SourceManager& otherMgr
+  SourceLoc otherLoc, SourceManager& otherMgr
 ) {
   if (&otherMgr == this || otherLoc.isInvalid()) {
     return otherLoc;

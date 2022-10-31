@@ -51,7 +51,8 @@ class TBDGenDescriptor final {
   TBDGenOptions Opts;
 
   TBDGenDescriptor(FileOrModule input, const TBDGenOptions& opts)
-    : Input(input), Opts(opts) {
+    : Input(input),
+      Opts(opts) {
     assert(input);
   }
 
@@ -264,8 +265,7 @@ public:
 /// can be recorded by the stats reporter.
 template <typename Request>
 void reportEvaluatedRequest(
-  UnifiedStatsReporter& stats,
-  const Request& request
+  UnifiedStatsReporter& stats, const Request& request
 );
 
 /// The zone number for TBDGen.

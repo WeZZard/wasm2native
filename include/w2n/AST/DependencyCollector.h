@@ -41,13 +41,16 @@ struct DependencyCollector {
 
   private:
     Reference(Kind kind, DeclContext * subject, DeclBaseName name)
-      : kind(kind), subject(subject), name(name) {
+      : kind(kind),
+        subject(subject),
+        name(name) {
     }
 
   public:
     static Reference empty() {
       return {
-        Kind::Empty, llvm::DenseMapInfo<DeclContext *>::getEmptyKey(),
+        Kind::Empty,
+        llvm::DenseMapInfo<DeclContext *>::getEmptyKey(),
         llvm::DenseMapInfo<DeclBaseName>::getEmptyKey()};
     }
 

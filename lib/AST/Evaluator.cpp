@@ -13,8 +13,7 @@
 using namespace w2n;
 
 AbstractRequestFunction * Evaluator::getAbstractRequestFunction(
-  uint8_t zoneID,
-  uint8_t requestID
+  uint8_t zoneID, uint8_t requestID
 ) const {
   for (const auto& zone : requestFunctionsByZone) {
     if (zone.first == zoneID) {
@@ -29,8 +28,7 @@ AbstractRequestFunction * Evaluator::getAbstractRequestFunction(
 }
 
 void Evaluator::registerRequestFunctions(
-  Zone zone,
-  ArrayRef<AbstractRequestFunction *> functions
+  Zone zone, ArrayRef<AbstractRequestFunction *> functions
 ) {
   uint8_t zoneID = static_cast<uint8_t>(zone);
 #ifndef NDEBUG
@@ -43,7 +41,8 @@ void Evaluator::registerRequestFunctions(
 }
 
 Evaluator::Evaluator(DiagnosticEngine& diags, const LanguageOptions& opts)
-  : diags(diags), debugDumpCycles(opts.DebugDumpCycles),
+  : diags(diags),
+    debugDumpCycles(opts.DebugDumpCycles),
     recorder(opts.RecordRequestReferences) {
 }
 
@@ -137,8 +136,7 @@ evaluator::DependencyCollector::~DependencyCollector() {
 }
 
 void evaluator::DependencyCollector::addUsedMember(
-  DeclContext * subject,
-  DeclBaseName name
+  DeclContext * subject, DeclBaseName name
 ) {
   // FIXME: assert(subject->isTypeContext());
   return parent.recordDependency(Reference::usedMember(subject, name));
@@ -162,8 +160,7 @@ void evaluator::DependencyCollector::addDynamicLookupName(
 }
 
 void evaluator::DependencyRecorder::enumerateReferencesInFile(
-  const SourceFile * SF,
-  ReferenceEnumerator f
+  const SourceFile * SF, ReferenceEnumerator f
 ) const {
   auto entry = fileReferences.find(SF);
   if (entry == fileReferences.end()) {

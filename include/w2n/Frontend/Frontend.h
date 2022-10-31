@@ -263,8 +263,7 @@ private:
   ) const;
 
   bool createFilesForMainModule(
-    ModuleDecl * Module,
-    SmallVectorImpl<FileUnit *>& Files
+    ModuleDecl * Module, SmallVectorImpl<FileUnit *>& Files
   ) const;
 
 public:

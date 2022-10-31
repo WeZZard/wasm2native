@@ -57,8 +57,7 @@ namespace w2n {
 namespace diag {
 
 void SerializedLocalizationWriter::insert(
-  w2n::DiagID id,
-  llvm::StringRef translation
+  w2n::DiagID id, llvm::StringRef translation
 ) {
   generator.insert(static_cast<uint32_t>(id), translation);
 }
@@ -96,8 +95,7 @@ void LocalizationProducer::initializeIfNeeded() {
 }
 
 llvm::StringRef LocalizationProducer::getMessageOr(
-  w2n::DiagID id,
-  llvm::StringRef defaultMessage
+  w2n::DiagID id, llvm::StringRef defaultMessage
 ) {
   initializeIfNeeded();
   if (getState() == FailedInitialization) {
@@ -122,8 +120,7 @@ LocalizationProducerState LocalizationProducer::getState() const {
 }
 
 SerializedLocalizationProducer::SerializedLocalizationProducer(
-  std::unique_ptr<llvm::MemoryBuffer> buffer,
-  bool printDiagnosticNames
+  std::unique_ptr<llvm::MemoryBuffer> buffer, bool printDiagnosticNames
 )
   : LocalizationProducer(printDiagnosticNames),
     Buffer(std::move(buffer)) {
@@ -149,10 +146,10 @@ llvm::StringRef SerializedLocalizationProducer::getMessage(w2n::DiagID id
 }
 
 YAMLLocalizationProducer::YAMLLocalizationProducer(
-  llvm::StringRef filePath,
-  bool printDiagnosticNames
+  llvm::StringRef filePath, bool printDiagnosticNames
 )
-  : LocalizationProducer(printDiagnosticNames), filePath(filePath) {
+  : LocalizationProducer(printDiagnosticNames),
+    filePath(filePath) {
 }
 
 bool YAMLLocalizationProducer::initializeImpl() {
@@ -185,9 +182,7 @@ void YAMLLocalizationProducer::forEachAvailable(
 }
 
 std::unique_ptr<LocalizationProducer> LocalizationProducer::producerFor(
-  llvm::StringRef locale,
-  llvm::StringRef path,
-  bool printDiagnosticNames
+  llvm::StringRef locale, llvm::StringRef path, bool printDiagnosticNames
 ) {
   std::unique_ptr<LocalizationProducer> producer;
   llvm::SmallString<128> filePath(path);

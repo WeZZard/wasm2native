@@ -44,11 +44,11 @@ public:
   ArithmeticExpr * rhs;
 
   Binary(
-    OperatorKind operatorKind,
-    ArithmeticExpr * lhs,
-    ArithmeticExpr * rhs
+    OperatorKind operatorKind, ArithmeticExpr * lhs, ArithmeticExpr * rhs
   )
-    : ArithmeticExpr(Kind::Binary), operatorKind(operatorKind), lhs(lhs),
+    : ArithmeticExpr(Kind::Binary),
+      operatorKind(operatorKind),
+      lhs(lhs),
       rhs(rhs) {
   }
 };

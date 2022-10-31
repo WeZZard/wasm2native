@@ -45,7 +45,8 @@ public:
     llvm::ArrayRef<const char *> ids,
     llvm::ArrayRef<const char *> messages
   )
-    : IDs(ids), Messages(messages) {
+    : IDs(ids),
+      Messages(messages) {
     assert(IDs.size() == Messages.size());
   }
 
@@ -66,9 +67,7 @@ public:
   }
 
   std::pair<offset_type, offset_type> EmitKeyDataLength(
-    llvm::raw_ostream& out,
-    key_type_ref key,
-    data_type_ref data
+    llvm::raw_ostream& out, key_type_ref key, data_type_ref data
   ) {
     offset_type dataLength = static_cast<offset_type>(data.size());
     endian::write<offset_type>(out, dataLength, little);
@@ -128,9 +127,7 @@ public:
   }
 
   data_type ReadData(
-    internal_key_type Key,
-    const unsigned char * data,
-    offset_type length
+    internal_key_type Key, const unsigned char * data, offset_type length
   ) {
     return data_type((const char *)data, length);
   }
@@ -218,8 +215,7 @@ public:
   /// The diagnostics IDs that are no longer available in `.def`
   std::vector<std::string> unknownIDs;
   explicit YAMLLocalizationProducer(
-    llvm::StringRef filePath,
-    bool printDiagnosticNames = false
+    llvm::StringRef filePath, bool printDiagnosticNames = false
   );
 
   /// Iterate over all of the available (non-empty) translations

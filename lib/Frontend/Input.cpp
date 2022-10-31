@@ -5,8 +5,7 @@
 using namespace w2n;
 
 bool Input::derivePrimarySpecificPaths(
-  PrimarySpecificPaths& ISPs,
-  DiagnosticEngine& Diag
+  PrimarySpecificPaths& ISPs, DiagnosticEngine& Diag
 ) const {
   switch (FileID) {
   case file_types::ID::TY_Wasm: {

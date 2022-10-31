@@ -118,9 +118,7 @@ enum DylibVersionKind_t : unsigned {
 /// maximum value that fits in the alloted space, which matches the
 /// behavior of the linker.
 static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
-  DylibVersionKind_t kind,
-  StringRef versionString,
-  ASTContext& ctx
+  DylibVersionKind_t kind, StringRef versionString, ASTContext& ctx
 ) {
   if (versionString.empty())
     return None;
@@ -129,14 +127,18 @@ static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
   auto result = version.parse64(versionString);
   if (!result.first) {
     ctx.Diags.diagnose(
-      SourceLoc(), diag::tbd_err_invalid_version, (unsigned)kind,
+      SourceLoc(),
+      diag::tbd_err_invalid_version,
+      (unsigned)kind,
       versionString
     );
     return None;
   }
   if (result.second) {
     ctx.Diags.diagnose(
-      SourceLoc(), diag::tbd_warn_truncating_version, (unsigned)kind,
+      SourceLoc(),
+      diag::tbd_warn_truncating_version,
+      (unsigned)kind,
       versionString
     );
   }
@@ -144,15 +146,13 @@ static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
 }
 
 TBDFile GenerateTBDRequest::evaluate(
-  Evaluator& evaluator,
-  TBDGenDescriptor desc
+  Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
   llvm_unreachable("not implemented.");
 }
 
 std::vector<std::string> PublicSymbolsRequest::evaluate(
-  Evaluator& evaluator,
-  TBDGenDescriptor desc
+  Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
   llvm_unreachable("not implemented.");
 }
@@ -163,9 +163,7 @@ std::vector<std::string> w2n::getPublicSymbols(TBDGenDescriptor Desc) {
 }
 
 void w2n::writeTBDFile(
-  ModuleDecl * M,
-  llvm::raw_ostream& os,
-  const TBDGenOptions& opts
+  ModuleDecl * M, llvm::raw_ostream& os, const TBDGenOptions& opts
 ) {
   auto& evaluator = M->getASTContext().Eval;
   auto desc = TBDGenDescriptor::forModule(M, opts);
@@ -177,16 +175,13 @@ void w2n::writeTBDFile(
 }
 
 apigen::API APIGenRequest::evaluate(
-  Evaluator& evaluator,
-  TBDGenDescriptor desc
+  Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
   llvm_unreachable("not implemented.");
 }
 
 void w2n::writeAPIJSONFile(
-  ModuleDecl * M,
-  llvm::raw_ostream& os,
-  bool PrettyPrint
+  ModuleDecl * M, llvm::raw_ostream& os, bool PrettyPrint
 ) {
   TBDGenOptions opts;
   auto& evaluator = M->getASTContext().Eval;
@@ -196,8 +191,7 @@ void w2n::writeAPIJSONFile(
 }
 
 SymbolSourceMap SymbolSourceMapRequest::evaluate(
-  Evaluator& evaluator,
-  TBDGenDescriptor desc
+  Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
   llvm_unreachable("not implemented.");
 }

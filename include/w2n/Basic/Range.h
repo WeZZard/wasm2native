@@ -27,7 +27,9 @@ template <typename T, typename InputRange, typename MapFn>
 T map(InputRange&& range, MapFn&& mapFn) {
   T result;
   std::transform(
-    std::begin(range), std::end(range), std::back_inserter(result),
+    std::begin(range),
+    std::end(range),
+    std::back_inserter(result),
     std::forward<MapFn>(mapFn)
   );
   return result;

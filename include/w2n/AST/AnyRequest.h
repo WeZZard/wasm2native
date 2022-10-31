@@ -63,9 +63,12 @@ struct AnyRequestVTable {
   template <typename Request>
   static const AnyRequestVTable * get() {
     static const AnyRequestVTable vtable = {
-      TypeID<Request>::value,        &Impl<Request>::getHash,
-      &Impl<Request>::isEqual,       &Impl<Request>::simpleDisplay,
-      &Impl<Request>::diagnoseCycle, &Impl<Request>::noteCycleStep};
+      TypeID<Request>::value,
+      &Impl<Request>::getHash,
+      &Impl<Request>::isEqual,
+      &Impl<Request>::simpleDisplay,
+      &Impl<Request>::diagnoseCycle,
+      &Impl<Request>::noteCycleStep};
     return &vtable;
   }
 };
@@ -113,8 +116,7 @@ protected:
   }
 
   AnyRequestBase(
-    const AnyRequestVTable * vtable,
-    StorageKind storageKind
+    const AnyRequestVTable * vtable, StorageKind storageKind
   ) {
     vtableAndKind.setPointer(vtable);
     vtableAndKind.setInt(storageKind);
@@ -178,8 +180,7 @@ public:
 
   /// Compare two instances for equality.
   friend bool operator==(
-    const AnyRequestBase<Derived>& lhs,
-    const AnyRequestBase<Derived>& rhs
+    const AnyRequestBase<Derived>& lhs, const AnyRequestBase<Derived>& rhs
   ) {
     // If the storage kinds don't match, we're done.
     if (lhs.getStorageKind() != rhs.getStorageKind())
@@ -213,8 +214,7 @@ public:
   }
 
   friend void simple_display(
-    llvm::raw_ostream& out,
-    const AnyRequestBase<Derived>& req
+    llvm::raw_ostream& out, const AnyRequestBase<Derived>& req
   ) {
     req.getVTable()->simpleDisplay(req.getRawStorage(), out);
   }
@@ -258,8 +258,7 @@ public:
   template <typename Request>
   explicit ActiveRequest(const Request& request)
     : AnyRequestBase(
-        AnyRequestVTable::get<Request>(),
-        StorageKind::Normal
+        AnyRequestVTable::get<Request>(), StorageKind::Normal
       ) {
     storage = &request;
   }

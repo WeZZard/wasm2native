@@ -61,9 +61,12 @@ struct StoredDiagnosticInfo {
     bool deprecation,
     bool noUsage
   )
-    : kind(k), pointsToFirstBadToken(firstBadToken), isFatal(fatal),
+    : kind(k),
+      pointsToFirstBadToken(firstBadToken),
+      isFatal(fatal),
       isAPIDigesterBreakage(isAPIDigesterBreakage),
-      isDeprecation(deprecation), isNoUsage(noUsage) {
+      isDeprecation(deprecation),
+      isNoUsage(noUsage) {
   }
 
   constexpr StoredDiagnosticInfo(DiagnosticKind k, DiagnosticOptions opts)
@@ -223,9 +226,7 @@ InFlightDiagnostic::highlightChars(SourceLoc Start, SourceLoc End) {
 /// text is inserted immediately *after* the token specified.
 ///
 InFlightDiagnostic& InFlightDiagnostic::fixItInsertAfter(
-  SourceLoc L,
-  StringRef FormatString,
-  ArrayRef<DiagnosticArgument> Args
+  SourceLoc L, StringRef FormatString, ArrayRef<DiagnosticArgument> Args
 ) {
   // L = Lexer::getLocForEndOfToken(Engine->SourceMgr, L);
   // return fixItInsert(L, FormatString, Args);
@@ -263,9 +264,7 @@ InFlightDiagnostic& InFlightDiagnostic::fixItRemove(SourceRange R) {
 }
 
 InFlightDiagnostic& InFlightDiagnostic::fixItReplace(
-  SourceRange R,
-  StringRef FormatString,
-  ArrayRef<DiagnosticArgument> Args
+  SourceRange R, StringRef FormatString, ArrayRef<DiagnosticArgument> Args
 ) {
   auto& SM = Engine->SourceMgr;
   auto charRange = toCharSourceRange(SM, R);
@@ -440,9 +439,7 @@ bool DiagnosticEngine::finishProcessing() {
 /// \returns The string leading up to the delimiter, or the empty string
 /// if no delimiter is found.
 static StringRef skipToDelimiter(
-  StringRef& Text,
-  char Delim,
-  bool * FoundDelim = nullptr
+  StringRef& Text, char Delim, bool * FoundDelim = nullptr
 ) {
   unsigned Depth = 0;
   if (FoundDelim)
@@ -548,8 +545,11 @@ static void formatDiagnosticArgument(
   case DiagnosticArgumentKind::String:
     if (Modifier == "select") {
       formatSelectionArgument(
-        ModifierArguments, Args, Arg.getAsString().empty() ? 0 : 1,
-        FormatOpts, Out
+        ModifierArguments,
+        Args,
+        Arg.getAsString().empty() ? 0 : 1,
+        FormatOpts,
+        Out
       );
     } else {
       assert(Modifier.empty() && "Improper modifier for string argument");
@@ -686,8 +686,7 @@ llvm::cl::opt<bool>
 // assert when a warning diagnostic is emitted. Intended for use in the
 // debugger.
 llvm::cl::opt<bool> AssertOnWarning(
-  "w2n-diagnostics-assert-on-warning",
-  llvm::cl::init(false)
+  "w2n-diagnostics-assert-on-warning", llvm::cl::init(false)
 );
 
 DiagnosticBehavior
@@ -831,11 +830,17 @@ DiagnosticEngine::diagnosticInfoForDiagnostic(const Diagnostic& diagnostic
     Category = "no-usage";
 
   return DiagnosticInfo(
-    diagnostic.getID(), loc, toDiagnosticKind(behavior),
+    diagnostic.getID(),
+    loc,
+    toDiagnosticKind(behavior),
     diagnosticStringFor(diagnostic.getID(), getPrintDiagnosticNames()),
-    diagnostic.getArgs(), Category, getDefaultDiagnosticLoc(),
-    /*child note info*/ {}, diagnostic.getRanges(),
-    diagnostic.getFixIts(), diagnostic.isChildNote()
+    diagnostic.getArgs(),
+    Category,
+    getDefaultDiagnosticLoc(),
+    /*child note info*/ {},
+    diagnostic.getRanges(),
+    diagnostic.getFixIts(),
+    diagnostic.isChildNote()
   );
 }
 
@@ -887,8 +892,7 @@ DiagnosticKind DiagnosticEngine::declaredDiagnosticKindFor(const DiagID id
 }
 
 llvm::StringRef DiagnosticEngine::diagnosticStringFor(
-  const DiagID id,
-  bool printDiagnosticNames
+  const DiagID id, bool printDiagnosticNames
 ) {
   const auto * defaultMessage = printDiagnosticNames
                                 ? debugDiagnosticStrings[(unsigned)id]

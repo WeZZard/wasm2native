@@ -84,7 +84,8 @@ public:
     std::unique_ptr<llvm::Module>&& Module,
     std::unique_ptr<llvm::TargetMachine>&& Target
   )
-    : Context(std::move(Context)), Module(std::move(Module)),
+    : Context(std::move(Context)),
+      Module(std::move(Module)),
       Target(std::move(Target)) {
     assert(getModule() && "Use GeneratedModule::null() instead");
     assert(getContext() && "Use GeneratedModule::null() instead");
@@ -188,9 +189,16 @@ public:
     SymsToEmit symsToEmit = None,
     llvm::GlobalVariable ** outModuleHash = nullptr
   ) {
-    return IRGenDescriptor{file,    symsToEmit, Opts,
-                           TBDOpts, Mod,        ModuleName,
-                           PSPs,    {},         outModuleHash};
+    return IRGenDescriptor{
+      file,
+      symsToEmit,
+      Opts,
+      TBDOpts,
+      Mod,
+      ModuleName,
+      PSPs,
+      {},
+      outModuleHash};
   }
 
   static IRGenDescriptor forWholeModule(
@@ -236,8 +244,7 @@ public:
 /// can be recorded by the stats reporter.
 template <typename Request>
 void reportEvaluatedRequest(
-  UnifiedStatsReporter& stats,
-  const Request& request
+  UnifiedStatsReporter& stats, const Request& request
 );
 
 class IRGenRequest

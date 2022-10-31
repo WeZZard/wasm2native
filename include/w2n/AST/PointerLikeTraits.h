@@ -80,8 +80,7 @@ struct PointerLikeTypeTraits;
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::Decl, w2n::DeclAlignInBits)
 
 LLVM_DECLARE_TEMPLATE_TYPE_ALIGNMENT_1(
-  w2n::ASTAllocated,
-  w2n::ASTAllocatedAlignInBits
+  w2n::ASTAllocated, w2n::ASTAllocatedAlignInBits
 )
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::ASTContext, w2n::ASTContextAlignInBits)
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::DeclContext, w2n::DeclContextAlignInBits)

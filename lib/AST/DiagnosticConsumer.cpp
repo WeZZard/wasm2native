@@ -18,9 +18,7 @@ using namespace w2n;
 DiagnosticConsumer::~DiagnosticConsumer() = default;
 
 DiagnosticInfo::FixIt::FixIt(
-  CharSourceRange R,
-  StringRef Str,
-  ArrayRef<DiagnosticArgument> Args
+  CharSourceRange R, StringRef Str, ArrayRef<DiagnosticArgument> Args
 )
   : Range(R) {
   // FIXME: Defer text formatting to later in the pipeline.
@@ -122,7 +120,8 @@ void FileSpecificDiagnosticConsumer::computeConsumersOrderedByRange(
   assert(
     ConsumersOrderedByRange.end() ==
       std::adjacent_find(
-        ConsumersOrderedByRange.begin(), ConsumersOrderedByRange.end(),
+        ConsumersOrderedByRange.begin(),
+        ConsumersOrderedByRange.end(),
         [](const ConsumerAndRange& left, const ConsumerAndRange& right) {
           return left.overlaps(right);
         }
@@ -133,8 +132,7 @@ void FileSpecificDiagnosticConsumer::computeConsumersOrderedByRange(
 
 Optional<FileSpecificDiagnosticConsumer::Subconsumer *>
 FileSpecificDiagnosticConsumer::subconsumerForLocation(
-  SourceManager& SM,
-  SourceLoc loc
+  SourceManager& SM, SourceLoc loc
 ) {
   // Diagnostics with invalid locations always go to every consumer.
   if (loc.isInvalid())
@@ -182,7 +180,9 @@ FileSpecificDiagnosticConsumer::subconsumerForLocation(
   // sorted by end location, it's looking for the first range where the
   // end location is greater than or equal to 'loc'.
   const ConsumerAndRange * possiblyContainingRangeIter = std::lower_bound(
-    ConsumersOrderedByRange.begin(), ConsumersOrderedByRange.end(), loc,
+    ConsumersOrderedByRange.begin(),
+    ConsumersOrderedByRange.end(),
+    loc,
     [](const ConsumerAndRange& entry, SourceLoc loc) -> bool {
       return entry.endsAfter(loc);
     }
@@ -200,8 +200,7 @@ FileSpecificDiagnosticConsumer::subconsumerForLocation(
 }
 
 void FileSpecificDiagnosticConsumer::handleDiagnostic(
-  SourceManager& SM,
-  const DiagnosticInfo& Info
+  SourceManager& SM, const DiagnosticInfo& Info
 ) {
 
   HasAnErrorBeenConsumed |= Info.Kind == DiagnosticKind::Error;
@@ -218,8 +217,7 @@ void FileSpecificDiagnosticConsumer::handleDiagnostic(
 
 Optional<FileSpecificDiagnosticConsumer::Subconsumer *>
 FileSpecificDiagnosticConsumer::findSubconsumer(
-  SourceManager& SM,
-  const DiagnosticInfo& Info
+  SourceManager& SM, const DiagnosticInfo& Info
 ) {
   // Ensure that a note goes to the same place as the preceeding non-note.
   switch (Info.Kind) {
@@ -237,8 +235,7 @@ FileSpecificDiagnosticConsumer::findSubconsumer(
 
 Optional<FileSpecificDiagnosticConsumer::Subconsumer *>
 FileSpecificDiagnosticConsumer::findSubconsumerForNonNote(
-  SourceManager& SM,
-  const DiagnosticInfo& Info
+  SourceManager& SM, const DiagnosticInfo& Info
 ) {
   const auto subconsumer = subconsumerForLocation(SM, Info.Loc);
   if (!subconsumer)
@@ -280,8 +277,7 @@ void FileSpecificDiagnosticConsumer::
 }
 
 void NullDiagnosticConsumer::handleDiagnostic(
-  SourceManager& SM,
-  const DiagnosticInfo& Info
+  SourceManager& SM, const DiagnosticInfo& Info
 ) {
   LLVM_DEBUG({
     llvm::dbgs() << "NullDiagnosticConsumer received diagnostic: ";
@@ -299,8 +295,7 @@ ForwardingDiagnosticConsumer::ForwardingDiagnosticConsumer(
 }
 
 void ForwardingDiagnosticConsumer::handleDiagnostic(
-  SourceManager& SM,
-  const DiagnosticInfo& Info
+  SourceManager& SM, const DiagnosticInfo& Info
 ) {
   LLVM_DEBUG({
     llvm::dbgs() << "ForwardingDiagnosticConsumer received diagnostic: ";

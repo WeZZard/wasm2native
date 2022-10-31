@@ -64,9 +64,7 @@ public:
   }
 
   virtual void addSymbol(
-    StringRef name,
-    llvm::MachO::SymbolKind kind,
-    SymbolSource source
+    StringRef name, llvm::MachO::SymbolKind kind, SymbolSource source
   ) {
   }
 };
@@ -80,9 +78,7 @@ public:
   }
 
   void addSymbol(
-    StringRef symbol,
-    llvm::MachO::SymbolKind kind,
-    SymbolSource source
+    StringRef symbol, llvm::MachO::SymbolKind kind, SymbolSource source
   ) override {
     func(symbol, kind, source);
   }

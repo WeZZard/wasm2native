@@ -22,8 +22,7 @@ namespace w2n {
 //----------------------------------------------------------------------------//
 
 WasmFileParsingResult ParseWasmFileRequest::evaluate(
-  Evaluator& evaluator,
-  WasmFile * SF
+  Evaluator& evaluator, WasmFile * SF
 ) const {
   assert(SF);
   auto& ctx = SF->getASTContext();

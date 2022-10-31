@@ -127,8 +127,7 @@ public:
   /// responsibility of callers to ensure they are order-invariant or are
   /// sorting the result.
   void enumerateReferencesInFile(
-    const SourceFile * SF,
-    ReferenceEnumerator f
+    const SourceFile * SF, ReferenceEnumerator f
   ) const;
 };
 
@@ -197,8 +196,7 @@ void evaluator::DependencyRecorder::replayCachedRequest(const Request& req
 
 template <typename Request>
 void evaluator::DependencyRecorder::handleDependencySourceRequest(
-  const Request& req,
-  SourceFile * source
+  const Request& req, SourceFile * source
 ) {
   auto found = requestReferences.find_as<Request>(req);
   if (found != requestReferences.end<Request>()) {

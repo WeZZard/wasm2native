@@ -41,7 +41,8 @@ private:
 
 protected:
   FileUnit(FileUnitKind Kind, ModuleDecl& Module)
-    : DeclContext(DeclContextKind::FileUnit, &Module), Kind(Kind) {
+    : DeclContext(DeclContextKind::FileUnit, &Module),
+      Kind(Kind) {
   }
 
 public:

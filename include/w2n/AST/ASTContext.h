@@ -121,8 +121,7 @@ public:
 
   template <typename T>
   MutableArrayRef<T> AllocateUninitialized(
-    unsigned NumElts,
-    AllocationArena Arena = AllocationArena::Permanent
+    unsigned NumElts, AllocationArena Arena = AllocationArena::Permanent
   ) const {
     T * Data = (T *)Allocate(sizeof(T) * NumElts, alignof(T), Arena);
     return {Data, NumElts};
@@ -130,8 +129,7 @@ public:
 
   template <typename T>
   MutableArrayRef<T> Allocate(
-    unsigned numElts,
-    AllocationArena arena = AllocationArena::Permanent
+    unsigned numElts, AllocationArena arena = AllocationArena::Permanent
   ) const {
     T * res = (T *)Allocate(sizeof(T) * numElts, alignof(T), arena);
     for (unsigned i = 0; i != numElts; ++i)
@@ -144,8 +142,7 @@ public:
    */
   template <typename T>
   typename std::remove_reference<T>::type * AllocateObjectCopy(
-    T&& t,
-    AllocationArena arena = AllocationArena::Permanent
+    T&& t, AllocationArena arena = AllocationArena::Permanent
   ) const {
     // This function cannot be named AllocateCopy because it would always
     // win overload resolution over the AllocateCopy(ArrayRef<T>).
@@ -158,9 +155,7 @@ public:
 
   template <typename T, typename It>
   T * AllocateCopy(
-    It start,
-    It end,
-    AllocationArena arena = AllocationArena::Permanent
+    It start, It end, AllocationArena arena = AllocationArena::Permanent
   ) const {
     T * res = (T *)Allocate(sizeof(T) * (end - start), alignof(T), arena);
     for (unsigned i = 0; start != end; ++start, ++i)
@@ -170,8 +165,7 @@ public:
 
   template <typename T, size_t N>
   MutableArrayRef<T> AllocateCopy(
-    T (&array)[N],
-    AllocationArena arena = AllocationArena::Permanent
+    T (&array)[N], AllocationArena arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
       AllocateCopy<T>(array, array + N, arena), N
@@ -180,8 +174,7 @@ public:
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
-    ArrayRef<T> array,
-    AllocationArena arena = AllocationArena::Permanent
+    ArrayRef<T> array, AllocationArena arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
       AllocateCopy<T>(array.begin(), array.end(), arena), array.size()
@@ -213,8 +206,7 @@ public:
   }
 
   StringRef AllocateCopy(
-    StringRef Str,
-    AllocationArena arena = AllocationArena::Permanent
+    StringRef Str, AllocationArena arena = AllocationArena::Permanent
   ) const {
     ArrayRef<char> Result =
       AllocateCopy(llvm::makeArrayRef(Str.data(), Str.size()), arena);

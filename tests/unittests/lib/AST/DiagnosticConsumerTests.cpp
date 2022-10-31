@@ -18,7 +18,8 @@ public:
     ExpectationDiagnosticConsumer * previous,
     ArrayRef<ExpectedDiagnostic> expected
   )
-    : previous(previous), expected(expected.begin(), expected.end()) {
+    : previous(previous),
+      expected(expected.begin(), expected.end()) {
   }
 
   ~ExpectationDiagnosticConsumer() override {
@@ -45,15 +46,20 @@ public:
 };
 
 DiagnosticInfo testDiagnosticInfo(
-  SourceLoc Loc,
-  const char * Message,
-  DiagnosticKind Kind
+  SourceLoc Loc, const char * Message, DiagnosticKind Kind
 ) {
   return DiagnosticInfo(
-    DiagID(0), Loc, Kind, Message, /*args*/ {},
+    DiagID(0),
+    Loc,
+    Kind,
+    Message,
+    /*args*/ {},
     /*category*/ StringRef(),
-    /*indirectBuffer*/ SourceLoc(), /*childInfo*/ {},
-    /*ranges*/ {}, /*fixIts*/ {}, /*isChild*/ false
+    /*indirectBuffer*/ SourceLoc(),
+    /*childInfo*/ {},
+    /*ranges*/ {},
+    /*fixIts*/ {},
+    /*isChild*/ false
   );
 }
 
@@ -108,8 +114,7 @@ TEST(FileSpecificDiagnosticConsumer, InvalidLocDiagsGoToEveryConsumer) {
 }
 
 TEST(
-  FileSpecificDiagnosticConsumer,
-  ErrorsWithLocationsGoToExpectedConsumers
+  FileSpecificDiagnosticConsumer, ErrorsWithLocationsGoToExpectedConsumers
 ) {
   SourceManager sourceMgr;
   //                                             01234
@@ -130,9 +135,7 @@ TEST(
     {"back", backOfA},
   };
   ExpectedDiagnostic expectedB[] = {
-    {"front", frontOfB},
-    {"middle", middleOfB},
-    {"back", backOfB}};
+    {"front", frontOfB}, {"middle", middleOfB}, {"back", backOfB}};
 
   auto consumerA =
     std::make_unique<ExpectationDiagnosticConsumer>(nullptr, expectedA);
@@ -189,12 +192,14 @@ TEST(
   SourceLoc backOfB = sourceMgr.getLocForOffset(bufferB, 4);
 
   ExpectedDiagnostic expectedA[] = {
-    {"front", frontOfA},   {"front", frontOfB}, {"middle", middleOfA},
-    {"middle", middleOfB}, {"back", backOfA},   {"back", backOfB}};
-  ExpectedDiagnostic expectedUnaffiliated[] = {
+    {"front", frontOfA},
     {"front", frontOfB},
+    {"middle", middleOfA},
     {"middle", middleOfB},
+    {"back", backOfA},
     {"back", backOfB}};
+  ExpectedDiagnostic expectedUnaffiliated[] = {
+    {"front", frontOfB}, {"middle", middleOfB}, {"back", backOfB}};
 
   auto consumerA =
     std::make_unique<ExpectationDiagnosticConsumer>(nullptr, expectedA);
@@ -235,8 +240,7 @@ TEST(
 }
 
 TEST(
-  FileSpecificDiagnosticConsumer,
-  WarningsAndRemarksAreTreatedLikeErrors
+  FileSpecificDiagnosticConsumer, WarningsAndRemarksAreTreatedLikeErrors
 ) {
   SourceManager sourceMgr;
   //                                             01234
@@ -304,9 +308,15 @@ TEST(FileSpecificDiagnosticConsumer, NotesAreAttachedToErrors) {
   SourceLoc backOfB = sourceMgr.getLocForOffset(bufferB, 4);
 
   ExpectedDiagnostic expectedA[] = {
-    {"error", frontOfA}, {"note", middleOfA}, {"note", backOfA},
-    {"error", frontOfB}, {"note", middleOfB}, {"note", backOfB},
-    {"error", frontOfA}, {"note", middleOfA}, {"note", backOfA},
+    {"error", frontOfA},
+    {"note", middleOfA},
+    {"note", backOfA},
+    {"error", frontOfB},
+    {"note", middleOfB},
+    {"note", backOfB},
+    {"error", frontOfA},
+    {"note", middleOfA},
+    {"note", backOfA},
   };
   ExpectedDiagnostic expectedUnaffiliated[] = {
     {"error", frontOfB},
@@ -361,8 +371,7 @@ TEST(FileSpecificDiagnosticConsumer, NotesAreAttachedToErrors) {
 }
 
 TEST(
-  FileSpecificDiagnosticConsumer,
-  NotesAreAttachedToWarningsAndRemarks
+  FileSpecificDiagnosticConsumer, NotesAreAttachedToWarningsAndRemarks
 ) {
   SourceManager sourceMgr;
   //                                             01234
@@ -378,9 +387,15 @@ TEST(
   SourceLoc backOfB = sourceMgr.getLocForOffset(bufferB, 4);
 
   ExpectedDiagnostic expectedA[] = {
-    {"warning", frontOfA}, {"note", middleOfA}, {"note", backOfA},
-    {"warning", frontOfB}, {"note", middleOfB}, {"note", backOfB},
-    {"remark", frontOfA},  {"note", middleOfA}, {"note", backOfA},
+    {"warning", frontOfA},
+    {"note", middleOfA},
+    {"note", backOfA},
+    {"warning", frontOfB},
+    {"note", middleOfB},
+    {"note", backOfB},
+    {"remark", frontOfA},
+    {"note", middleOfA},
+    {"note", backOfA},
   };
   ExpectedDiagnostic expectedUnaffiliated[] = {
     {"warning", frontOfB},
@@ -435,8 +450,7 @@ TEST(
 }
 
 TEST(
-  FileSpecificDiagnosticConsumer,
-  NotesAreAttachedToErrorsEvenAcrossFiles
+  FileSpecificDiagnosticConsumer, NotesAreAttachedToErrorsEvenAcrossFiles
 ) {
   SourceManager sourceMgr;
   //                                             01234
@@ -452,8 +466,12 @@ TEST(
   SourceLoc backOfB = sourceMgr.getLocForOffset(bufferB, 4);
 
   ExpectedDiagnostic expectedA[] = {
-    {"error", frontOfA}, {"note", middleOfB}, {"note", backOfA},
-    {"error", frontOfA}, {"note", middleOfB}, {"note", backOfA},
+    {"error", frontOfA},
+    {"note", middleOfB},
+    {"note", backOfA},
+    {"error", frontOfA},
+    {"note", middleOfB},
+    {"note", backOfA},
   };
   ExpectedDiagnostic expectedB[] = {
     {"error", frontOfB},
@@ -524,9 +542,15 @@ TEST(
   SourceLoc backOfB = sourceMgr.getLocForOffset(bufferB, 4);
 
   ExpectedDiagnostic expectedA[] = {
-    {"error", frontOfA}, {"note", middleOfB}, {"note", backOfA},
-    {"error", frontOfB}, {"note", middleOfA}, {"note", backOfB},
-    {"error", frontOfA}, {"note", middleOfB}, {"note", backOfA},
+    {"error", frontOfA},
+    {"note", middleOfB},
+    {"note", backOfA},
+    {"error", frontOfB},
+    {"note", middleOfA},
+    {"note", backOfB},
+    {"error", frontOfA},
+    {"note", middleOfB},
+    {"note", backOfA},
   };
   ExpectedDiagnostic expectedUnaffiliated[] = {
     {"error", frontOfB},
@@ -593,8 +617,12 @@ TEST(
   SourceLoc frontOfB = sourceMgr.getLocForBufferStart(bufferB);
 
   ExpectedDiagnostic expectedA[] = {
-    {"error", frontOfA},   {"note", SourceLoc()}, {"error", frontOfB},
-    {"note", SourceLoc()}, {"error", frontOfA},   {"note", SourceLoc()},
+    {"error", frontOfA},
+    {"note", SourceLoc()},
+    {"error", frontOfB},
+    {"note", SourceLoc()},
+    {"error", frontOfA},
+    {"note", SourceLoc()},
   };
   ExpectedDiagnostic expectedUnaffiliated[] = {
     {"error", frontOfB},

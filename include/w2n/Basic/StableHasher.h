@@ -219,8 +219,7 @@ public:
 private:
   template <typename... Ts, unsigned... Indices>
   void combine_tuple(
-    const std::tuple<Ts...>& arg,
-    std::index_sequence<Indices...> indices
+    const std::tuple<Ts...>& arg, std::index_sequence<Indices...> indices
   ) {
     return combine_many(hash_value(std::get<Indices>(arg))...);
   }

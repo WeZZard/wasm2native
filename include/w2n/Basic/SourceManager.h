@@ -103,10 +103,7 @@ public:
 
   /// Add a \c #sourceLocation-defined virtual file region of \p Length.
   void createVirtualFile(
-    SourceLoc Loc,
-    StringRef Name,
-    int LineOffset,
-    unsigned Length
+    SourceLoc Loc, StringRef Name, int LineOffset, unsigned Length
   );
 
   /// Add a \c #sourceLocation-defined virtual file region.
@@ -192,8 +189,7 @@ public:
   ///
   /// This respects \c #sourceLocation directives.
   std::pair<unsigned, unsigned> getPresumedLineAndColumnForLoc(
-    SourceLoc Loc,
-    unsigned BufferID = 0
+    SourceLoc Loc, unsigned BufferID = 0
   ) const {
     assert(Loc.isValid());
     int LineOffset = getLineOffset(Loc);
@@ -222,8 +218,7 @@ public:
   StringRef getEntireTextForBuffer(unsigned BufferID) const;
 
   StringRef extractText(
-    CharSourceRange Range,
-    Optional<unsigned> BufferID = None
+    CharSourceRange Range, Optional<unsigned> BufferID = None
   ) const;
 
   llvm::SMDiagnostic GetMessage(
@@ -240,9 +235,9 @@ public:
   /// Translate line and column pair to the offset.
   /// If the column number is the maximum unsinged int, return the offset
   /// of the end of the line.
-  llvm::Optional<unsigned>
-  resolveFromLineCol(unsigned BufferId, unsigned Line, unsigned Col)
-    const;
+  llvm::Optional<unsigned> resolveFromLineCol(
+    unsigned BufferId, unsigned Line, unsigned Col
+  ) const;
 
   /// Translate the end position of the given line to the offset.
   llvm::Optional<unsigned>

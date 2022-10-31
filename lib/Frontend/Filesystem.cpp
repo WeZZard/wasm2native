@@ -74,8 +74,7 @@ canUseTemporaryForWrite(const StringRef outputPath) {
 /// \returns The path to the temporary file that was opened, or \c None if
 /// the file couldn't be created.
 static Optional<std::string> tryToOpenTemporaryFile(
-  Optional<llvm::raw_fd_ostream>& openedStream,
-  const StringRef outputPath
+  Optional<llvm::raw_fd_ostream>& openedStream, const StringRef outputPath
 ) {
   namespace fs = llvm::sys::fs;
 
@@ -219,7 +218,10 @@ llvm::ErrorOr<FileDifference> w2n::areFilesDifferent(
   std::error_code sourceRegionErr;
   fs::mapped_file_region sourceRegion(
     fs::convertFDToNativeFile(sourceFile.fd),
-    fs::mapped_file_region::readonly, size, 0, sourceRegionErr
+    fs::mapped_file_region::readonly,
+    size,
+    0,
+    sourceRegionErr
   );
   if (sourceRegionErr) {
     return sourceRegionErr;
@@ -228,7 +230,10 @@ llvm::ErrorOr<FileDifference> w2n::areFilesDifferent(
   std::error_code destRegionErr;
   fs::mapped_file_region destRegion(
     fs::convertFDToNativeFile(destFile.fd),
-    fs::mapped_file_region::readonly, size, 0, destRegionErr
+    fs::mapped_file_region::readonly,
+    size,
+    0,
+    destRegionErr
   );
 
   if (destRegionErr) {
@@ -243,13 +248,13 @@ llvm::ErrorOr<FileDifference> w2n::areFilesDifferent(
 }
 
 std::error_code w2n::moveFileIfDifferent(
-  const llvm::Twine& source,
-  const llvm::Twine& destination
+  const llvm::Twine& source, const llvm::Twine& destination
 ) {
   namespace fs = llvm::sys::fs;
 
   auto result = areFilesDifferent(
-    source, destination,
+    source,
+    destination,
     /*allowDestinationErrors=*/true
   );
 

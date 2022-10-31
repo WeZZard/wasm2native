@@ -82,19 +82,23 @@ class DiagnosticArgument {
 
 public:
   DiagnosticArgument(StringRef S)
-    : Kind(DiagnosticArgumentKind::String), StringVal(S) {
+    : Kind(DiagnosticArgumentKind::String),
+      StringVal(S) {
   }
 
   DiagnosticArgument(int I)
-    : Kind(DiagnosticArgumentKind::Integer), IntegerVal(I) {
+    : Kind(DiagnosticArgumentKind::Integer),
+      IntegerVal(I) {
   }
 
   DiagnosticArgument(unsigned I)
-    : Kind(DiagnosticArgumentKind::Unsigned), UnsignedVal(I) {
+    : Kind(DiagnosticArgumentKind::Unsigned),
+      UnsignedVal(I) {
   }
 
   DiagnosticArgument(DiagnosticInfo * D)
-    : Kind(DiagnosticArgumentKind::Diagnostic), DiagnosticVal(D) {
+    : Kind(DiagnosticArgumentKind::Diagnostic),
+      DiagnosticVal(D) {
   }
 
   /// Initializes a diagnostic argument using the underlying type of the
@@ -165,7 +169,8 @@ struct DiagnosticFormatOptions {
   }
 
   DiagnosticFormatOptions()
-    : OpeningQuotationMark("'"), ClosingQuotationMark("'"),
+    : OpeningQuotationMark("'"),
+      ClosingQuotationMark("'"),
       AKAFormatString("'%s' (aka '%s')"),
       OpaqueResultFormatString("'%s' (%s of '%s')") {
   }
@@ -222,7 +227,8 @@ public:
   }
 
   /*implicit*/ Diagnostic(DiagID ID, ArrayRef<DiagnosticArgument> Args)
-    : ID(ID), Args(Args.begin(), Args.end()) {
+    : ID(ID),
+      Args(Args.begin(), Args.end()) {
   }
 
   // Accessors.
@@ -317,7 +323,8 @@ class InFlightDiagnostic {
   ///
   /// This constructor is only available to the DiagnosticEngine.
   InFlightDiagnostic(DiagnosticEngine& Engine)
-    : Engine(&Engine), IsActive(true) {
+    : Engine(&Engine),
+      IsActive(true) {
   }
 
   InFlightDiagnostic(const InFlightDiagnostic&) = delete;
@@ -336,7 +343,8 @@ public:
   /// Transfer an in-flight diagnostic to a new object, which is
   /// typically used when returning in-flight diagnostics.
   InFlightDiagnostic(InFlightDiagnostic&& Other)
-    : Engine(Other.Engine), IsActive(Other.IsActive) {
+    : Engine(Other.Engine),
+      IsActive(Other.IsActive) {
     Other.IsActive = false;
   }
 
@@ -518,17 +526,13 @@ private:
   );
 
   InFlightDiagnostic& fixItInsert(
-    SourceLoc L,
-    StringRef FormatString,
-    ArrayRef<DiagnosticArgument> Args
+    SourceLoc L, StringRef FormatString, ArrayRef<DiagnosticArgument> Args
   ) {
     return fixItReplaceChars(L, L, FormatString, Args);
   }
 
   InFlightDiagnostic& fixItInsertAfter(
-    SourceLoc L,
-    StringRef FormatString,
-    ArrayRef<DiagnosticArgument> Args
+    SourceLoc L, StringRef FormatString, ArrayRef<DiagnosticArgument> Args
   );
 };
 
@@ -703,7 +707,8 @@ private:
 
 public:
   explicit DiagnosticEngine(SourceManager& SourceMgr)
-    : SourceMgr(SourceMgr), ActiveDiagnostic(),
+    : SourceMgr(SourceMgr),
+      ActiveDiagnostic(),
       TransactionStrings(TransactionAllocator) {
   }
 
@@ -889,9 +894,7 @@ public:
   /// \returns An in-flight diagnostic, to which additional information
   /// can be attached.
   InFlightDiagnostic diagnose(
-    const Decl * decl,
-    DiagID id,
-    ArrayRef<DiagnosticArgument> args
+    const Decl * decl, DiagID id, ArrayRef<DiagnosticArgument> args
   ) {
     return diagnose(decl, Diagnostic(id, args));
   }
@@ -939,8 +942,7 @@ public:
   /// \param builder A closure which builds and emits notes to be attached
   /// to the parent diag.
   void diagnoseWithNotes(
-    InFlightDiagnostic parentDiag,
-    llvm::function_ref<void(void)> builder
+    InFlightDiagnostic parentDiag, llvm::function_ref<void(void)> builder
   );
 
   /// \returns true if diagnostic is marked with PointsToFirstBadToken
@@ -1096,8 +1098,10 @@ public:
   DiagnosticTransaction& operator=(const DiagnosticTransaction&) = delete;
 
   explicit DiagnosticTransaction(DiagnosticEngine& engine)
-    : Engine(engine), PrevDiagnostics(Engine.TentativeDiagnostics.size()),
-      Depth(Engine.TransactionCount), IsOpen(true) {
+    : Engine(engine),
+      PrevDiagnostics(Engine.TentativeDiagnostics.size()),
+      Depth(Engine.TransactionCount),
+      IsOpen(true) {
     Engine.TransactionCount++;
   }
 
@@ -1195,7 +1199,8 @@ public:
     // Associate the children with the parent.
     for (auto diag =
            Engine.TentativeDiagnostics.begin() + PrevDiagnostics + 1;
-         diag != Engine.TentativeDiagnostics.end(); ++diag) {
+         diag != Engine.TentativeDiagnostics.end();
+         ++diag) {
       diag->setIsChildNote(true);
       parent.addChildNote(std::move(*diag));
     }
@@ -1245,10 +1250,10 @@ public:
   /// Create a new diagnostic queue with a given engine to forward the
   /// diagnostics to.
   explicit DiagnosticQueue(
-    DiagnosticEngine& engine,
-    bool emitOnDestruction
+    DiagnosticEngine& engine, bool emitOnDestruction
   )
-    : UnderlyingEngine(engine), QueueEngine(engine.SourceMgr),
+    : UnderlyingEngine(engine),
+      QueueEngine(engine.SourceMgr),
       EmitOnDestruction(emitOnDestruction) {
     // Open a transaction to avoid emitting any diagnostics for the
     // temporary engine.
@@ -1294,8 +1299,7 @@ public:
 };
 
 inline void DiagnosticEngine::diagnoseWithNotes(
-  InFlightDiagnostic parentDiag,
-  llvm::function_ref<void(void)> builder
+  InFlightDiagnostic parentDiag, llvm::function_ref<void(void)> builder
 ) {
   CompoundDiagnosticTransaction transaction(*this);
   parentDiag.flush();

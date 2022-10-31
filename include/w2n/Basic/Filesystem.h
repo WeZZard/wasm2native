@@ -43,8 +43,7 @@ std::error_code atomicallyWritingToFile(
 /// In the latter case, the file at \p source is deleted. If an error
 /// occurs, the file at \p source will still be present at \p source.
 std::error_code moveFileIfDifferent(
-  const llvm::Twine& source,
-  const llvm::Twine& destination
+  const llvm::Twine& source, const llvm::Twine& destination
 );
 
 enum class FileDifference : uint8_t {

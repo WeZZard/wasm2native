@@ -17,9 +17,7 @@ namespace w2n {
  *
  */
 int performFrontend(
-  llvm::ArrayRef<const char *> args,
-  const char * argv0,
-  void * mainAddr
+  llvm::ArrayRef<const char *> args, const char * argv0, void * mainAddr
 );
 
 } // namespace w2n

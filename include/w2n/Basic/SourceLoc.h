@@ -77,14 +77,12 @@ public:
   /// as specified by \c LastBufferID, then we don't print the filename.
   /// If not, we do print the filename, and then update \c LastBufferID
   /// with the BufferID printed.
-  void
-  print(raw_ostream& OS, const SourceManager& SM, unsigned& LastBufferID)
-    const;
+  void print(
+    raw_ostream& OS, const SourceManager& SM, unsigned& LastBufferID
+  ) const;
 
   void printLineAndColumn(
-    raw_ostream& OS,
-    const SourceManager& SM,
-    unsigned BufferID = 0
+    raw_ostream& OS, const SourceManager& SM, unsigned BufferID = 0
   ) const;
 
   void print(raw_ostream& OS, const SourceManager& SM) const {
@@ -172,9 +170,9 @@ public:
     bool PrintText = true
   ) const;
 
-  void
-  print(raw_ostream& OS, const SourceManager& SM, bool PrintText = true)
-    const {
+  void print(
+    raw_ostream& OS, const SourceManager& SM, bool PrintText = true
+  ) const {
     unsigned Tmp = ~0U;
     print(OS, SM, Tmp, PrintText);
   }
@@ -192,15 +190,14 @@ public:
   CharSourceRange() = default;
 
   CharSourceRange(SourceLoc Start, unsigned ByteLength)
-    : Start(Start), ByteLength(ByteLength) {
+    : Start(Start),
+      ByteLength(ByteLength) {
   }
 
   /// Constructs a character range which starts and ends at the
   /// specified character locations.
   CharSourceRange(
-    const SourceManager& SM,
-    SourceLoc Start,
-    SourceLoc End
+    const SourceManager& SM, SourceLoc Start, SourceLoc End
   );
 
   /// Use Lexer::getCharSourceRangeFromSourceRange() instead.
@@ -293,9 +290,9 @@ public:
     bool PrintText = true
   ) const;
 
-  void
-  print(raw_ostream& OS, const SourceManager& SM, bool PrintText = true)
-    const {
+  void print(
+    raw_ostream& OS, const SourceManager& SM, bool PrintText = true
+  ) const {
     unsigned Tmp = ~0U;
     print(OS, SM, Tmp, PrintText);
   }

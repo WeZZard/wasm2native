@@ -10,7 +10,9 @@ using namespace w2n::irgen;
 #pragma mark - IRGenerator
 
 IRGenerator::IRGenerator(const IRGenOptions& Opts, ModuleDecl& Module)
-  : Opts(Opts), Module(Module), QueueIndex(0) {
+  : Opts(Opts),
+    Module(Module),
+    QueueIndex(0) {
 }
 
 void IRGenerator::addGenModule(SourceFile * SF, IRGenModule * IGM) {
@@ -67,9 +69,11 @@ IRGenModule::IRGenModule(
   StringRef OutputFilename,
   StringRef MainInputFilenameForDebugInfo
 )
-  : LLVMContext(new llvm::LLVMContext()), IRGen(irgen),
+  : LLVMContext(new llvm::LLVMContext()),
+    IRGen(irgen),
     Context(irgen.Module.getASTContext()),
-    TargetMachine(std::move(target)), OutputFilename(OutputFilename),
+    TargetMachine(std::move(target)),
+    OutputFilename(OutputFilename),
     MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
     ModuleHash(nullptr) {
 }
@@ -82,7 +86,8 @@ GeneratedModule IRGenModule::intoGeneratedModule() && {
   return GeneratedModule{
     std::move(LLVMContext),
     // FIXME: std::unique_ptr<llvm::Module>{ClangCodeGen->ReleaseModule()}
-    std::unique_ptr<llvm::Module>(), std::move(TargetMachine)};
+    std::unique_ptr<llvm::Module>(),
+    std::move(TargetMachine)};
 }
 
 llvm::Module * IRGenModule::getModule() const {

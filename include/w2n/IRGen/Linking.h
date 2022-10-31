@@ -235,8 +235,7 @@ public:
 };
 
 StringRef encodeForceLoadSymbolName(
-  llvm::SmallVectorImpl<char>& buf,
-  StringRef name
+  llvm::SmallVectorImpl<char>& buf, StringRef name
 );
 } // namespace irgen
 } // namespace w2n

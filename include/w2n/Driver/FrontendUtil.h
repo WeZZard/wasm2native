@@ -14,8 +14,7 @@ namespace driver {
 /// This function is a wrapper of lvm::cl::ExpandResponseFiles. It will
 /// retry calling the function if the previous expansion failed.
 void ExpandResponseFilesWithRetry(
-  llvm::StringSaver& Saver,
-  llvm::SmallVectorImpl<const char *>& Args
+  llvm::StringSaver& Saver, llvm::SmallVectorImpl<const char *>& Args
 );
 
 } // end namespace driver

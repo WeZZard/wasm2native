@@ -69,7 +69,9 @@ ASTContext::ASTContext(
   SourceManager& SourceMgr,
   DiagnosticEngine& Diags
 )
-  : LangOpts(LangOpts), SourceMgr(SourceMgr), Diags(Diags),
+  : LangOpts(LangOpts),
+    SourceMgr(SourceMgr),
+    Diags(Diags),
     Eval(Diags, LangOpts) {
 }
 

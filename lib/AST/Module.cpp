@@ -22,8 +22,7 @@ void ModuleDecl::addFile(FileUnit& NewFile) {
 }
 
 ArrayRef<SourceFile *> PrimarySourceFilesRequest::evaluate(
-  Evaluator& Eval,
-  ModuleDecl * Module
+  Evaluator& Eval, ModuleDecl * Module
 ) const {
   assert(
     Module->isMainModule() && "Only the main module can have primaries"

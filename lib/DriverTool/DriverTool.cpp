@@ -54,14 +54,16 @@ int runDriver(
     if (FirstArg == "-frontend") {
       return performFrontend(
         llvm::makeArrayRef(Argv.data() + 2, Argv.data() + Argv.size()),
-        Argv[0], (void *)(intptr_t)getExecutablePath
+        Argv[0],
+        (void *)(intptr_t)getExecutablePath
       );
     }
 
     if (!FirstArg.startswith("--driver-mode=") && ExecName == "w2n-frontend") {
       return performFrontend(
         llvm::makeArrayRef(Argv.data() + 1, Argv.data() + Argv.size()),
-        Argv[0], (void *)(intptr_t)getExecutablePath
+        Argv[0],
+        (void *)(intptr_t)getExecutablePath
       );
     }
   }

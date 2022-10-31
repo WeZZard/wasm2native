@@ -65,7 +65,8 @@ public:
   const Evaluator& evaluator;
 
   CyclicalRequestError(const Request& request, const Evaluator& evaluator)
-    : request(request), evaluator(evaluator) {
+    : request(request),
+      evaluator(evaluator) {
   }
 
   virtual void log(llvm::raw_ostream& out) const override;
@@ -86,9 +87,7 @@ char CyclicalRequestError<Request>::ID = '\0';
 /// detected.
 template <typename Request>
 typename Request::OutputType evaluateOrDefault(
-  Evaluator& Eval,
-  Request req,
-  typename Request::OutputType DefaultValue
+  Evaluator& Eval, Request req, typename Request::OutputType DefaultValue
 ) {
   auto Result = Eval(req);
   if (auto Err = Result.takeError()) {
@@ -107,8 +106,7 @@ typename Request::OutputType evaluateOrDefault(
 /// can be recorded by the stats reporter.
 template <typename Request>
 void reportEvaluatedRequest(
-  UnifiedStatsReporter& stats,
-  const Request& request
+  UnifiedStatsReporter& stats, const Request& request
 ) {
 }
 
@@ -241,8 +239,7 @@ public:
   /// These functions will be called to evaluate any requests within that
   /// zone.
   void registerRequestFunctions(
-    Zone zone,
-    ArrayRef<AbstractRequestFunction *> functions
+    Zone zone, ArrayRef<AbstractRequestFunction *> functions
   );
 
   void enumerateReferencesInFile(
@@ -296,8 +293,7 @@ public:
     typename Request,
     typename std::enable_if<Request::hasExternalCache>::type * = nullptr>
   void cacheOutput(
-    const Request& request,
-    typename Request::OutputType&& output
+    const Request& request, typename Request::OutputType&& output
   ) {
     request.cacheResult(std::move(output));
   }
@@ -308,8 +304,7 @@ public:
     typename Request,
     typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
   void cacheOutput(
-    const Request& request,
-    typename Request::OutputType&& output
+    const Request& request, typename Request::OutputType&& output
   ) {
     cache.insert<Request>(request, std::move(output));
   }
@@ -446,8 +441,7 @@ private:
     typename Request,
     typename std::enable_if<!Request::isDependencySink>::type * = nullptr>
   void handleDependencySinkRequest(
-    const Request& r,
-    const typename Request::OutputType& o
+    const Request& r, const typename Request::OutputType& o
   ) {
   }
 
@@ -455,8 +449,7 @@ private:
     typename Request,
     typename std::enable_if<Request::isDependencySink>::type * = nullptr>
   void handleDependencySinkRequest(
-    const Request& r,
-    const typename Request::OutputType& o
+    const Request& r, const typename Request::OutputType& o
   ) {
     evaluator::DependencyCollector collector(recorder);
     r.writeDependencySink(collector, o);

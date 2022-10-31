@@ -124,8 +124,7 @@ public:
   void
   addInputFile(StringRef file, llvm::MemoryBuffer * buffer = nullptr);
   void addPrimaryInputFile(
-    StringRef file,
-    llvm::MemoryBuffer * buffer = nullptr
+    StringRef file, llvm::MemoryBuffer * buffer = nullptr
   );
 
   bool isSingleThreadedWMO() const {

@@ -64,7 +64,8 @@ class RequestKey {
 
 public:
   explicit RequestKey(Request req)
-    : Req(std::move(req)), Kind(StorageKind::Normal) {
+    : Req(std::move(req)),
+      Kind(StorageKind::Normal) {
   }
 
   RequestKey(const RequestKey& other) : Empty(), Kind(other.Kind) {
@@ -170,7 +171,8 @@ class PerRequestCache {
   std::function<void(void *)> Deleter;
 
   PerRequestCache(void * storage, std::function<void(void *)> deleter)
-    : Storage(storage), Deleter(deleter) {
+    : Storage(storage),
+      Deleter(deleter) {
   }
 
 public:
@@ -178,7 +180,8 @@ public:
   }
 
   PerRequestCache(PerRequestCache&& other)
-    : Storage(other.Storage), Deleter(std::move(other.Deleter)) {
+    : Storage(other.Storage),
+      Deleter(std::move(other.Deleter)) {
     other.Storage = nullptr;
   }
 
@@ -232,7 +235,8 @@ class RequestCache {
   std::vector<PerRequestCache> Name##ZoneCache;                          \
                                                                          \
   template <                                                             \
-    typename Request, typename ZoneTypes = TypeIDZoneTypes<Zone::Name>,  \
+    typename Request,                                                    \
+    typename ZoneTypes = TypeIDZoneTypes<Zone::Name>,                    \
     typename std::enable_if<                                             \
       TypeID<Request>::zone == Zone::Name>::type * = nullptr>            \
   llvm::DenseMap<RequestKey<Request>, typename Request::OutputType> *    \
@@ -299,10 +303,10 @@ class PerRequestReferences {
   std::function<void(void *)> Deleter;
 
   PerRequestReferences(
-    void * storage,
-    std::function<void(void *)> deleter
+    void * storage, std::function<void(void *)> deleter
   )
-    : Storage(storage), Deleter(deleter) {
+    : Storage(storage),
+      Deleter(deleter) {
   }
 
 public:
@@ -310,7 +314,8 @@ public:
   }
 
   PerRequestReferences(PerRequestReferences&& other)
-    : Storage(other.Storage), Deleter(std::move(other.Deleter)) {
+    : Storage(other.Storage),
+      Deleter(std::move(other.Deleter)) {
     other.Storage = nullptr;
   }
 
@@ -328,7 +333,8 @@ public:
   template <typename Request>
   static PerRequestReferences makeEmpty() {
     using Map = llvm::DenseMap<
-      RequestKey<Request>, std::vector<DependencyCollector::Reference>>;
+      RequestKey<Request>,
+      std::vector<DependencyCollector::Reference>>;
     return PerRequestReferences(new Map(), [](void * ptr) {
       delete static_cast<Map *>(ptr);
     });
@@ -340,7 +346,8 @@ public:
     std::vector<DependencyCollector::Reference>> *
   get() const {
     using Map = llvm::DenseMap<
-      RequestKey<Request>, std::vector<DependencyCollector::Reference>>;
+      RequestKey<Request>,
+      std::vector<DependencyCollector::Reference>>;
     assert(Storage);
     return static_cast<Map *>(Storage);
   }
@@ -367,11 +374,13 @@ class RequestReferences {
   std::vector<PerRequestReferences> Name##ZoneRefs;                      \
                                                                          \
   template <                                                             \
-    typename Request, typename ZoneTypes = TypeIDZoneTypes<Zone::Name>,  \
+    typename Request,                                                    \
+    typename ZoneTypes = TypeIDZoneTypes<Zone::Name>,                    \
     typename std::enable_if<                                             \
       TypeID<Request>::zone == Zone::Name>::type * = nullptr>            \
   llvm::DenseMap<                                                        \
-    RequestKey<Request>, std::vector<DependencyCollector::Reference>> *  \
+    RequestKey<Request>,                                                 \
+    std::vector<DependencyCollector::Reference>> *                       \
   getRefs() {                                                            \
     auto& refs = Name##ZoneRefs;                                         \
     if (refs.empty()) {                                                  \

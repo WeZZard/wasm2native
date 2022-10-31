@@ -340,17 +340,17 @@ UnifiedStatsReporter::UnifiedStatsReporter(
   bool ProfileEntities
 )
   : currentProcessExitStatusSet(false),
-    currentProcessExitStatus(EXIT_FAILURE), StatsFilename(Directory),
-    TraceFilename(Directory), ProfileDirname(Directory),
+    currentProcessExitStatus(EXIT_FAILURE),
+    StatsFilename(Directory),
+    TraceFilename(Directory),
+    ProfileDirname(Directory),
     StartedTime(llvm::TimeRecord::getCurrentTime()),
     MainThreadID(std::this_thread::get_id()),
     Timer(std::make_unique<NamedRegionTimer>(
-      AuxName,
-      "Building Target",
-      ProgramName,
-      "Running Program"
+      AuxName, "Building Target", ProgramName, "Running Program"
     )),
-    SourceMgr(SM), ClangSourceMgr(CSM),
+    SourceMgr(SM),
+    ClangSourceMgr(CSM),
     RecursiveTimers(std::make_unique<RecursionSafeTimers>()),
     IsFlushingTracesAndProfiles(false) {
   path::append(StatsFilename, makeStatsFileName(ProgramName, AuxName));
@@ -471,7 +471,10 @@ FrontendStatsTracer::FrontendStatsTracer(
   const void * Entity,
   const UnifiedStatsReporter::TraceFormatter * Formatter
 )
-  : Reporter(Reporter), SavedTime(), EventName(EventName), Entity(Entity),
+  : Reporter(Reporter),
+    SavedTime(),
+    EventName(EventName),
+    Entity(Entity),
     Formatter(Formatter) {
   if (Reporter) {
     SavedTime = llvm::TimeRecord::getCurrentTime();
@@ -493,8 +496,10 @@ FrontendStatsTracer::operator=(FrontendStatsTracer&& other) {
 }
 
 FrontendStatsTracer::FrontendStatsTracer(FrontendStatsTracer&& other)
-  : Reporter(other.Reporter), SavedTime(other.SavedTime),
-    EventName(other.EventName), Entity(other.Entity),
+  : Reporter(other.Reporter),
+    SavedTime(other.SavedTime),
+    EventName(other.EventName),
+    Entity(other.Entity),
     Formatter(other.Formatter) {
   other.Reporter = nullptr;
 }
@@ -543,14 +548,20 @@ static inline void saveEvent(
   int64_t Delta = Curr - Last;
   if (Delta != 0) {
     Events.emplace_back(UnifiedStatsReporter::FrontendStatsEvent{
-      NowUS, LiveUS, IsEntry, T.EventName, StatName, Delta, Curr,
-      T.Entity, T.Formatter});
+      NowUS,
+      LiveUS,
+      IsEntry,
+      T.EventName,
+      StatName,
+      Delta,
+      Curr,
+      T.Entity,
+      T.Formatter});
   }
 }
 
 void UnifiedStatsReporter::saveAnyFrontendStatsEvents(
-  FrontendStatsTracer const& T,
-  bool IsEntry
+  FrontendStatsTracer const& T, bool IsEntry
 ) {
   assert(MainThreadID == std::this_thread::get_id());
 
@@ -605,11 +616,17 @@ void UnifiedStatsReporter::saveAnyFrontendStatsEvents(
       T.EventName, TimeDelta.getUserTime(), IsEntry, T.Entity, T.Formatter
     );
     EntityProfilers->SystemTime.profileEvent(
-      T.EventName, TimeDelta.getSystemTime(), IsEntry, T.Entity,
+      T.EventName,
+      TimeDelta.getSystemTime(),
+      IsEntry,
+      T.Entity,
       T.Formatter
     );
     EntityProfilers->ProcessTime.profileEvent(
-      T.EventName, TimeDelta.getProcessTime(), IsEntry, T.Entity,
+      T.EventName,
+      TimeDelta.getProcessTime(),
+      IsEntry,
+      T.Entity,
       T.Formatter
     );
     EntityProfilers->WallTime.profileEvent(

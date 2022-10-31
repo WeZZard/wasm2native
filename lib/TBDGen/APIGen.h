@@ -59,7 +59,9 @@ public:
   APILoc() = default;
 
   APILoc(std::string file, unsigned line, unsigned col)
-    : file(file), line(line), col(col) {
+    : file(file),
+      line(line),
+      col(col) {
   }
 
   StringRef getFilename() const {
@@ -106,8 +108,12 @@ struct APIRecord {
     APIAccess access,
     APIAvailability availability
   )
-    : name(name.data(), name.size()), loc(loc), linkage(linkage),
-      flags(flags), access(access), availability(availability) {
+    : name(name.data(), name.size()),
+      loc(loc),
+      linkage(linkage),
+      flags(flags),
+      access(access),
+      availability(availability) {
   }
 
   bool isWeakDefined() const {

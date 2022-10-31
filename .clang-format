@@ -1,9 +1,10 @@
 BasedOnStyle: LLVM
 ColumnLimit: 74 # 4 for git diff
 AlwaysBreakTemplateDeclarations: true
-AllowAllArgumentsOnNextLine: false
-AllowAllParametersOfDeclarationOnNextLine: false
-AllowAllConstructorInitializersOnNextLine: false # Clang-format 14: consider PackConstructorInitializers: CurrentLine
+AllowAllArgumentsOnNextLine: true
+PackConstructorInitializers: CurrentLine
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments: false
 BinPackParameters: false
 SeparateDefinitionBlocks: Always # Clang-format 14
 AlignAfterOpenBracket: BlockIndent

@@ -20,6 +20,8 @@ AllowShortEnumsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: None
 AllowShortLambdasOnASingleLine: Inline
+BreakBeforeBinaryOperators: NonAssignment
+BreakConstructorInitializers: AfterColon
 SortIncludes: CaseSensitive
 IncludeCategories:
   - Regex:           '^(<|")(llvm|llvm-c|clang|clang-c)/'

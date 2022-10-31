@@ -46,9 +46,9 @@ private:
 protected:
   Decl(
     DeclKind Kind, llvm::PointerUnion<DeclContext *, ASTContext *> Context
-  )
-    : Kind(Kind),
-      Context(Context) {
+  ) :
+    Kind(Kind),
+    Context(Context) {
   }
 
   DeclContext * getDeclContextForModule() const;

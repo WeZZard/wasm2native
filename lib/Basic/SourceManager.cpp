@@ -111,8 +111,8 @@ bool SourceManager::openVirtualFile(
       return false;
     }
     assert(
-      !existingFile.Range.contains(loc) &&
-      "must close current open file first"
+      !existingFile.Range.contains(loc)
+      && "must close current open file first"
     );
     end = nextRangeIter->second.Range.getStart();
   } else {
@@ -132,9 +132,9 @@ void SourceManager::closeVirtualFile(SourceLoc end) {
     unsigned bufferID = findBufferContainingLoc(end);
     CharSourceRange fullRange = getRangeForBuffer(bufferID);
     assert(
-      (fullRange.getByteLength() == 0 ||
-       getVirtualFile(end.getAdvancedLoc(-1))) &&
-      "no open virtual file for this location"
+      (fullRange.getByteLength() == 0
+       || getVirtualFile(end.getAdvancedLoc(-1)))
+      && "no open virtual file for this location"
     );
     assert(fullRange.getEnd() == end);
 #endif
@@ -196,9 +196,9 @@ unsigned SourceManager::getLocOffsetInBuffer(
   assert(Loc.isValid() && "location should be valid");
   auto * Buffer = LLVMSourceMgr.getMemoryBuffer(BufferID);
   assert(
-    Loc.Value.getPointer() >= Buffer->getBuffer().begin() &&
-    Loc.Value.getPointer() <= Buffer->getBuffer().end() &&
-    "Location is not from the specified buffer"
+    Loc.Value.getPointer() >= Buffer->getBuffer().begin()
+    && Loc.Value.getPointer() <= Buffer->getBuffer().end()
+    && "Location is not from the specified buffer"
   );
   return Loc.Value.getPointer() - Buffer->getBuffer().begin();
 }
@@ -211,9 +211,9 @@ SourceManager::getByteDistance(SourceLoc Start, SourceLoc End) const {
   unsigned BufferID = findBufferContainingLoc(Start);
   auto * Buffer = LLVMSourceMgr.getMemoryBuffer(BufferID);
   assert(
-    End.Value.getPointer() >= Buffer->getBuffer().begin() &&
-    End.Value.getPointer() <= Buffer->getBuffer().end() &&
-    "End location is not from the same buffer"
+    End.Value.getPointer() >= Buffer->getBuffer().begin()
+    && End.Value.getPointer() <= Buffer->getBuffer().end()
+    && "End location is not from the same buffer"
   );
 #endif
   // When we have a rope buffer, could be implemented in terms of
@@ -295,8 +295,8 @@ void SourceRange::widen(SourceRange Other) {
 }
 
 bool SourceRange::contains(SourceLoc Loc) const {
-  return Start.Value.getPointer() <= Loc.Value.getPointer() &&
-         Loc.Value.getPointer() <= End.Value.getPointer();
+  return Start.Value.getPointer() <= Loc.Value.getPointer()
+      && Loc.Value.getPointer() <= End.Value.getPointer();
 }
 
 bool SourceRange::overlaps(SourceRange Other) const {

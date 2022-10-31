@@ -36,10 +36,10 @@ private:
   unsigned ForceLoad : 1;
 
 public:
-  LinkLibrary(StringRef N, LibraryKind K, bool forceLoad = false)
-    : Name(N),
-      Kind(static_cast<unsigned>(K)),
-      ForceLoad(forceLoad) {
+  LinkLibrary(StringRef N, LibraryKind K, bool forceLoad = false) :
+    Name(N),
+    Kind(static_cast<unsigned>(K)),
+    ForceLoad(forceLoad) {
     assert(getKind() == K && "not enough bits for the kind");
   }
 

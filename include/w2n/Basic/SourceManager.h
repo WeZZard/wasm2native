@@ -49,8 +49,8 @@ public:
   SourceManager(
     llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> FS =
       llvm::vfs::getRealFileSystem()
-  )
-    : FileSystem(FS) {
+  ) :
+    FileSystem(FS) {
   }
 
   llvm::SourceMgr& getLLVMSourceMgr() {
@@ -77,15 +77,15 @@ public:
   /// Returns true if range \c R contains the location \c Loc.  The
   /// location \c Loc should point at the beginning of the token.
   bool rangeContainsTokenLoc(SourceRange R, SourceLoc Loc) const {
-    return Loc == R.Start || Loc == R.End ||
-           (isBeforeInBuffer(R.Start, Loc) && isBeforeInBuffer(Loc, R.End)
-           );
+    return Loc == R.Start || Loc == R.End
+        || (isBeforeInBuffer(R.Start, Loc) && isBeforeInBuffer(Loc, R.End)
+        );
   }
 
   /// Returns true if range \c Enclosing contains the range \c Inner.
   bool rangeContains(SourceRange Enclosing, SourceRange Inner) const {
-    return rangeContainsTokenLoc(Enclosing, Inner.Start) &&
-           rangeContainsTokenLoc(Enclosing, Inner.End);
+    return rangeContainsTokenLoc(Enclosing, Inner.Start)
+        && rangeContainsTokenLoc(Enclosing, Inner.End);
   }
 
   /// Returns the buffer ID for the specified *valid* location.

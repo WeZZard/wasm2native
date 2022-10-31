@@ -52,8 +52,8 @@ public:
     return const_cast<DeclContext *>(this)->getAsDecl();
   }
 
-  DeclContext(DeclContextKind Kind, DeclContext * Parent)
-    : ParentAndKind(Parent, getASTHierarchyFromKind(Kind)) {
+  DeclContext(DeclContextKind Kind, DeclContext * Parent) :
+    ParentAndKind(Parent, getASTHierarchyFromKind(Kind)) {
     if (Kind != DeclContextKind::Module)
       assert(
         Parent != nullptr && "DeclContext must have a parent context"

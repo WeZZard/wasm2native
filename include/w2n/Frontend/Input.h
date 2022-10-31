@@ -30,15 +30,15 @@ public:
     StringRef Filename,
     bool IsPrimary,
     llvm::MemoryBuffer * Buffer = nullptr
-  )
-    : Input(
-        Filename,
-        IsPrimary,
-        Buffer,
-        file_types::lookupTypeForExtension(
-          llvm::sys::path::extension(Filename)
-        )
-      ) {
+  ) :
+    Input(
+      Filename,
+      IsPrimary,
+      Buffer,
+      file_types::lookupTypeForExtension(
+        llvm::sys::path::extension(Filename)
+      )
+    ) {
   }
 
   /// Constructs an input file from the provided data.
@@ -47,12 +47,12 @@ public:
     bool IsPrimary,
     llvm::MemoryBuffer * Buffer,
     file_types::ID FileID
-  )
-    : Filename(convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions(
-        Filename
-      )),
-      FileID(FileID),
-      BufferAndIsPrimary(Buffer, IsPrimary) {
+  ) :
+    Filename(
+      convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions(Filename)
+    ),
+    FileID(FileID),
+    BufferAndIsPrimary(Buffer, IsPrimary) {
     assert(!Filename.empty());
   }
 

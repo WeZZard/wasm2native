@@ -44,9 +44,9 @@ public:
   DefToYAMLConverter(
     llvm::ArrayRef<const char *> ids,
     llvm::ArrayRef<const char *> messages
-  )
-    : IDs(ids),
-      Messages(messages) {
+  ) :
+    IDs(ids),
+    Messages(messages) {
     assert(IDs.size() == Messages.size());
   }
 
@@ -170,9 +170,9 @@ class LocalizationProducer {
   LocalizationProducerState state = NotInitialized;
 
 public:
-  LocalizationProducer(bool printDiagnosticNames = false)
-    : localizationSaver(localizationAllocator),
-      printDiagnosticNames(printDiagnosticNames) {
+  LocalizationProducer(bool printDiagnosticNames = false) :
+    localizationSaver(localizationAllocator),
+    printDiagnosticNames(printDiagnosticNames) {
   }
 
   /// If the  message isn't available/localized in current context

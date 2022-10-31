@@ -87,13 +87,13 @@ public:
     Optional<unsigned> BufferID,
     ParsingOptions Opts,
     bool IsPrimary
-  )
-    : FileUnit(FileUnitKind::Source, Module),
-      BufferID(BufferID ? *BufferID : -1),
-      Kind(Kind),
-      IsPrimary(IsPrimary),
-      ParsingOpts(Opts),
-      Stage(ASTStage::Unresolved) {
+  ) :
+    FileUnit(FileUnitKind::Source, Module),
+    BufferID(BufferID ? *BufferID : -1),
+    Kind(Kind),
+    IsPrimary(IsPrimary),
+    ParsingOpts(Opts),
+    Stage(ASTStage::Unresolved) {
   }
 
   /// The buffer ID for the file that was imported, or None if there

@@ -19,8 +19,8 @@ DiagnosticConsumer::~DiagnosticConsumer() = default;
 
 DiagnosticInfo::FixIt::FixIt(
   CharSourceRange R, StringRef Str, ArrayRef<DiagnosticArgument> Args
-)
-  : Range(R) {
+) :
+  Range(R) {
   // FIXME: Defer text formatting to later in the pipeline.
   llvm::raw_string_ostream OS(Text);
   DiagnosticEngine::formatDiagnosticText(
@@ -72,15 +72,15 @@ FileSpecificDiagnosticConsumer::consolidateSubconsumers(
 
 FileSpecificDiagnosticConsumer::FileSpecificDiagnosticConsumer(
   SmallVectorImpl<Subconsumer>& subconsumers
-)
-  : Subconsumers(std::move(subconsumers)) {
+) :
+  Subconsumers(std::move(subconsumers)) {
   assert(
-    !Subconsumers.empty() &&
-    "don't waste time handling diagnostics that will never get emitted"
+    !Subconsumers.empty()
+    && "don't waste time handling diagnostics that will never get emitted"
   );
   assert(
-    !hasDuplicateFileNames(Subconsumers) &&
-    "having multiple subconsumers for the same file is not implemented"
+    !hasDuplicateFileNames(Subconsumers)
+    && "having multiple subconsumers for the same file is not implemented"
   );
 }
 
@@ -118,15 +118,15 @@ void FileSpecificDiagnosticConsumer::computeConsumersOrderedByRange(
   // all distinct, this should be trivially true, but if it's ever not we
   // might end up mis-filing diagnostics.
   assert(
-    ConsumersOrderedByRange.end() ==
-      std::adjacent_find(
+    ConsumersOrderedByRange.end()
+      == std::adjacent_find(
         ConsumersOrderedByRange.begin(),
         ConsumersOrderedByRange.end(),
         [](const ConsumerAndRange& left, const ConsumerAndRange& right) {
           return left.overlaps(right);
         }
-      ) &&
-    "overlapping ranges despite having distinct files"
+      )
+    && "overlapping ranges despite having distinct files"
   );
 }
 
@@ -248,9 +248,9 @@ FileSpecificDiagnosticConsumer::findSubconsumerForNonNote(
   const auto currentPrimarySubconsumer =
     subconsumerForLocation(SM, Info.BufferIndirectlyCausingDiagnostic);
   assert(
-    !currentPrimarySubconsumer ||
-    (*currentPrimarySubconsumer)->getConsumer() &&
-      "current primary must have a .dia file"
+    !currentPrimarySubconsumer
+    || (*currentPrimarySubconsumer)->getConsumer()
+         && "current primary must have a .dia file"
   );
   return currentPrimarySubconsumer;
 }
@@ -263,8 +263,8 @@ bool FileSpecificDiagnosticConsumer::finishProcessing() {
 
   bool hadError = false;
   for (auto& subconsumer : Subconsumers)
-    hadError |= subconsumer.getConsumer() &&
-                subconsumer.getConsumer()->finishProcessing();
+    hadError |= subconsumer.getConsumer()
+             && subconsumer.getConsumer()->finishProcessing();
   return hadError;
 }
 
@@ -290,8 +290,8 @@ void NullDiagnosticConsumer::handleDiagnostic(
 
 ForwardingDiagnosticConsumer::ForwardingDiagnosticConsumer(
   DiagnosticEngine& Target
-)
-  : TargetEngine(Target) {
+) :
+  TargetEngine(Target) {
 }
 
 void ForwardingDiagnosticConsumer::handleDiagnostic(

@@ -40,10 +40,10 @@ struct DependencyCollector {
     DeclBaseName name;
 
   private:
-    Reference(Kind kind, DeclContext * subject, DeclBaseName name)
-      : kind(kind),
-        subject(subject),
-        name(name) {
+    Reference(Kind kind, DeclContext * subject, DeclBaseName name) :
+      kind(kind),
+      subject(subject),
+      name(name) {
     }
 
   public:
@@ -96,8 +96,8 @@ struct DependencyCollector {
       }
 
       static bool isEqual(const Reference& LHS, const Reference& RHS) {
-        return LHS.kind == RHS.kind && LHS.subject == RHS.subject &&
-               LHS.name == RHS.name;
+        return LHS.kind == RHS.kind && LHS.subject == RHS.subject
+            && LHS.name == RHS.name;
       }
     };
   };

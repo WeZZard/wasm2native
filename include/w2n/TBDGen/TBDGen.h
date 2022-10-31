@@ -76,19 +76,19 @@ struct TBDGenOptions {
 
   friend bool
   operator==(const TBDGenOptions& lhs, const TBDGenOptions& rhs) {
-    return lhs.HasMultipleIGMs == rhs.HasMultipleIGMs &&
-           lhs.IsInstallAPI == rhs.IsInstallAPI &&
-           lhs.LinkerDirectivesOnly == rhs.LinkerDirectivesOnly &&
-           lhs.PublicSymbolsOnly == rhs.PublicSymbolsOnly &&
-           lhs.VirtualFunctionElimination ==
-             rhs.VirtualFunctionElimination &&
-           lhs.WitnessMethodElimination == rhs.WitnessMethodElimination &&
-           lhs.InstallName == rhs.InstallName &&
-           lhs.ModuleLinkName == rhs.ModuleLinkName &&
-           lhs.CurrentVersion == rhs.CurrentVersion &&
-           lhs.CompatibilityVersion == rhs.CompatibilityVersion &&
-           lhs.ModuleInstallNameMapPath == rhs.ModuleInstallNameMapPath &&
-           lhs.embedSymbolsFromModules == rhs.embedSymbolsFromModules;
+    return lhs.HasMultipleIGMs == rhs.HasMultipleIGMs
+        && lhs.IsInstallAPI == rhs.IsInstallAPI
+        && lhs.LinkerDirectivesOnly == rhs.LinkerDirectivesOnly
+        && lhs.PublicSymbolsOnly == rhs.PublicSymbolsOnly
+        && lhs.VirtualFunctionElimination
+             == rhs.VirtualFunctionElimination
+        && lhs.WitnessMethodElimination == rhs.WitnessMethodElimination
+        && lhs.InstallName == rhs.InstallName
+        && lhs.ModuleLinkName == rhs.ModuleLinkName
+        && lhs.CurrentVersion == rhs.CurrentVersion
+        && lhs.CompatibilityVersion == rhs.CompatibilityVersion
+        && lhs.ModuleInstallNameMapPath == rhs.ModuleInstallNameMapPath
+        && lhs.embedSymbolsFromModules == rhs.embedSymbolsFromModules;
   }
 
   friend bool

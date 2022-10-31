@@ -91,13 +91,13 @@ struct TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE> {
     );                                                                   \
                                                                          \
   public:                                                                \
-    static const uint64_t value = (TypeID<Arg1>::value << 32) |          \
-                                  (TypeID<Arg2>::value << 16) |          \
-                                  templateID;                            \
+    static const uint64_t value = (TypeID<Arg1>::value << 32)            \
+                                | (TypeID<Arg2>::value << 16)            \
+                                | templateID;                            \
                                                                          \
     static std::string getName() {                                       \
-      return std::string(#Name) + "<" + TypeID<Arg1>::getName() + ", " + \
-             TypeID<Arg2>::getName() + ">";                              \
+      return std::string(#Name) + "<" + TypeID<Arg1>::getName() + ", "   \
+           + TypeID<Arg2>::getName() + ">";                              \
     }                                                                    \
   };                                                                     \
                                                                          \

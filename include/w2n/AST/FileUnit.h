@@ -40,9 +40,9 @@ private:
   FileUnitKind Kind;
 
 protected:
-  FileUnit(FileUnitKind Kind, ModuleDecl& Module)
-    : DeclContext(DeclContextKind::FileUnit, &Module),
-      Kind(Kind) {
+  FileUnit(FileUnitKind Kind, ModuleDecl& Module) :
+    DeclContext(DeclContextKind::FileUnit, &Module),
+    Kind(Kind) {
   }
 
 public:

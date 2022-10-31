@@ -50,9 +50,9 @@ class TBDGenDescriptor final {
   FileOrModule Input;
   TBDGenOptions Opts;
 
-  TBDGenDescriptor(FileOrModule input, const TBDGenOptions& opts)
-    : Input(input),
-      Opts(opts) {
+  TBDGenDescriptor(FileOrModule input, const TBDGenOptions& opts) :
+    Input(input),
+    Opts(opts) {
     assert(input);
   }
 

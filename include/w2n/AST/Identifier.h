@@ -28,8 +28,8 @@ private:
    */
   explicit Identifier(const char * Ptr) : Pointer(Ptr) {
     assert(
-      ((uintptr_t)Ptr & SpareBitMask) == 0 &&
-      "Identifier pointer does not use any spare bits"
+      ((uintptr_t)Ptr & SpareBitMask) == 0
+      && "Identifier pointer does not use any spare bits"
     );
   }
 

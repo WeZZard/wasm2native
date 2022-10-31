@@ -63,9 +63,9 @@ class RequestKey {
   }
 
 public:
-  explicit RequestKey(Request req)
-    : Req(std::move(req)),
-      Kind(StorageKind::Normal) {
+  explicit RequestKey(Request req) :
+    Req(std::move(req)),
+    Kind(StorageKind::Normal) {
   }
 
   RequestKey(const RequestKey& other) : Empty(), Kind(other.Kind) {
@@ -170,18 +170,18 @@ class PerRequestCache {
   void * Storage;
   std::function<void(void *)> Deleter;
 
-  PerRequestCache(void * storage, std::function<void(void *)> deleter)
-    : Storage(storage),
-      Deleter(deleter) {
+  PerRequestCache(void * storage, std::function<void(void *)> deleter) :
+    Storage(storage),
+    Deleter(deleter) {
   }
 
 public:
   PerRequestCache() : Storage(nullptr), Deleter([](void *) {}) {
   }
 
-  PerRequestCache(PerRequestCache&& other)
-    : Storage(other.Storage),
-      Deleter(std::move(other.Deleter)) {
+  PerRequestCache(PerRequestCache&& other) :
+    Storage(other.Storage),
+    Deleter(std::move(other.Deleter)) {
     other.Storage = nullptr;
   }
 
@@ -304,18 +304,18 @@ class PerRequestReferences {
 
   PerRequestReferences(
     void * storage, std::function<void(void *)> deleter
-  )
-    : Storage(storage),
-      Deleter(deleter) {
+  ) :
+    Storage(storage),
+    Deleter(deleter) {
   }
 
 public:
   PerRequestReferences() : Storage(nullptr), Deleter([](void *) {}) {
   }
 
-  PerRequestReferences(PerRequestReferences&& other)
-    : Storage(other.Storage),
-      Deleter(std::move(other.Deleter)) {
+  PerRequestReferences(PerRequestReferences&& other) :
+    Storage(other.Storage),
+    Deleter(std::move(other.Deleter)) {
     other.Storage = nullptr;
   }
 

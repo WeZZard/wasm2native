@@ -42,13 +42,13 @@ public:
   }
 
   /// Create an option set with only the given option set.
-  constexpr OptionSet(Flags flag)
-    : Storage(static_cast<StorageType>(flag)) {
+  constexpr OptionSet(Flags flag) :
+    Storage(static_cast<StorageType>(flag)) {
   }
 
   /// Create an option set containing the given options.
-  constexpr OptionSet(std::initializer_list<Flags> flags)
-    : Storage(combineFlags(flags)) {
+  constexpr OptionSet(std::initializer_list<Flags> flags) :
+    Storage(combineFlags(flags)) {
   }
 
   /// Create an option set from raw storage.

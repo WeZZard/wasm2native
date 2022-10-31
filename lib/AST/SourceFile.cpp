@@ -57,8 +57,8 @@ WasmFile::WasmFile(
   Optional<unsigned> BufferID,
   ParsingOptions Opts,
   bool IsPrimary
-)
-  : SourceFile(Module, SourceFileKind::Wasm, BufferID, Opts, IsPrimary) {
+) :
+  SourceFile(Module, SourceFileKind::Wasm, BufferID, Opts, IsPrimary) {
   Module.getASTContext().addDestructorCleanup(*this);
 };
 
@@ -87,8 +87,8 @@ WatFile::WatFile(
   Optional<unsigned> BufferID,
   ParsingOptions Opts,
   bool IsPrimary
-)
-  : SourceFile(Module, SourceFileKind::Wasm, BufferID, Opts, IsPrimary) {
+) :
+  SourceFile(Module, SourceFileKind::Wasm, BufferID, Opts, IsPrimary) {
   Module.getASTContext().addDestructorCleanup(*this);
 };
 

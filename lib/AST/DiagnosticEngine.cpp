@@ -60,24 +60,26 @@ struct StoredDiagnosticInfo {
     bool isAPIDigesterBreakage,
     bool deprecation,
     bool noUsage
-  )
-    : kind(k),
-      pointsToFirstBadToken(firstBadToken),
-      isFatal(fatal),
-      isAPIDigesterBreakage(isAPIDigesterBreakage),
-      isDeprecation(deprecation),
-      isNoUsage(noUsage) {
+  ) :
+    kind(k),
+    pointsToFirstBadToken(firstBadToken),
+    isFatal(fatal),
+    isAPIDigesterBreakage(isAPIDigesterBreakage),
+    isDeprecation(deprecation),
+    isNoUsage(noUsage) {
   }
 
-  constexpr StoredDiagnosticInfo(DiagnosticKind k, DiagnosticOptions opts)
-    : StoredDiagnosticInfo(
-        k,
-        opts == DiagnosticOptions::PointsToFirstBadToken,
-        opts == DiagnosticOptions::Fatal,
-        opts == DiagnosticOptions::APIDigesterBreakage,
-        opts == DiagnosticOptions::Deprecation,
-        opts == DiagnosticOptions::NoUsage
-      ) {
+  constexpr StoredDiagnosticInfo(
+    DiagnosticKind k, DiagnosticOptions opts
+  ) :
+    StoredDiagnosticInfo(
+      k,
+      opts == DiagnosticOptions::PointsToFirstBadToken,
+      opts == DiagnosticOptions::Fatal,
+      opts == DiagnosticOptions::APIDigesterBreakage,
+      opts == DiagnosticOptions::Deprecation,
+      opts == DiagnosticOptions::NoUsage
+    ) {
   }
 };
 
@@ -108,8 +110,8 @@ static const constexpr StoredDiagnosticInfo storedDiagnosticInfos[] = {
 #include <w2n/AST/DiagnosticsAll.def>
 };
 static_assert(
-  sizeof(storedDiagnosticInfos) / sizeof(StoredDiagnosticInfo) ==
-    LocalDiagID::NumDiags,
+  sizeof(storedDiagnosticInfos) / sizeof(StoredDiagnosticInfo)
+    == LocalDiagID::NumDiags,
   "array size mismatch"
 );
 
@@ -372,8 +374,8 @@ InFlightDiagnostic& InFlightDiagnostic::wrapIn(const Diagnostic& wrapper
 
   // Set the argument to the diagnostic being wrapped.
   assert(
-    wrapper.getArgs().front().getKind() ==
-    DiagnosticArgumentKind::Diagnostic
+    wrapper.getArgs().front().getKind()
+    == DiagnosticArgumentKind::Diagnostic
   );
   Engine->getActiveDiagnostic().Args.front() = &wrapped;
 
@@ -391,12 +393,12 @@ void InFlightDiagnostic::flush() {
 
 void Diagnostic::addChildNote(Diagnostic&& D) {
   assert(
-    storedDiagnosticInfos[(unsigned)D.ID].kind == DiagnosticKind::Note &&
-    "Only notes can have a parent."
+    storedDiagnosticInfos[(unsigned)D.ID].kind == DiagnosticKind::Note
+    && "Only notes can have a parent."
   );
   assert(
-    storedDiagnosticInfos[(unsigned)ID].kind != DiagnosticKind::Note &&
-    "Notes can't have children."
+    storedDiagnosticInfos[(unsigned)ID].kind != DiagnosticKind::Note
+    && "Notes can't have children."
   );
   ChildNotes.push_back(std::move(D));
 }
@@ -485,8 +487,8 @@ static void formatSelectionArgument(
   bool foundPipe = false;
   do {
     assert(
-      (!ModifierArguments.empty() || foundPipe) &&
-      "Index beyond bounds in %select modifier"
+      (!ModifierArguments.empty() || foundPipe)
+      && "Index beyond bounds in %select modifier"
     );
     StringRef Text = skipToDelimiter(ModifierArguments, '|', &foundPipe);
     if (SelectedIndex == 0) {
@@ -750,8 +752,8 @@ DiagnosticState::determineBehavior(const Diagnostic& diag) {
     (!AssertOnError || !anyErrorOccurred) && "We emitted an error?!"
   );
   assert(
-    (!AssertOnWarning || (lvl != DiagnosticBehavior::Warning)) &&
-    "We emitted a warning?!"
+    (!AssertOnWarning || (lvl != DiagnosticBehavior::Warning))
+    && "We emitted a warning?!"
   );
 
   previousBehavior = lvl;
@@ -852,8 +854,8 @@ void DiagnosticEngine::emitDiagnostic(const Diagnostic& diagnostic) {
       auto child = diagnosticInfoForDiagnostic(childNotes[i]);
       assert(child);
       assert(
-        child->Kind == DiagnosticKind::Note &&
-        "Expected child diagnostics to all be notes?!"
+        child->Kind == DiagnosticKind::Note
+        && "Expected child diagnostics to all be notes?!"
       );
       childInfo.push_back(*child);
     }
@@ -920,13 +922,13 @@ void DiagnosticEngine::setBufferIndirectlyCausingDiagnosticToInput(
   // be supported, the compiler will need a stack for
   // bufferIndirectlyCausingDiagnostic.
   assert(
-    bufferIndirectlyCausingDiagnostic.isInvalid() &&
-    "Buffer should not already be set."
+    bufferIndirectlyCausingDiagnostic.isInvalid()
+    && "Buffer should not already be set."
   );
   bufferIndirectlyCausingDiagnostic = loc;
   assert(
-    bufferIndirectlyCausingDiagnostic.isValid() &&
-    "Buffer must be valid for previous assertion to work."
+    bufferIndirectlyCausingDiagnostic.isValid()
+    && "Buffer must be valid for previous assertion to work."
   );
 }
 
@@ -934,8 +936,8 @@ void DiagnosticEngine::resetBufferIndirectlyCausingDiagnostic() {
   bufferIndirectlyCausingDiagnostic = SourceLoc();
 }
 
-DiagnosticSuppression::DiagnosticSuppression(DiagnosticEngine& diags)
-  : diags(diags) {
+DiagnosticSuppression::DiagnosticSuppression(DiagnosticEngine& diags) :
+  diags(diags) {
   consumers = diags.takeConsumers();
 }
 
@@ -949,8 +951,8 @@ bool DiagnosticSuppression::isEnabled(const DiagnosticEngine& diags) {
 }
 
 BufferIndirectlyCausingDiagnosticRAII::
-  BufferIndirectlyCausingDiagnosticRAII(const SourceFile& SF)
-  : Diags(SF.getASTContext().Diags) {
+  BufferIndirectlyCausingDiagnosticRAII(const SourceFile& SF) :
+  Diags(SF.getASTContext().Diags) {
   auto id = SF.getBufferID();
   if (!id)
     return;

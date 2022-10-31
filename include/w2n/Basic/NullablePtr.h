@@ -30,8 +30,8 @@ public:
     typename std::enable_if<
       std::is_convertible<OtherT *, T *>::value,
       PlaceHolder>::type = PlaceHolder()
-  )
-    : Ptr(Other.getPtrOrNull()) {
+  ) :
+    Ptr(Other.getPtrOrNull()) {
   }
 
   bool isNull() const {

@@ -9,10 +9,10 @@ using namespace w2n::irgen;
 
 #pragma mark - IRGenerator
 
-IRGenerator::IRGenerator(const IRGenOptions& Opts, ModuleDecl& Module)
-  : Opts(Opts),
-    Module(Module),
-    QueueIndex(0) {
+IRGenerator::IRGenerator(const IRGenOptions& Opts, ModuleDecl& Module) :
+  Opts(Opts),
+  Module(Module),
+  QueueIndex(0) {
 }
 
 void IRGenerator::addGenModule(SourceFile * SF, IRGenModule * IGM) {
@@ -68,14 +68,14 @@ IRGenModule::IRGenModule(
   StringRef ModuleName,
   StringRef OutputFilename,
   StringRef MainInputFilenameForDebugInfo
-)
-  : LLVMContext(new llvm::LLVMContext()),
-    IRGen(irgen),
-    Context(irgen.Module.getASTContext()),
-    TargetMachine(std::move(target)),
-    OutputFilename(OutputFilename),
-    MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
-    ModuleHash(nullptr) {
+) :
+  LLVMContext(new llvm::LLVMContext()),
+  IRGen(irgen),
+  Context(irgen.Module.getASTContext()),
+  TargetMachine(std::move(target)),
+  OutputFilename(OutputFilename),
+  MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
+  ModuleHash(nullptr) {
 }
 
 IRGenModule::~IRGenModule() {

@@ -117,8 +117,8 @@ public:
 
   SourceRange(SourceLoc Start, SourceLoc End) : Start(Start), End(End) {
     assert(
-      Start.isValid() == End.isValid() &&
-      "Start and end should either both be valid or both be invalid!"
+      Start.isValid() == End.isValid()
+      && "Start and end should either both be valid or both be invalid!"
     );
   }
 
@@ -189,9 +189,9 @@ public:
   /// Constructs an invalid range.
   CharSourceRange() = default;
 
-  CharSourceRange(SourceLoc Start, unsigned ByteLength)
-    : Start(Start),
-      ByteLength(ByteLength) {
+  CharSourceRange(SourceLoc Start, unsigned ByteLength) :
+    Start(Start),
+    ByteLength(ByteLength) {
   }
 
   /// Constructs a character range which starts and ends at the
@@ -233,17 +233,17 @@ public:
     auto less_equal = std::less_equal<const char *>();
     return less_equal(
              getStart().Value.getPointer(), loc.Value.getPointer()
-           ) &&
-           less(loc.Value.getPointer(), getEnd().Value.getPointer());
+           )
+        && less(loc.Value.getPointer(), getEnd().Value.getPointer());
   }
 
   bool contains(CharSourceRange Other) const {
     auto less_equal = std::less_equal<const char *>();
-    return contains(Other.getStart()) &&
-           less_equal(
+    return contains(Other.getStart())
+        && less_equal(
              Other.getEnd().Value.getPointer(),
              getEnd().Value.getPointer()
-           );
+        );
   }
 
   /// expands *this to cover Other

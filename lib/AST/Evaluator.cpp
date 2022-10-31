@@ -40,10 +40,12 @@ void Evaluator::registerRequestFunctions(
   requestFunctionsByZone.push_back({zoneID, functions});
 }
 
-Evaluator::Evaluator(DiagnosticEngine& diags, const LanguageOptions& opts)
-  : diags(diags),
-    debugDumpCycles(opts.DebugDumpCycles),
-    recorder(opts.RecordRequestReferences) {
+Evaluator::Evaluator(
+  DiagnosticEngine& diags, const LanguageOptions& opts
+) :
+  diags(diags),
+  debugDumpCycles(opts.DebugDumpCycles),
+  recorder(opts.RecordRequestReferences) {
 }
 
 bool Evaluator::checkDependency(const ActiveRequest& request) {
@@ -115,12 +117,12 @@ void evaluator::DependencyRecorder::recordDependency(
 
 evaluator::DependencyCollector::DependencyCollector(
   evaluator::DependencyRecorder& parent
-)
-  : parent(parent) {
+) :
+  parent(parent) {
 #ifndef NDEBUG
   assert(
-    !parent.isRecording &&
-    "Probably not a good idea to allow nested recording"
+    !parent.isRecording
+    && "Probably not a good idea to allow nested recording"
   );
   parent.isRecording = true;
 #endif

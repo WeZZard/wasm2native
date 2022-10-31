@@ -108,8 +108,8 @@ public:
       );
     default:
       return (
-        (Components[0] == major && Components[1] >= minor) ||
-        (Components[0] > major)
+        (Components[0] == major && Components[1] >= minor)
+        || (Components[0] > major)
       );
     }
   }

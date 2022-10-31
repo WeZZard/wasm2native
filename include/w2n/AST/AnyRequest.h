@@ -33,8 +33,8 @@ struct AnyRequestVTable {
     }
 
     static bool isEqual(const void * lhs, const void * rhs) {
-      return *static_cast<const Request *>(lhs) ==
-           *static_cast<const Request *>(rhs);
+      return *static_cast<const Request *>(lhs)
+          == *static_cast<const Request *>(rhs);
     }
 
     static void simpleDisplay(const void * ptr, llvm::raw_ostream& out) {
@@ -152,8 +152,8 @@ public:
   template <typename Request>
   const Request& castTo() const {
     assert(
-      getVTable()->typeID == TypeID<Request>::value &&
-      "Wrong type in cast"
+      getVTable()->typeID == TypeID<Request>::value
+      && "Wrong type in cast"
     );
     return *static_cast<const Request *>(getRawStorage());
   }
@@ -244,8 +244,8 @@ class ActiveRequest final : public AnyRequestBase<ActiveRequest> {
   const void * storage;
 
   /// Creates an \c ActiveRequest without storage.
-  explicit ActiveRequest(StorageKind storageKind)
-    : AnyRequestBase(/*vtable*/ nullptr, storageKind) {
+  explicit ActiveRequest(StorageKind storageKind) :
+    AnyRequestBase(/*vtable*/ nullptr, storageKind) {
   }
 
   const void * getRawStorage() const {
@@ -256,10 +256,10 @@ public:
   /// Creates a new \c ActiveRequest referencing a concrete request on the
   /// stack.
   template <typename Request>
-  explicit ActiveRequest(const Request& request)
-    : AnyRequestBase(
-        AnyRequestVTable::get<Request>(), StorageKind::Normal
-      ) {
+  explicit ActiveRequest(const Request& request) :
+    AnyRequestBase(
+      AnyRequestVTable::get<Request>(), StorageKind::Normal
+    ) {
     storage = &request;
   }
 };

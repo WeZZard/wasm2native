@@ -141,8 +141,8 @@ public:
   unsigned getFunctionOrder(FuncDecl * F) {
     auto it = FunctionOrder.find(F);
     assert(
-      it != FunctionOrder.end() &&
-      "no order number for SIL function definition?"
+      it != FunctionOrder.end()
+      && "no order number for SIL function definition?"
     );
     return it->second;
   }

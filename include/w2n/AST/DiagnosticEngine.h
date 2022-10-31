@@ -81,24 +81,24 @@ class DiagnosticArgument {
   };
 
 public:
-  DiagnosticArgument(StringRef S)
-    : Kind(DiagnosticArgumentKind::String),
-      StringVal(S) {
+  DiagnosticArgument(StringRef S) :
+    Kind(DiagnosticArgumentKind::String),
+    StringVal(S) {
   }
 
-  DiagnosticArgument(int I)
-    : Kind(DiagnosticArgumentKind::Integer),
-      IntegerVal(I) {
+  DiagnosticArgument(int I) :
+    Kind(DiagnosticArgumentKind::Integer),
+    IntegerVal(I) {
   }
 
-  DiagnosticArgument(unsigned I)
-    : Kind(DiagnosticArgumentKind::Unsigned),
-      UnsignedVal(I) {
+  DiagnosticArgument(unsigned I) :
+    Kind(DiagnosticArgumentKind::Unsigned),
+    UnsignedVal(I) {
   }
 
-  DiagnosticArgument(DiagnosticInfo * D)
-    : Kind(DiagnosticArgumentKind::Diagnostic),
-      DiagnosticVal(D) {
+  DiagnosticArgument(DiagnosticInfo * D) :
+    Kind(DiagnosticArgumentKind::Diagnostic),
+    DiagnosticVal(D) {
   }
 
   /// Initializes a diagnostic argument using the underlying type of the
@@ -107,10 +107,10 @@ public:
     typename EnumType,
     typename std::enable_if<std::is_enum<EnumType>::value>::type * =
       nullptr>
-  DiagnosticArgument(EnumType value)
-    : DiagnosticArgument(
-        static_cast<typename std::underlying_type<EnumType>::type>(value)
-      ) {
+  DiagnosticArgument(EnumType value) :
+    DiagnosticArgument(
+      static_cast<typename std::underlying_type<EnumType>::type>(value)
+    ) {
   }
 
   DiagnosticArgumentKind getKind() const {
@@ -161,18 +161,18 @@ struct DiagnosticFormatOptions {
     std::string ClosingQuotationMark,
     std::string AKAFormatString,
     std::string OpaqueResultFormatString
-  )
-    : OpeningQuotationMark(OpeningQuotationMark),
-      ClosingQuotationMark(ClosingQuotationMark),
-      AKAFormatString(AKAFormatString),
-      OpaqueResultFormatString(OpaqueResultFormatString) {
+  ) :
+    OpeningQuotationMark(OpeningQuotationMark),
+    ClosingQuotationMark(ClosingQuotationMark),
+    AKAFormatString(AKAFormatString),
+    OpaqueResultFormatString(OpaqueResultFormatString) {
   }
 
-  DiagnosticFormatOptions()
-    : OpeningQuotationMark("'"),
-      ClosingQuotationMark("'"),
-      AKAFormatString("'%s' (aka '%s')"),
-      OpaqueResultFormatString("'%s' (%s of '%s')") {
+  DiagnosticFormatOptions() :
+    OpeningQuotationMark("'"),
+    ClosingQuotationMark("'"),
+    AKAFormatString("'%s' (aka '%s')"),
+    OpaqueResultFormatString("'%s' (%s of '%s')") {
   }
 
   /// When formatting fix-it arguments, don't include quotes or other
@@ -219,16 +219,16 @@ public:
   Diagnostic(
     Diag<ArgTypes...> ID,
     typename detail::PassArgument<ArgTypes>::type... VArgs
-  )
-    : ID(ID.ID) {
+  ) :
+    ID(ID.ID) {
     DiagnosticArgument DiagArgs[] = {
       DiagnosticArgument(0), std::move(VArgs)...};
     Args.append(DiagArgs + 1, DiagArgs + 1 + sizeof...(VArgs));
   }
 
-  /*implicit*/ Diagnostic(DiagID ID, ArrayRef<DiagnosticArgument> Args)
-    : ID(ID),
-      Args(Args.begin(), Args.end()) {
+  /*implicit*/ Diagnostic(DiagID ID, ArrayRef<DiagnosticArgument> Args) :
+    ID(ID),
+    Args(Args.begin(), Args.end()) {
   }
 
   // Accessors.
@@ -322,9 +322,9 @@ class InFlightDiagnostic {
   /// Create a new in-flight diagnostic.
   ///
   /// This constructor is only available to the DiagnosticEngine.
-  InFlightDiagnostic(DiagnosticEngine& Engine)
-    : Engine(&Engine),
-      IsActive(true) {
+  InFlightDiagnostic(DiagnosticEngine& Engine) :
+    Engine(&Engine),
+    IsActive(true) {
   }
 
   InFlightDiagnostic(const InFlightDiagnostic&) = delete;
@@ -342,9 +342,9 @@ public:
 
   /// Transfer an in-flight diagnostic to a new object, which is
   /// typically used when returning in-flight diagnostics.
-  InFlightDiagnostic(InFlightDiagnostic&& Other)
-    : Engine(Other.Engine),
-      IsActive(Other.IsActive) {
+  InFlightDiagnostic(InFlightDiagnostic&& Other) :
+    Engine(Other.Engine),
+    IsActive(Other.IsActive) {
     Other.IsActive = false;
   }
 
@@ -706,10 +706,10 @@ private:
   friend class DiagnosticQueue;
 
 public:
-  explicit DiagnosticEngine(SourceManager& SourceMgr)
-    : SourceMgr(SourceMgr),
-      ActiveDiagnostic(),
-      TransactionStrings(TransactionAllocator) {
+  explicit DiagnosticEngine(SourceManager& SourceMgr) :
+    SourceMgr(SourceMgr),
+    ActiveDiagnostic(),
+    TransactionStrings(TransactionAllocator) {
   }
 
   /// hadAnyError - return true if any *error* diagnostics have been
@@ -1052,8 +1052,8 @@ class DiagnosticStateRAII {
   llvm::SaveAndRestore<DiagnosticBehavior> previousBehavior;
 
 public:
-  DiagnosticStateRAII(DiagnosticEngine& diags)
-    : previousBehavior(diags.state.previousBehavior) {
+  DiagnosticStateRAII(DiagnosticEngine& diags) :
+    previousBehavior(diags.state.previousBehavior) {
   }
 
   ~DiagnosticStateRAII() {
@@ -1097,11 +1097,11 @@ public:
   DiagnosticTransaction(const DiagnosticTransaction&) = delete;
   DiagnosticTransaction& operator=(const DiagnosticTransaction&) = delete;
 
-  explicit DiagnosticTransaction(DiagnosticEngine& engine)
-    : Engine(engine),
-      PrevDiagnostics(Engine.TentativeDiagnostics.size()),
-      Depth(Engine.TransactionCount),
-      IsOpen(true) {
+  explicit DiagnosticTransaction(DiagnosticEngine& engine) :
+    Engine(engine),
+    PrevDiagnostics(Engine.TentativeDiagnostics.size()),
+    Depth(Engine.TransactionCount),
+    IsOpen(true) {
     Engine.TransactionCount++;
   }
 
@@ -1158,8 +1158,8 @@ private:
     IsOpen = false;
     Engine.TransactionCount--;
     assert(
-      Depth == Engine.TransactionCount &&
-      "transactions must be closed LIFO"
+      Depth == Engine.TransactionCount
+      && "transactions must be closed LIFO"
     );
   }
 };
@@ -1171,8 +1171,8 @@ private:
 /// regular DiagnosticTransaction.
 class CompoundDiagnosticTransaction : public DiagnosticTransaction {
 public:
-  explicit CompoundDiagnosticTransaction(DiagnosticEngine& engine)
-    : DiagnosticTransaction(engine) {
+  explicit CompoundDiagnosticTransaction(DiagnosticEngine& engine) :
+    DiagnosticTransaction(engine) {
   }
 
   ~CompoundDiagnosticTransaction() {
@@ -1188,8 +1188,8 @@ public:
 
   void commit() {
     assert(
-      PrevDiagnostics < Engine.TentativeDiagnostics.size() &&
-      "CompoundDiagnosticTransaction must contain at least one diag"
+      PrevDiagnostics < Engine.TentativeDiagnostics.size()
+      && "CompoundDiagnosticTransaction must contain at least one diag"
     );
 
     // The first diagnostic is assumed to be the parent. If this is not an
@@ -1251,10 +1251,10 @@ public:
   /// diagnostics to.
   explicit DiagnosticQueue(
     DiagnosticEngine& engine, bool emitOnDestruction
-  )
-    : UnderlyingEngine(engine),
-      QueueEngine(engine.SourceMgr),
-      EmitOnDestruction(emitOnDestruction) {
+  ) :
+    UnderlyingEngine(engine),
+    QueueEngine(engine.SourceMgr),
+    EmitOnDestruction(emitOnDestruction) {
     // Open a transaction to avoid emitting any diagnostics for the
     // temporary engine.
     QueueEngine.TransactionCount++;
@@ -1273,8 +1273,8 @@ public:
   /// Clear this queue and erase all diagnostics recorded.
   void clear() {
     assert(
-      QueueEngine.TransactionCount == 1 &&
-      "Must close outstanding DiagnosticTransactions before draining"
+      QueueEngine.TransactionCount == 1
+      && "Must close outstanding DiagnosticTransactions before draining"
     );
     QueueEngine.clearTentativeDiagnostics();
   }
@@ -1282,8 +1282,8 @@ public:
   /// Emit all the diagnostics recorded by this queue.
   void emit() {
     assert(
-      QueueEngine.TransactionCount == 1 &&
-      "Must close outstanding DiagnosticTransactions before draining"
+      QueueEngine.TransactionCount == 1
+      && "Must close outstanding DiagnosticTransactions before draining"
     );
     QueueEngine.forwardTentativeDiagnosticsTo(UnderlyingEngine);
   }

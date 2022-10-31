@@ -121,9 +121,9 @@ LocalizationProducerState LocalizationProducer::getState() const {
 
 SerializedLocalizationProducer::SerializedLocalizationProducer(
   std::unique_ptr<llvm::MemoryBuffer> buffer, bool printDiagnosticNames
-)
-  : LocalizationProducer(printDiagnosticNames),
-    Buffer(std::move(buffer)) {
+) :
+  LocalizationProducer(printDiagnosticNames),
+  Buffer(std::move(buffer)) {
 }
 
 bool SerializedLocalizationProducer::initializeImpl() {
@@ -147,9 +147,9 @@ llvm::StringRef SerializedLocalizationProducer::getMessage(w2n::DiagID id
 
 YAMLLocalizationProducer::YAMLLocalizationProducer(
   llvm::StringRef filePath, bool printDiagnosticNames
-)
-  : LocalizationProducer(printDiagnosticNames),
-    filePath(filePath) {
+) :
+  LocalizationProducer(printDiagnosticNames),
+  filePath(filePath) {
 }
 
 bool YAMLLocalizationProducer::initializeImpl() {

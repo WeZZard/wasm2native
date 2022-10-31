@@ -52,8 +52,8 @@ enum class RequestFlags {
 static constexpr inline RequestFlags
 operator|(RequestFlags lhs, RequestFlags rhs) {
   return RequestFlags(
-    static_cast<std::underlying_type<RequestFlags>::type>(lhs) |
-    static_cast<std::underlying_type<RequestFlags>::type>(rhs)
+    static_cast<std::underlying_type<RequestFlags>::type>(lhs)
+    | static_cast<std::underlying_type<RequestFlags>::type>(rhs)
   );
 }
 
@@ -111,8 +111,8 @@ template <
   typename T,
   typename U,
   typename = typename std::enable_if<
-    canExtractNearestSourceLoc<T>() &&
-    canExtractNearestSourceLoc<U>()>::type>
+    canExtractNearestSourceLoc<T>()
+    && canExtractNearestSourceLoc<U>()>::type>
 SourceLoc extractNearestSourceLoc(const llvm::PointerUnion<T, U>& value) {
   if (auto first = value.template dyn_cast<T>()) {
     return extractNearestSourceLoc(first);
@@ -152,8 +152,8 @@ SourceLoc extractNearestSourceLocTuple(const std::tuple<Types...>& value
 namespace detail {
 constexpr bool cacheContains(RequestFlags kind, RequestFlags needle) {
   using cache_t = std::underlying_type<RequestFlags>::type;
-  return (static_cast<cache_t>(kind) & static_cast<cache_t>(needle)) ==
-         static_cast<cache_t>(needle);
+  return (static_cast<cache_t>(kind) & static_cast<cache_t>(needle))
+      == static_cast<cache_t>(needle);
 }
 
 constexpr bool isEverCached(RequestFlags kind) {

@@ -70,9 +70,9 @@ struct SupplementaryOutputPaths {
   }
 
   bool empty() const {
-    return DependenciesFilePath.empty() &&
-           SerializedDiagnosticsPath.empty() &&
-           FixItsOutputPath.empty() && TBDPath.empty();
+    return DependenciesFilePath.empty()
+        && SerializedDiagnosticsPath.empty() && FixItsOutputPath.empty()
+        && TBDPath.empty();
   }
 };
 } // namespace w2n

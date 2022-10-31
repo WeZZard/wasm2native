@@ -263,15 +263,15 @@ struct DenseMapInfo<w2n::irgen::LinkEntity> {
   }
 
   static unsigned getHashValue(const LinkEntity& entity) {
-    return DenseMapInfo<void *>::getHashValue(entity.Pointer) ^
-           DenseMapInfo<void *>::getHashValue(entity.SecondaryPointer) ^
-           entity.Data;
+    return DenseMapInfo<void *>::getHashValue(entity.Pointer)
+         ^ DenseMapInfo<void *>::getHashValue(entity.SecondaryPointer)
+         ^ entity.Data;
   }
 
   static bool isEqual(const LinkEntity& LHS, const LinkEntity& RHS) {
-    return LHS.Pointer == RHS.Pointer &&
-           LHS.SecondaryPointer == RHS.SecondaryPointer &&
-           LHS.Data == RHS.Data;
+    return LHS.Pointer == RHS.Pointer
+        && LHS.SecondaryPointer == RHS.SecondaryPointer
+        && LHS.Data == RHS.Data;
   }
 };
 } // namespace llvm

@@ -30,8 +30,8 @@ struct ModuleBuffers {
 
   std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer;
 
-  ModuleBuffers(std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer)
-    : ModuleBuffer(std::move(ModuleBuffer)) {
+  ModuleBuffers(std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer) :
+    ModuleBuffer(std::move(ModuleBuffer)) {
   }
 };
 

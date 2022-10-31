@@ -72,8 +72,8 @@ struct DenseMapInfo<w2n::Located<T>> {
 
   static bool
   isEqual(const w2n::Located<T>& LHS, const w2n::Located<T>& RHS) {
-    return DenseMapInfo<T>::isEqual(LHS.Item, RHS.Item) &&
-           DenseMapInfo<T>::isEqual(LHS.Loc, RHS.Loc);
+    return DenseMapInfo<T>::isEqual(LHS.Item, RHS.Item)
+        && DenseMapInfo<T>::isEqual(LHS.Loc, RHS.Loc);
   }
 };
 } // namespace llvm

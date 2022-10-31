@@ -19,9 +19,9 @@
 // Define macros
 #ifdef DEFINE_DIAGNOSTIC_MACROS
 
-#if !(                                                                   \
-  defined(DIAG) || (defined(ERROR) && defined(WARNING) &&                \
-                    defined(NOTE) && defined(REMARK))                    \
+#if !(                                                                        \
+  defined(DIAG)                                                               \
+  || (defined(ERROR) && defined(WARNING) && defined(NOTE) && defined(REMARK)) \
 )
 #error Must define either DIAG or the set {ERROR,WARNING,NOTE,REMARK}
 #endif

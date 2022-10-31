@@ -304,10 +304,10 @@ struct w2n::StableHasher::Combiner<HashBytes> {
   U32TO8_LE((p) + 4, (uint32_t)((v) >> 32));
 
 #define U8TO64_LE(p)                                                     \
-  (((uint64_t)((p)[0])) | ((uint64_t)((p)[1]) << 8) |                    \
-   ((uint64_t)((p)[2]) << 16) | ((uint64_t)((p)[3]) << 24) |             \
-   ((uint64_t)((p)[4]) << 32) | ((uint64_t)((p)[5]) << 40) |             \
-   ((uint64_t)((p)[6]) << 48) | ((uint64_t)((p)[7]) << 56))
+  (((uint64_t)((p)[0])) | ((uint64_t)((p)[1]) << 8)                      \
+   | ((uint64_t)((p)[2]) << 16) | ((uint64_t)((p)[3]) << 24)             \
+   | ((uint64_t)((p)[4]) << 32) | ((uint64_t)((p)[5]) << 40)             \
+   | ((uint64_t)((p)[6]) << 48) | ((uint64_t)((p)[7]) << 56))
 
 TEST(StableHasher, Vectors) {
   uint8_t k[16];

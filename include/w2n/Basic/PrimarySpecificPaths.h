@@ -30,10 +30,10 @@ public:
     StringRef MainInputFilenameForDebugInfo = StringRef(),
     SupplementaryOutputPaths SupplementaryOutputs =
       SupplementaryOutputPaths()
-  )
-    : OutputFilename(OutputFilename),
-      SupplementaryOutputs(SupplementaryOutputs),
-      MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo) {
+  ) :
+    OutputFilename(OutputFilename),
+    SupplementaryOutputs(SupplementaryOutputs),
+    MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo) {
   }
 };
 

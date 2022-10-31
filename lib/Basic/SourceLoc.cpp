@@ -44,11 +44,11 @@ void SourceLoc::dump(const SourceManager& SM) const {
 
 CharSourceRange::CharSourceRange(
   const SourceManager& SM, SourceLoc Start, SourceLoc End
-)
-  : Start(Start) {
+) :
+  Start(Start) {
   assert(
-    Start.isValid() == End.isValid() &&
-    "Start and end should either both be valid or both be invalid!"
+    Start.isValid() == End.isValid()
+    && "Start and end should either both be valid or both be invalid!"
   );
   if (Start.isValid())
     ByteLength = SM.getByteDistance(Start, End);

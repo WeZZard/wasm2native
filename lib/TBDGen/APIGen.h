@@ -58,10 +58,10 @@ class APILoc {
 public:
   APILoc() = default;
 
-  APILoc(std::string file, unsigned line, unsigned col)
-    : file(file),
-      line(line),
-      col(col) {
+  APILoc(std::string file, unsigned line, unsigned col) :
+    file(file),
+    line(line),
+    col(col) {
   }
 
   StringRef getFilename() const {
@@ -107,13 +107,13 @@ struct APIRecord {
     APIFlags flags,
     APIAccess access,
     APIAvailability availability
-  )
-    : name(name.data(), name.size()),
-      loc(loc),
-      linkage(linkage),
-      flags(flags),
-      access(access),
-      availability(availability) {
+  ) :
+    name(name.data(), name.size()),
+    loc(loc),
+    linkage(linkage),
+    flags(flags),
+    access(access),
+    availability(availability) {
   }
 
   bool isWeakDefined() const {
@@ -125,8 +125,8 @@ struct APIRecord {
   }
 
   bool isThreadLocalValue() const {
-    return (flags & APIFlags::ThreadLocalValue) ==
-           APIFlags::ThreadLocalValue;
+    return (flags & APIFlags::ThreadLocalValue)
+        == APIFlags::ThreadLocalValue;
   }
 
   bool isExternal() const {
@@ -159,9 +159,9 @@ struct GlobalRecord : APIRecord {
     APIAccess access,
     GVKind kind,
     APIAvailability availability
-  )
-    : APIRecord(name, loc, linkage, flags, access, availability),
-      kind(kind) {
+  ) :
+    APIRecord(name, loc, linkage, flags, access, availability),
+    kind(kind) {
   }
 };
 

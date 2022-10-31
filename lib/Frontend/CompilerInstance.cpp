@@ -263,8 +263,8 @@ bool CompilerInstance::performParseAndResolveImportsOnly() {
           return true;
         return SF->getASTStage() >= SourceFile::ASTStage::ImportsResolved;
       }
-    ) &&
-    "some files have not yet had their imports resolved"
+    )
+    && "some files have not yet had their imports resolved"
   );
   mainModule->setHasResolvedImports();
 

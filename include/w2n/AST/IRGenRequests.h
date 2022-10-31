@@ -83,10 +83,10 @@ public:
     std::unique_ptr<llvm::LLVMContext>&& Context,
     std::unique_ptr<llvm::Module>&& Module,
     std::unique_ptr<llvm::TargetMachine>&& Target
-  )
-    : Context(std::move(Context)),
-      Module(std::move(Module)),
-      Target(std::move(Target)) {
+  ) :
+    Context(std::move(Context)),
+    Module(std::move(Module)),
+    Target(std::move(Target)) {
     assert(getModule() && "Use GeneratedModule::null() instead");
     assert(getContext() && "Use GeneratedModule::null() instead");
     assert(getTargetMachine() && "Use GeneratedModule::null() instead");

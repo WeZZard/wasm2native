@@ -6,9 +6,9 @@
 
 using namespace w2n;
 
-ModuleDecl::ModuleDecl(Identifier Name, ASTContext& Context)
-  : DeclContext(DeclContextKind::Module, nullptr),
-    Decl(DeclKind::Module, const_cast<ASTContext *>(&Context)) {
+ModuleDecl::ModuleDecl(Identifier Name, ASTContext& Context) :
+  DeclContext(DeclContextKind::Module, nullptr),
+  Decl(DeclKind::Module, const_cast<ASTContext *>(&Context)) {
   Context.addDestructorCleanup(*this);
 }
 

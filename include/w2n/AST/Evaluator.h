@@ -64,9 +64,11 @@ public:
   const Request& request;
   const Evaluator& evaluator;
 
-  CyclicalRequestError(const Request& request, const Evaluator& evaluator)
-    : request(request),
-      evaluator(evaluator) {
+  CyclicalRequestError(
+    const Request& request, const Evaluator& evaluator
+  ) :
+    request(request),
+    evaluator(evaluator) {
   }
 
   virtual void log(llvm::raw_ostream& out) const override;

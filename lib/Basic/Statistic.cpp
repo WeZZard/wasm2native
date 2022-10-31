@@ -135,9 +135,9 @@ static std::string auxName(
     OptType = OptType.substr(1);
   }
   return (
-    cleanName(ModuleName) + "-" + cleanName(InputName) + "-" +
-    cleanName(TripleName) + "-" + cleanName(OutputType) + "-" +
-    cleanName(OptType)
+    cleanName(ModuleName) + "-" + cleanName(InputName) + "-"
+    + cleanName(TripleName) + "-" + cleanName(OutputType) + "-"
+    + cleanName(OptType)
   );
 }
 
@@ -316,17 +316,17 @@ UnifiedStatsReporter::UnifiedStatsReporter(
   bool TraceEvents,
   bool ProfileEvents,
   bool ProfileEntities
-)
-  : UnifiedStatsReporter(
-      ProgramName,
-      auxName(ModuleName, InputName, TripleName, OutputType, OptType),
-      Directory,
-      SM,
-      CSM,
-      TraceEvents,
-      ProfileEvents,
-      ProfileEntities
-    ) {
+) :
+  UnifiedStatsReporter(
+    ProgramName,
+    auxName(ModuleName, InputName, TripleName, OutputType, OptType),
+    Directory,
+    SM,
+    CSM,
+    TraceEvents,
+    ProfileEvents,
+    ProfileEntities
+  ) {
 }
 
 UnifiedStatsReporter::UnifiedStatsReporter(
@@ -338,21 +338,21 @@ UnifiedStatsReporter::UnifiedStatsReporter(
   bool TraceEvents,
   bool ProfileEvents,
   bool ProfileEntities
-)
-  : currentProcessExitStatusSet(false),
-    currentProcessExitStatus(EXIT_FAILURE),
-    StatsFilename(Directory),
-    TraceFilename(Directory),
-    ProfileDirname(Directory),
-    StartedTime(llvm::TimeRecord::getCurrentTime()),
-    MainThreadID(std::this_thread::get_id()),
-    Timer(std::make_unique<NamedRegionTimer>(
-      AuxName, "Building Target", ProgramName, "Running Program"
-    )),
-    SourceMgr(SM),
-    ClangSourceMgr(CSM),
-    RecursiveTimers(std::make_unique<RecursionSafeTimers>()),
-    IsFlushingTracesAndProfiles(false) {
+) :
+  currentProcessExitStatusSet(false),
+  currentProcessExitStatus(EXIT_FAILURE),
+  StatsFilename(Directory),
+  TraceFilename(Directory),
+  ProfileDirname(Directory),
+  StartedTime(llvm::TimeRecord::getCurrentTime()),
+  MainThreadID(std::this_thread::get_id()),
+  Timer(std::make_unique<NamedRegionTimer>(
+    AuxName, "Building Target", ProgramName, "Running Program"
+  )),
+  SourceMgr(SM),
+  ClangSourceMgr(CSM),
+  RecursiveTimers(std::make_unique<RecursionSafeTimers>()),
+  IsFlushingTracesAndProfiles(false) {
   path::append(StatsFilename, makeStatsFileName(ProgramName, AuxName));
   path::append(TraceFilename, makeTraceFileName(ProgramName, AuxName));
   path::append(ProfileDirname, makeProfileDirName(ProgramName, AuxName));
@@ -470,12 +470,12 @@ FrontendStatsTracer::FrontendStatsTracer(
   StringRef EventName,
   const void * Entity,
   const UnifiedStatsReporter::TraceFormatter * Formatter
-)
-  : Reporter(Reporter),
-    SavedTime(),
-    EventName(EventName),
-    Entity(Entity),
-    Formatter(Formatter) {
+) :
+  Reporter(Reporter),
+  SavedTime(),
+  EventName(EventName),
+  Entity(Entity),
+  Formatter(Formatter) {
   if (Reporter) {
     SavedTime = llvm::TimeRecord::getCurrentTime();
     Reporter->saveAnyFrontendStatsEvents(*this, true);
@@ -495,12 +495,12 @@ FrontendStatsTracer::operator=(FrontendStatsTracer&& other) {
   return *this;
 }
 
-FrontendStatsTracer::FrontendStatsTracer(FrontendStatsTracer&& other)
-  : Reporter(other.Reporter),
-    SavedTime(other.SavedTime),
-    EventName(other.EventName),
-    Entity(other.Entity),
-    Formatter(other.Formatter) {
+FrontendStatsTracer::FrontendStatsTracer(FrontendStatsTracer&& other) :
+  Reporter(other.Reporter),
+  SavedTime(other.SavedTime),
+  EventName(other.EventName),
+  Entity(other.Entity),
+  Formatter(other.Formatter) {
   other.Reporter = nullptr;
 }
 

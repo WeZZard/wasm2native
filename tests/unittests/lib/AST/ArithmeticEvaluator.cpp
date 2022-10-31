@@ -78,8 +78,8 @@ static double evalOrNaN(Evaluator& evaluator, const Request& request) {
 
 /// Rule to evaluate the value of the expression.
 template <typename Derived, RequestFlags Caching>
-struct EvaluationRule
-  : public SimpleRequest<Derived, double(ArithmeticExpr *), Caching> {
+struct EvaluationRule :
+  public SimpleRequest<Derived, double(ArithmeticExpr *), Caching> {
   using SimpleRequest<Derived, double(ArithmeticExpr *), Caching>::
     SimpleRequest;
 
@@ -122,8 +122,8 @@ struct EvaluationRule
 template <typename Derived, RequestFlags Caching>
 bool EvaluationRule<Derived, Caching>::brokeCycle = false;
 
-struct InternallyCachedEvaluationRule
-  : EvaluationRule<InternallyCachedEvaluationRule, RequestFlags::Cached> {
+struct InternallyCachedEvaluationRule :
+  EvaluationRule<InternallyCachedEvaluationRule, RequestFlags::Cached> {
   using EvaluationRule::EvaluationRule;
 
   bool isCached() const {
@@ -136,15 +136,15 @@ struct InternallyCachedEvaluationRule
   }
 };
 
-struct UncachedEvaluationRule
-  : EvaluationRule<UncachedEvaluationRule, RequestFlags::Uncached> {
+struct UncachedEvaluationRule :
+  EvaluationRule<UncachedEvaluationRule, RequestFlags::Uncached> {
   using EvaluationRule::EvaluationRule;
 };
 
-struct ExternallyCachedEvaluationRule
-  : EvaluationRule<
-      ExternallyCachedEvaluationRule,
-      RequestFlags::SeparatelyCached> {
+struct ExternallyCachedEvaluationRule :
+  EvaluationRule<
+    ExternallyCachedEvaluationRule,
+    RequestFlags::SeparatelyCached> {
   using EvaluationRule::EvaluationRule;
 
   bool isCached() const {

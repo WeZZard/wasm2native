@@ -15,9 +15,10 @@ class FileUnit;
 class SourceFile;
 class ASTContext;
 
-class ModuleDecl : public DeclContext,
-                   public Decl,
-                   public ASTAllocated<ModuleDecl> {
+class ModuleDecl :
+  public DeclContext,
+  public Decl,
+  public ASTAllocated<ModuleDecl> {
 
 private:
   friend class Decl;

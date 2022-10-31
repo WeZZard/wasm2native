@@ -57,8 +57,8 @@ public:
 /// An llvm::ErrorInfo container for a request in which a cycle was
 /// detected and diagnosed.
 template <typename Request>
-struct CyclicalRequestError
-  : public llvm::ErrorInfo<CyclicalRequestError<Request>> {
+struct CyclicalRequestError :
+  public llvm::ErrorInfo<CyclicalRequestError<Request>> {
 public:
   static char ID;
   const Request& request;

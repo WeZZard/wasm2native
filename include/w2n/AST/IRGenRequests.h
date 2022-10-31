@@ -247,11 +247,11 @@ void reportEvaluatedRequest(
   UnifiedStatsReporter& stats, const Request& request
 );
 
-class IRGenRequest
-  : public SimpleRequest<
-      IRGenRequest,
-      GeneratedModule(IRGenDescriptor),
-      RequestFlags::Uncached | RequestFlags::DependencySource> {
+class IRGenRequest :
+  public SimpleRequest<
+    IRGenRequest,
+    GeneratedModule(IRGenDescriptor),
+    RequestFlags::Uncached | RequestFlags::DependencySource> {
 public:
   using SimpleRequest::SimpleRequest;
 
@@ -274,10 +274,11 @@ SourceLoc extractNearestSourceLoc(const IRGenDescriptor& desc);
 
 /// Returns the optimized IR for a given file or module. Note this runs
 /// the entire compiler pipeline and ignores the passed SILModule.
-class OptimizedIRRequest : public SimpleRequest<
-                             OptimizedIRRequest,
-                             GeneratedModule(IRGenDescriptor),
-                             RequestFlags::Uncached> {
+class OptimizedIRRequest :
+  public SimpleRequest<
+    OptimizedIRRequest,
+    GeneratedModule(IRGenDescriptor),
+    RequestFlags::Uncached> {
 public:
   using SimpleRequest::SimpleRequest;
 
@@ -293,10 +294,11 @@ using SymbolsToEmit = SmallVector<std::string, 1>;
 
 /// Return the object code for a specific set of symbols in a file or
 /// module.
-class SymbolObjectCodeRequest : public SimpleRequest<
-                                  SymbolObjectCodeRequest,
-                                  StringRef(IRGenDescriptor),
-                                  RequestFlags::Cached> {
+class SymbolObjectCodeRequest :
+  public SimpleRequest<
+    SymbolObjectCodeRequest,
+    StringRef(IRGenDescriptor),
+    RequestFlags::Cached> {
 public:
   using SimpleRequest::SimpleRequest;
 

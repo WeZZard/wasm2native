@@ -18,8 +18,8 @@ enum class DeclContextKind {
   Last_DeclContextKind = Module,
 };
 
-class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext
-  : public ASTAllocated<DeclContext> {
+class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext :
+  public ASTAllocated<DeclContext> {
 
   enum class ASTHierarchy : unsigned {
     Decl,

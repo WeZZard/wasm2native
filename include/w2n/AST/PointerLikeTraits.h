@@ -66,15 +66,15 @@ struct PointerLikeTypeTraits;
 #define LLVM_DECLARE_TYPE_ALIGNMENT(CLASS, ALIGNMENT)                    \
   namespace llvm {                                                       \
   template <>                                                            \
-  struct PointerLikeTypeTraits<CLASS *>                                  \
-    : public MoreAlignedPointerTraits<CLASS, ALIGNMENT> {};              \
+  struct PointerLikeTypeTraits<CLASS *> :                                \
+    public MoreAlignedPointerTraits<CLASS, ALIGNMENT> {};                \
   }
 
 #define LLVM_DECLARE_TEMPLATE_TYPE_ALIGNMENT_1(CLASS, ALIGNMENT)         \
   namespace llvm {                                                       \
   template <typename Arg0>                                               \
-  struct PointerLikeTypeTraits<CLASS<Arg0> *>                            \
-    : public MoreAlignedPointerTraits<CLASS<Arg0>, ALIGNMENT> {};        \
+  struct PointerLikeTypeTraits<CLASS<Arg0> *> :                          \
+    public MoreAlignedPointerTraits<CLASS<Arg0>, ALIGNMENT> {};          \
   }
 
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::Decl, w2n::DeclAlignInBits)

@@ -18,11 +18,11 @@ struct WasmFileParsingResult {
 };
 
 /// Parse the top-level decls of a SourceFile.
-class ParseWasmFileRequest
-  : public SimpleRequest<
-      ParseWasmFileRequest,
-      WasmFileParsingResult(WasmFile *),
-      RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
+class ParseWasmFileRequest :
+  public SimpleRequest<
+    ParseWasmFileRequest,
+    WasmFileParsingResult(WasmFile *),
+    RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
 public:
   using SimpleRequest::SimpleRequest;
 

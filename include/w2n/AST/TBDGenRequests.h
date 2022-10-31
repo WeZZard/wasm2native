@@ -105,10 +105,11 @@ SourceLoc extractNearestSourceLoc(const TBDGenDescriptor& desc);
 using TBDFile = llvm::MachO::InterfaceFile;
 
 /// Computes the TBD file for a given w2n module or file.
-class GenerateTBDRequest : public SimpleRequest<
-                             GenerateTBDRequest,
-                             TBDFile(TBDGenDescriptor),
-                             RequestFlags::Uncached> {
+class GenerateTBDRequest :
+  public SimpleRequest<
+    GenerateTBDRequest,
+    TBDFile(TBDGenDescriptor),
+    RequestFlags::Uncached> {
 public:
   using SimpleRequest::SimpleRequest;
 
@@ -120,10 +121,11 @@ private:
 };
 
 /// Retrieve the public symbols for a file or module.
-class PublicSymbolsRequest : public SimpleRequest<
-                               PublicSymbolsRequest,
-                               std::vector<std::string>(TBDGenDescriptor),
-                               RequestFlags::Uncached> {
+class PublicSymbolsRequest :
+  public SimpleRequest<
+    PublicSymbolsRequest,
+    std::vector<std::string>(TBDGenDescriptor),
+    RequestFlags::Uncached> {
 public:
   using SimpleRequest::SimpleRequest;
 
@@ -136,10 +138,11 @@ private:
 };
 
 /// Retrieve API information for a file or module.
-class APIGenRequest : public SimpleRequest<
-                        APIGenRequest,
-                        apigen::API(TBDGenDescriptor),
-                        RequestFlags::Uncached> {
+class APIGenRequest :
+  public SimpleRequest<
+    APIGenRequest,
+    apigen::API(TBDGenDescriptor),
+    RequestFlags::Uncached> {
 public:
   using SimpleRequest::SimpleRequest;
 
@@ -240,10 +243,11 @@ public:
 };
 
 /// Computes a map of symbols to their SymbolSource for a file or module.
-class SymbolSourceMapRequest : public SimpleRequest<
-                                 SymbolSourceMapRequest,
-                                 SymbolSourceMap(TBDGenDescriptor),
-                                 RequestFlags::Cached> {
+class SymbolSourceMapRequest :
+  public SimpleRequest<
+    SymbolSourceMapRequest,
+    SymbolSourceMap(TBDGenDescriptor),
+    RequestFlags::Cached> {
 public:
   using SimpleRequest::SimpleRequest;
 

@@ -201,7 +201,7 @@ public:
   std::map<std::string, llvm::AllocaInst *> NamedValues;
 
   IRGenModule(
-    IRGenerator& Generator,
+    IRGenerator& IRGen,
     std::unique_ptr<llvm::TargetMachine>&& Target,
     SourceFile * SF,
     StringRef ModuleName,

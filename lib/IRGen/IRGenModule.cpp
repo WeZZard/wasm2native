@@ -63,7 +63,7 @@ void IRGenerator::emitLazyDefinitions() {
 #pragma mark - IRGenModule
 
 IRGenModule::IRGenModule(
-  IRGenerator& irgen,
+  IRGenerator& IRGen,
   std::unique_ptr<llvm::TargetMachine>&& target,
   SourceFile * SF,
   StringRef ModuleName,
@@ -71,8 +71,8 @@ IRGenModule::IRGenModule(
   StringRef MainInputFilenameForDebugInfo
 ) :
   LLVMContext(new llvm::LLVMContext()),
-  IRGen(irgen),
-  Context(irgen.Module.getASTContext()),
+  IRGen(IRGen),
+  Context(IRGen.Module.getASTContext()),
   Module(std::make_unique<llvm::Module>(ModuleName, *LLVMContext)),
   TargetMachine(std::move(target)),
   OutputFilename(OutputFilename),

@@ -5,6 +5,7 @@
 #include <w2n/AST/FileUnit.h>
 #include <w2n/Basic/LanguageOptions.h>
 #include <w2n/Basic/OptionSet.h>
+#include <w2n/Basic/Unimplemented.h>
 
 namespace w2n {
 
@@ -34,6 +35,7 @@ class SourceFile : public FileUnit {
   friend void performImportResolution(SourceFile& SF);
 
 public:
+
   /// Flags that direct how the source file is parsed.
   enum class ParsingFlags : uint8_t {
     SuppressWarnings,
@@ -48,6 +50,7 @@ public:
   };
 
 private:
+
   /// The ID for the memory buffer containing this file's source.
   ///
   /// May be -1, to indicate no association with a buffer.
@@ -66,6 +69,7 @@ private:
   Optional<std::vector<Decl *>> Decls;
 
 public:
+
   /// Retrieve the parsing options specified in the \c LanguageOptions for
   /// specific \c SourceFileKind .
   static ParsingOptions getDefaultParsingOptions(
@@ -161,6 +165,7 @@ class WasmFile : public SourceFile {
 #pragma clang diagnostic pop
 
 private:
+
   WasmFile(
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
@@ -169,6 +174,7 @@ private:
   );
 
 public:
+
   /// Retrieve the parsing options specified in the LanguageOptions.
   static ParsingOptions
   getDefaultParsingOptions(const LanguageOptions& Opts);
@@ -191,6 +197,7 @@ class WatFile : public SourceFile {
 #pragma clang diagnostic pop
 
 private:
+
   WatFile(
     ModuleDecl& Module,
     Optional<unsigned> BufferID,
@@ -199,6 +206,7 @@ private:
   );
 
 public:
+
   /// Retrieve the parsing options specified in the LanguageOptions.
   static ParsingOptions
   getDefaultParsingOptions(const LanguageOptions& Opts);
@@ -212,7 +220,7 @@ public:
   );
 
   ArrayRef<Decl *> getTopLevelDecls() const override {
-    llvm_unreachable("not implemented.");
+    w2n_not_implemented();
   }
 };
 

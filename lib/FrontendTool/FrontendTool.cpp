@@ -3,6 +3,7 @@
 #include <w2n/AST/FileUnit.h>
 #include <w2n/AST/IRGenRequests.h>
 #include <w2n/AST/Module.h>
+#include <w2n/Basic/LLVMInitialize.h>
 #include <w2n/Frontend/Frontend.h>
 #include <w2n/FrontendTool/FrontendTool.h>
 #include <w2n/IRGen/IRGen.h>
@@ -66,6 +67,8 @@ static void performEndOfPipelineActions(CompilerInstance& Instance);
 int w2n::performFrontend(
   llvm::ArrayRef<const char *> Args, const char * Argv0, void * MainAddr
 ) {
+  INITIALIZE_LLVM();
+
   CompilerInvocation Invocation;
   CompilerInstance Instance;
 
@@ -176,7 +179,7 @@ bool performCompileStepsPostSema(
   if (!Instance.getPrimarySourceFiles().empty()) {
     bool result = false;
     for (auto * PrimaryFile : Instance.getPrimarySourceFiles()) {
-      const PrimarySpecificPaths PSPs =
+      const PrimarySpecificPaths& PSPs =
         Instance.getPrimarySpecificPathsForSourceFile(*PrimaryFile);
       IRGenOptions IRGenOpts = Invocation.getIRGenOptions();
       StringRef OutputFilename = PSPs.OutputFilename;

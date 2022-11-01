@@ -3,6 +3,7 @@
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/TypeCheckerRequests.h>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 
@@ -59,5 +60,5 @@ void ModuleDecl::collectLinkLibraries(LinkLibraryCallback callback
 void SourceFile::collectLinkLibraries(
   ModuleDecl::LinkLibraryCallback callback
 ) const {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }

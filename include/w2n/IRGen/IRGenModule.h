@@ -168,7 +168,7 @@ public:
 
   ASTContext& Context;
 
-  // FIXME: llvm::Module& Module;
+  std::unique_ptr<llvm::Module> Module;
 
   std::unique_ptr<llvm::TargetMachine> TargetMachine;
 

@@ -25,6 +25,7 @@
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/Basic/Defer.h>
+#include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/IRGen.h>
 #include <w2n/IRGen/IRGenModule.h>
 
@@ -304,7 +305,7 @@ GeneratedModule w2n::performIRGeneration(
   ArrayRef<std::string> parallelOutputFilenames,
   llvm::GlobalVariable ** outModuleHash
 ) {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 GeneratedModule w2n::performIRGeneration(
@@ -356,11 +357,10 @@ static void initLLVMModule(const IRGenModule& IGM, ModuleDecl& ModDecl) {
 /// \c IRGenModule.
 static void
 runIRGenPreparePasses(ModuleDecl& Module, irgen::IRGenModule& IRModule) {
-  llvm_unreachable("not implemented.");
+  proto_impl();
 }
 
 static void setModuleFlags(IRGenModule& IGM) {
-
   auto * Module = IGM.getModule();
 
   // These module flags don't affect code generation; they just let us
@@ -383,7 +383,7 @@ static void embedBitcode(llvm::Module * M, const IRGenOptions& Opts) {
   if (Opts.EmbedMode == IRGenEmbedMode::None)
     return;
 
-  llvm_unreachable("not implemented.");
+  proto_impl();
 }
 
 /// Generates LLVM IR, runs the LLVM passes and produces the output file.
@@ -486,7 +486,7 @@ IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
 GeneratedModule OptimizedIRRequest::evaluate(
   Evaluator& evaluator, IRGenDescriptor desc
 ) const {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 StringRef SymbolObjectCodeRequest::evaluate(

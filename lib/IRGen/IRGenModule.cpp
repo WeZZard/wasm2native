@@ -2,6 +2,7 @@
 #include <llvm/Support/ErrorHandling.h>
 #include <memory>
 #include <w2n/AST/IRGenRequests.h>
+#include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/IRGenModule.h>
 
 using namespace w2n;
@@ -38,25 +39,25 @@ IRGenModule * IRGenerator::getGenModule(DeclContext * DC) {
 }
 
 IRGenModule * IRGenerator::getGenModule(FuncDecl * f) {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 void IRGenerator::emitGlobalTopLevel(
   const std::vector<std::string>& LinkerDirectives
 ) {
-  llvm_unreachable("not implemented.");
+  proto_impl();
 }
 
 void IRGenerator::emitEntryPointInfo() {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 void IRGenerator::emitCoverageMapping() {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 void IRGenerator::emitLazyDefinitions() {
-  llvm_unreachable("not implemented.");
+  proto_impl();
 }
 
 #pragma mark - IRGenModule
@@ -72,6 +73,7 @@ IRGenModule::IRGenModule(
   LLVMContext(new llvm::LLVMContext()),
   IRGen(irgen),
   Context(irgen.Module.getASTContext()),
+  Module(std::make_unique<llvm::Module>(ModuleName, *LLVMContext)),
   TargetMachine(std::move(target)),
   OutputFilename(OutputFilename),
   MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
@@ -84,33 +86,28 @@ IRGenModule::~IRGenModule() {
 
 GeneratedModule IRGenModule::intoGeneratedModule() && {
   return GeneratedModule{
-    std::move(LLVMContext),
-    // FIXME: std::unique_ptr<llvm::Module>{ClangCodeGen->ReleaseModule()}
-    std::unique_ptr<llvm::Module>(),
-    std::move(TargetMachine)};
+    std::move(LLVMContext), std::move(Module), std::move(TargetMachine)};
 }
 
 llvm::Module * IRGenModule::getModule() const {
-  // Swift uses ClangCodeGen->GetModule() here. Seems like this method is
-  // for code-gen with clang.
-  llvm_unreachable("not implemented.");
+  return Module.get();
 }
 
 void IRGenModule::emitCoverageMapping() {
-  llvm_unreachable("not implemented.");
+  proto_impl();
 }
 
 bool IRGenModule::finalize() {
-  llvm_unreachable("not implemented.");
+  return proto_impl<bool>([]() -> bool { return true; });
 }
 
 void IRGenModule::addLinkLibrary(const LinkLibrary& linkLib) {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 #pragma mark Gen Decls
 
 /// Emit all the top-level code in the source file.
 void IRGenModule::emitSourceFile(SourceFile& SF) {
-  llvm_unreachable("not implemented.");
+  proto_impl();
 }

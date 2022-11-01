@@ -731,7 +731,7 @@ public:
   }
 
   void flushConsumers() {
-    for (auto consumer : Consumers)
+    for (auto * consumer : Consumers)
       consumer->flush();
   }
 

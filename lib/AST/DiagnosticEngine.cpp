@@ -86,7 +86,6 @@ struct StoredDiagnosticInfo {
 // Reproduce the DiagIDs, as we want both the size and access to the raw
 // ids themselves.
 enum LocalDiagID : uint32_t {
-
 #define DIAG(KIND, ID, Options, Text, Signature) ID,
 #include <w2n/AST/DiagnosticsAll.def>
   NumDiags
@@ -177,7 +176,7 @@ static CharSourceRange
 toCharSourceRange(SourceManager& SM, SourceRange SR) {
   // FIXME: return CharSourceRange(SM, SR.Start,
   // Lexer::getLocForEndOfToken(SM, SR.End));
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 static CharSourceRange
@@ -232,7 +231,7 @@ InFlightDiagnostic& InFlightDiagnostic::fixItInsertAfter(
 ) {
   // L = Lexer::getLocForEndOfToken(Engine->SourceMgr, L);
   // return fixItInsert(L, FormatString, Args);
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 /// Add a token-based removal fix-it to the currently-active

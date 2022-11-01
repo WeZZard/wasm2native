@@ -36,6 +36,7 @@
 #include <w2n/Basic/Defer.h>
 #include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/SourceManager.h>
+#include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
 #include <w2n/TBDGen/TBDGen.h>
 
@@ -148,13 +149,15 @@ __unused static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
 TBDFile GenerateTBDRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 std::vector<std::string> PublicSymbolsRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  llvm_unreachable("not implemented.");
+  return proto_impl<std::vector<std::string>>(
+    []() -> std::vector<std::string> { return {}; }
+  );
 }
 
 std::vector<std::string> w2n::getPublicSymbols(TBDGenDescriptor Desc) {
@@ -177,7 +180,7 @@ void w2n::writeTBDFile(
 apigen::API APIGenRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }
 
 void w2n::writeAPIJSONFile(
@@ -193,5 +196,5 @@ void w2n::writeAPIJSONFile(
 SymbolSourceMap SymbolSourceMapRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  llvm_unreachable("not implemented.");
+  w2n_not_implemented();
 }

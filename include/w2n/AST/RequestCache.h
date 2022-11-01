@@ -63,6 +63,7 @@ class RequestKey {
   }
 
 public:
+
   explicit RequestKey(Request req) :
     Req(std::move(req)),
     Kind(StorageKind::Normal) {
@@ -143,6 +144,7 @@ class RequestKey<
   }
 
 public:
+
   explicit RequestKey(Request req) : Req(std::move(req)) {
   }
 
@@ -176,6 +178,7 @@ class PerRequestCache {
   }
 
 public:
+
   PerRequestCache() : Storage(nullptr), Deleter([](void *) {}) {
   }
 
@@ -230,7 +233,6 @@ public:
 /// Conceptually equivalent to DenseMap<AnyRequest, AnyValue>, but without
 /// type erasure overhead for keys and values.
 class RequestCache {
-
 #define W2N_TYPEID_ZONE(Name, Id)                                        \
   std::vector<PerRequestCache> Name##ZoneCache;                          \
                                                                          \
@@ -255,6 +257,7 @@ class RequestCache {
 #undef W2N_TYPEID_ZONE
 
 public:
+
   template <typename Request>
   typename llvm::DenseMap<
     RequestKey<Request>,
@@ -310,6 +313,7 @@ class PerRequestReferences {
   }
 
 public:
+
   PerRequestReferences() : Storage(nullptr), Deleter([](void *) {}) {
   }
 
@@ -369,7 +373,6 @@ public:
 /// Conceptually equivalent to DenseMap<AnyRequest, vector<Reference>>,
 /// but without type erasure overhead for keys.
 class RequestReferences {
-
 #define W2N_TYPEID_ZONE(Name, Id)                                        \
   std::vector<PerRequestReferences> Name##ZoneRefs;                      \
                                                                          \
@@ -396,6 +399,7 @@ class RequestReferences {
 #undef W2N_TYPEID_ZONE
 
 public:
+
   template <typename Request>
   typename llvm::DenseMap<
     RequestKey<Request>,

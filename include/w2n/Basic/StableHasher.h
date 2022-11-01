@@ -74,6 +74,7 @@ namespace w2n {
 /// relative to the other SipHash tunings.
 class StableHasher final {
 private:
+
   struct State {
     uint64_t v0 = 0x736F6D6570736575;
     uint64_t v1 = 0x646F72616E646f6D;
@@ -91,6 +92,7 @@ private:
   uint64_t lengthAndByteCount = 0;
 
 public:
+
   static StableHasher defaultHasher() {
     StableHasher hasher{0, 0};
     return hasher;
@@ -106,12 +108,14 @@ public:
   }
 
 public:
+
   template <typename T>
   struct Combiner {
     // static void combine(StableHasher &hasher, const T &Val);
   };
 
 public:
+
   /// Consume this stable hasher and compute the final 128-bit stable hash
   /// value.
   std::pair<uint64_t, uint64_t> finalize() &&;
@@ -217,6 +221,7 @@ public:
   }
 
 private:
+
   template <typename... Ts, unsigned... Indices>
   void combine_tuple(
     const std::tuple<Ts...>& arg, std::index_sequence<Indices...> indices
@@ -236,6 +241,7 @@ private:
   }
 
 private:
+
   /// Return the number of bytes in the inline buffer.
   uint64_t getBufferLength() const {
     return lengthAndByteCount >> 56;

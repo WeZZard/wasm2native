@@ -19,6 +19,7 @@ class Input final {
   PrimarySpecificPaths ISPs;
 
 public:
+
   /// Constructs an input file from the provided data.
   ///
   /// \warning This entrypoint infers the type of the file from its
@@ -57,6 +58,7 @@ public:
   }
 
 public:
+
   /// Retrieves the type of this input file.
   file_types::ID getType() const {
     return FileID;

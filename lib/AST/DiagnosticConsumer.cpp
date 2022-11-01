@@ -148,7 +148,6 @@ FileSpecificDiagnosticConsumer::subconsumerForLocation(
   // FileSpecificDiagnosticConsumer to be set up before the source files
   // are actually loaded.
   if (ConsumersOrderedByRange.empty()) {
-
     // It's possible to get here while a bridging header PCH is being
     // attached-to, if there's some sort of AST-reader warning or error,
     // which happens before CompilerInstance::setUpInputs(), at which
@@ -202,7 +201,6 @@ FileSpecificDiagnosticConsumer::subconsumerForLocation(
 void FileSpecificDiagnosticConsumer::handleDiagnostic(
   SourceManager& SM, const DiagnosticInfo& Info
 ) {
-
   HasAnErrorBeenConsumed |= Info.Kind == DiagnosticKind::Error;
 
   auto subconsumer = findSubconsumer(SM, Info);

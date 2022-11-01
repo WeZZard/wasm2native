@@ -24,9 +24,11 @@ class ParseWasmFileRequest :
     WasmFileParsingResult(WasmFile *),
     RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -34,6 +36,7 @@ private:
   evaluate(Evaluator& evaluator, WasmFile * SF) const;
 
 public:
+
   // Caching.
   bool isCached() const {
     return true;
@@ -43,6 +46,7 @@ public:
   void cacheResult(WasmFileParsingResult result) const;
 
 public:
+
   evaluator::DependencySource
   readDependencySource(const evaluator::DependencyRecorder&) const;
 };

@@ -64,6 +64,7 @@ namespace w2n {
 /// construction.
 class GeneratedModule final {
 private:
+
   std::unique_ptr<llvm::LLVMContext> Context;
   std::unique_ptr<llvm::Module> Module;
   std::unique_ptr<llvm::TargetMachine> Target;
@@ -75,6 +76,7 @@ private:
   GeneratedModule& operator=(GeneratedModule const&) = delete;
 
 public:
+
   /// Construct a \c GeneratedModule that owns a given module and context.
   ///
   /// The given pointers must not be null. If a null \c GeneratedModule is
@@ -96,17 +98,20 @@ public:
   GeneratedModule& operator=(GeneratedModule&&) = default;
 
 public:
+
   /// Construct a \c GeneratedModule that does not own any resources.
   static GeneratedModule null() {
     return GeneratedModule{};
   }
 
 public:
+
   explicit operator bool() const {
     return Module != nullptr && Context != nullptr;
   }
 
 public:
+
   const llvm::Module * getModule() const {
     return Module.get();
   }
@@ -132,6 +137,7 @@ public:
   }
 
 public:
+
   /// Release ownership of the context and module to the caller, consuming
   /// this value in the process.
   ///
@@ -142,6 +148,7 @@ public:
   }
 
 public:
+
   /// Transfers ownership of the underlying module and context to an
   /// ORC-compatible context.
   llvm::orc::ThreadSafeModule intoThreadSafeContext() &&;
@@ -179,6 +186,7 @@ struct IRGenDescriptor {
   }
 
 public:
+
   static IRGenDescriptor forFile(
     FileUnit * file,
     const IRGenOptions& Opts,
@@ -253,9 +261,11 @@ class IRGenRequest :
     GeneratedModule(IRGenDescriptor),
     RequestFlags::Uncached | RequestFlags::DependencySource> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -263,6 +273,7 @@ private:
   evaluate(Evaluator& evaluator, IRGenDescriptor desc) const;
 
 public:
+
   // Incremental dependencies.
   evaluator::DependencySource
   readDependencySource(const evaluator::DependencyRecorder&) const;
@@ -280,9 +291,11 @@ class OptimizedIRRequest :
     GeneratedModule(IRGenDescriptor),
     RequestFlags::Uncached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -300,15 +313,18 @@ class SymbolObjectCodeRequest :
     StringRef(IRGenDescriptor),
     RequestFlags::Cached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
   StringRef evaluate(Evaluator& evaluator, IRGenDescriptor desc) const;
 
 public:
+
   // Caching.
   bool isCached() const {
     return true;

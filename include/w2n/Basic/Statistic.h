@@ -90,8 +90,8 @@ uint64_t getInstructionsExecuted();
 bool environmentVariableRequestedMaximumDeterminism();
 
 class UnifiedStatsReporter {
-
 public:
+
   struct AlwaysOnDriverCounters {
 #define DRIVER_STATISTIC(ID) int64_t ID;
 #include <w2n/Basic/Statistics.def>
@@ -147,6 +147,7 @@ public:
   struct StatsProfilers;
 
 private:
+
   bool currentProcessExitStatusSet;
   int currentProcessExitStatus;
   long maxChildRSS = 0;
@@ -191,6 +192,7 @@ private:
   );
 
 public:
+
   UnifiedStatsReporter(
     StringRef ProgramName,
     StringRef ModuleName,
@@ -236,6 +238,7 @@ class FrontendStatsTracer {
   }
 
 public:
+
   UnifiedStatsReporter * Reporter;
   llvm::TimeRecord SavedTime;
   StringRef EventName;

@@ -19,15 +19,18 @@ class PrimarySourceFilesRequest :
     ArrayRef<SourceFile *>(ModuleDecl *),
     RequestFlags::Cached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   ArrayRef<SourceFile *>
   evaluate(Evaluator& evaluator, ModuleDecl * mod) const;
 
 public:
+
   // Cached.
   bool isCached() const {
     return true;

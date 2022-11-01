@@ -43,6 +43,7 @@ bool useDllStorage(const llvm::Triple& triple);
 
 class UniversalLinkageInfo {
 public:
+
   bool IsELFObject;
   bool UseDLLStorage;
   bool Internalize;
@@ -124,6 +125,7 @@ class LinkEntity {
   LinkEntity() = default;
 
 public:
+
   // TODO: static LinkEntity forXXX(...);
 
   void mangle(llvm::raw_ostream& out) const;
@@ -150,6 +152,7 @@ class ApplyIRLinkage {
   IRLinkage IRL;
 
 public:
+
   ApplyIRLinkage(IRLinkage IRL) : IRL(IRL) {
   }
 
@@ -185,6 +188,7 @@ class LinkInfo {
   ForDefinition_t ForDefinition;
 
 public:
+
   /// Compute linkage information for the given
   static LinkInfo get(
     IRGenModule& IGM,

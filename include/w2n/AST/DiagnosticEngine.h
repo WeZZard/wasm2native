@@ -81,6 +81,7 @@ class DiagnosticArgument {
   };
 
 public:
+
   DiagnosticArgument(StringRef S) :
     Kind(DiagnosticArgumentKind::String),
     StringVal(S) {
@@ -197,9 +198,11 @@ struct StructuredFixIt {
 /// all of the DiagnosticArguments that it requires.
 class Diagnostic {
 public:
+
   typedef DiagnosticInfo::FixIt FixIt;
 
 private:
+
   DiagID ID;
   SmallVector<DiagnosticArgument, 3> Args;
   SmallVector<CharSourceRange, 2> Ranges;
@@ -214,6 +217,7 @@ private:
   friend class InFlightDiagnostic;
 
 public:
+
   // All constructors are intentionally implicit.
   template <typename... ArgTypes>
   Diagnostic(
@@ -332,6 +336,7 @@ class InFlightDiagnostic {
   InFlightDiagnostic& operator=(InFlightDiagnostic&&) = delete;
 
 public:
+
   /// Create an active but unattached in-flight diagnostic.
   ///
   /// The resulting diagnostic can be used as a dummy, accepting the
@@ -512,6 +517,7 @@ public:
   InFlightDiagnostic& fixItExchange(SourceRange R1, SourceRange R2);
 
 private:
+
   InFlightDiagnostic& fixItReplace(
     SourceRange R,
     StringRef FormatString,
@@ -564,6 +570,7 @@ class DiagnosticState {
   friend class DiagnosticStateRAII;
 
 public:
+
   DiagnosticState();
 
   /// Figure out the Behavior for the given diagnostic, taking current
@@ -627,6 +634,7 @@ public:
   }
 
 private:
+
   // Make the state movable only
   DiagnosticState(const DiagnosticState&) = delete;
   const DiagnosticState& operator=(const DiagnosticState&) = delete;
@@ -639,11 +647,13 @@ private:
 /// to the user.
 class DiagnosticEngine {
 public:
+
   /// The source manager used to interpret source locations and
   /// display diagnostics.
   SourceManager& SourceMgr;
 
 private:
+
   /// The diagnostic consumer(s) that will be responsible for actually
   /// emitting diagnostics.
   SmallVector<DiagnosticConsumer *, 2> Consumers;
@@ -706,6 +716,7 @@ private:
   friend class DiagnosticQueue;
 
 public:
+
   explicit DiagnosticEngine(SourceManager& SourceMgr) :
     SourceMgr(SourceMgr),
     ActiveDiagnostic(),
@@ -974,6 +985,7 @@ public:
   );
 
 private:
+
   /// Called when tentative diagnostic is about to be flushed,
   /// to apply any required transformations e.g. copy string arguments
   /// to extend their lifetime.
@@ -1009,6 +1021,7 @@ private:
   void forwardTentativeDiagnosticsTo(DiagnosticEngine& targetEngine);
 
 public:
+
   DiagnosticKind declaredDiagnosticKindFor(const DiagID id);
 
   llvm::StringRef
@@ -1052,6 +1065,7 @@ class DiagnosticStateRAII {
   llvm::SaveAndRestore<DiagnosticBehavior> previousBehavior;
 
 public:
+
   DiagnosticStateRAII(DiagnosticEngine& diags) :
     previousBehavior(diags.state.previousBehavior) {
   }
@@ -1062,9 +1076,11 @@ public:
 
 class BufferIndirectlyCausingDiagnosticRAII {
 private:
+
   DiagnosticEngine& Diags;
 
 public:
+
   BufferIndirectlyCausingDiagnosticRAII(const SourceFile& SF);
 
   ~BufferIndirectlyCausingDiagnosticRAII() {
@@ -1080,6 +1096,7 @@ public:
 /// implicitly committed upon destruction.
 class DiagnosticTransaction {
 protected:
+
   DiagnosticEngine& Engine;
 
   /// How many tentative diagnostics there were when the transaction
@@ -1094,6 +1111,7 @@ protected:
   bool IsOpen = true;
 
 public:
+
   DiagnosticTransaction(const DiagnosticTransaction&) = delete;
   DiagnosticTransaction& operator=(const DiagnosticTransaction&) = delete;
 
@@ -1153,6 +1171,7 @@ public:
   }
 
 private:
+
   void close() {
     assert(IsOpen && "only open transactions may be closed");
     IsOpen = false;
@@ -1171,6 +1190,7 @@ private:
 /// regular DiagnosticTransaction.
 class CompoundDiagnosticTransaction : public DiagnosticTransaction {
 public:
+
   explicit CompoundDiagnosticTransaction(DiagnosticEngine& engine) :
     DiagnosticTransaction(engine) {
   }
@@ -1244,6 +1264,7 @@ class DiagnosticQueue final {
   bool EmitOnDestruction;
 
 public:
+
   DiagnosticQueue(const DiagnosticQueue&) = delete;
   DiagnosticQueue& operator=(const DiagnosticQueue&) = delete;
 

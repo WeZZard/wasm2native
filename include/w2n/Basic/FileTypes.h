@@ -9,7 +9,6 @@
 namespace w2n {
 namespace file_types {
 enum ID : uint8_t {
-
 #define TYPE(NAME, ID, EXTENSION, FLAGS) TY_##ID,
 #include <w2n/Basic/FileTypes.def>
 #undef TYPE

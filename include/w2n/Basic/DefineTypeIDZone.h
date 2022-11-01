@@ -27,7 +27,6 @@
 template <>
 struct TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE> {
   enum Types : uint8_t {
-
 #define W2N_TYPEID_NAMED(Type, Name)                             Name,
 #define W2N_TYPEID_TEMPLATE1_NAMED(Template, Name, Param1, Arg1) Name,
 #define W2N_TYPEID_TEMPLATE2_NAMED(                                      \
@@ -62,12 +61,14 @@ struct TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE> {
   template <Param1>                                                      \
   struct TypeID<Template<Arg1>> {                                        \
   private:                                                               \
+                                                                         \
     static const uint64_t templateID = formTypeID(                       \
       static_cast<uint8_t>(Zone::W2N_TYPEID_ZONE),                       \
       TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE>::Name                       \
     );                                                                   \
                                                                          \
   public:                                                                \
+                                                                         \
     static const uint64_t value =                                        \
       (TypeID<Arg1>::value << 16) | templateID;                          \
                                                                          \
@@ -85,12 +86,14 @@ struct TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE> {
   template <Param1, Param2>                                              \
   struct TypeID<Template<Arg1, Arg2>> {                                  \
   private:                                                               \
+                                                                         \
     static const uint64_t templateID = formTypeID(                       \
       static_cast<uint8_t>(Zone::W2N_TYPEID_ZONE),                       \
       TypeIDZoneTypes<Zone::W2N_TYPEID_ZONE>::Name                       \
     );                                                                   \
                                                                          \
   public:                                                                \
+                                                                         \
     static const uint64_t value = (TypeID<Arg1>::value << 32)            \
                                 | (TypeID<Arg2>::value << 16)            \
                                 | templateID;                            \

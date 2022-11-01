@@ -81,6 +81,7 @@ class IntRange {
   using difference_type = typename Traits::difference_type;
 
 public:
+
   IntRange() : Begin(0), End(0) {
   }
 
@@ -99,6 +100,7 @@ public:
     }
 
   public:
+
     using value_type = T;
     using reference = T;
     using pointer = void;

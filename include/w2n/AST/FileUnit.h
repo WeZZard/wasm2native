@@ -37,15 +37,18 @@ class FileUnit : public DeclContext, public ASTAllocated<FileUnit> {
 #pragma clang diagnostic pop
 
 private:
+
   FileUnitKind Kind;
 
 protected:
+
   FileUnit(FileUnitKind Kind, ModuleDecl& Module) :
     DeclContext(DeclContextKind::FileUnit, &Module),
     Kind(Kind) {
   }
 
 public:
+
   FileUnitKind getKind() const {
     return Kind;
   }

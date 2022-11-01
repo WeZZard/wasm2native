@@ -14,6 +14,7 @@ class ExpectationDiagnosticConsumer : public DiagnosticConsumer {
   bool hasFinished = false;
 
 public:
+
   ExpectationDiagnosticConsumer(
     ExpectationDiagnosticConsumer * previous,
     ArrayRef<ExpectedDiagnostic> expected

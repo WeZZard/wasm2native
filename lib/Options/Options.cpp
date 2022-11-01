@@ -46,6 +46,7 @@ namespace {
 
 class W2NOptTable : public OptTable {
 public:
+
   W2NOptTable() : OptTable(InfoTable) {
   }
 };

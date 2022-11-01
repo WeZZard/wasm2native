@@ -17,8 +17,8 @@ class DiagnosticEngine;
 class OutputInfo {};
 
 class Driver {
-
 public:
+
   /// DriverKind determines how later arguments are parsed, as well as the
   /// allowable OutputInfo::Mode values.
   enum class DriverKind {
@@ -27,9 +27,11 @@ public:
   };
 
 private:
+
   DriverKind TheKind;
 
 public:
+
   Driver(
     StringRef ExeName,
     StringRef Name,

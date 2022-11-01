@@ -14,6 +14,7 @@ namespace w2n {
 /// This class manages and owns source buffers.
 class SourceManager {
 public:
+
   /// A \c #sourceLocation-defined virtual file region, representing the
   /// source source after a \c #sourceLocation (or between two). It
   /// provides a filename and line offset to be applied to \c SourceLoc's
@@ -25,6 +26,7 @@ public:
   };
 
 private:
+
   llvm::SourceMgr LLVMSourceMgr;
 
   llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> FileSystem;
@@ -46,6 +48,7 @@ private:
   Optional<unsigned> findBufferContainingLocInternal(SourceLoc Loc) const;
 
 public:
+
   SourceManager(
     llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> FS =
       llvm::vfs::getRealFileSystem()
@@ -280,6 +283,7 @@ public:
   getLocForForeignLoc(SourceLoc otherLoc, SourceManager& otherMgr);
 
 private:
+
   int getLineOffset(SourceLoc Loc) const {
     if (auto VFile = getVirtualFile(Loc))
       return VFile->LineOffset;

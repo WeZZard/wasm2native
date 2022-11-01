@@ -6,8 +6,8 @@
 namespace w2n {
 
 class TargetInfo {
-
 public:
+
   const llvm::Triple& getTriple() const;
   const char * getDataLayoutString() const;
 };

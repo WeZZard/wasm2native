@@ -21,6 +21,7 @@ class NullablePtr {
   struct PlaceHolder {};
 
 public:
+
   NullablePtr(T * P = 0) : Ptr(P) {
   }
 
@@ -100,6 +101,7 @@ struct PointerLikeTypeTraits;
 template <typename T>
 struct PointerLikeTypeTraits<w2n::NullablePtr<T>> {
 public:
+
   static inline void * getAsVoidPointer(w2n::NullablePtr<T> ptr) {
     return static_cast<void *>(ptr.getPtrOrNull());
   }

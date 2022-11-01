@@ -31,11 +31,13 @@ enum class LibraryKind {
 // Module::LinkLibrary.
 class LinkLibrary {
 private:
+
   std::string Name;
   unsigned Kind : 1;
   unsigned ForceLoad : 1;
 
 public:
+
   LinkLibrary(StringRef N, LibraryKind K, bool forceLoad = false) :
     Name(N),
     Kind(static_cast<unsigned>(K)),

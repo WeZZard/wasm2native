@@ -16,6 +16,7 @@ class OpenFileRAII {
   static const int INVALID_FD = -1;
 
 public:
+
   int fd = INVALID_FD;
 
   ~OpenFileRAII() {

@@ -44,6 +44,7 @@ enum class IRGenEmbedMode : unsigned {
 
 class IRGenOptions {
 public:
+
   /// The libraries and frameworks specified on the command line.
   SmallVector<LinkLibrary, 4> LinkLibraries;
 

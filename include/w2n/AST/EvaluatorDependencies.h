@@ -78,6 +78,7 @@ class DependencyRecorder {
 #endif
 
 public:
+
   DependencyRecorder(bool shouldRecord) : shouldRecord(shouldRecord) {
   }
 
@@ -108,11 +109,13 @@ public:
   void clearRequest(const Request& req);
 
 private:
+
   /// Add an entry to the innermost set on the activeRequestReferences
   /// stack. Called from the DependencyCollector.
   void recordDependency(const DependencyCollector::Reference& ref);
 
 public:
+
   using ReferenceEnumerator =
     llvm::function_ref<void(const DependencyCollector::Reference&)>;
 

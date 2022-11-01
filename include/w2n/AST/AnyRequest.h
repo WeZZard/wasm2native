@@ -79,6 +79,7 @@ class AnyRequestBase {
   friend llvm::DenseMapInfo<Derived>;
 
 protected:
+
   static hash_code hashForHolder(uint64_t typeID, hash_code requestHash) {
     return hash_combine(typeID, requestHash);
   }
@@ -135,6 +136,7 @@ protected:
   }
 
 private:
+
   Derived& asDerived() {
     return *static_cast<Derived *>(this);
   }
@@ -148,6 +150,7 @@ private:
   }
 
 public:
+
   /// Cast to a specific (known) type.
   template <typename Request>
   const Request& castTo() const {
@@ -253,6 +256,7 @@ class ActiveRequest final : public AnyRequestBase<ActiveRequest> {
   }
 
 public:
+
   /// Creates a new \c ActiveRequest referencing a concrete request on the
   /// stack.
   template <typename Request>

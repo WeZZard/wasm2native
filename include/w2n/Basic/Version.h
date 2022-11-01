@@ -39,6 +39,7 @@ class Version {
   SmallVector<unsigned, 5> Components;
 
 public:
+
   /// Create the empty compiler version - this always compares greater
   /// or equal to any other CompilerVersion, as in the case of building
   /// w2n from latest sources outside of a build/integration/release

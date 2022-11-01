@@ -8,7 +8,6 @@ namespace w2n {
 
 /// A set of frontend inputs and outputs.
 class FrontendInputsAndOutputs final {
-
   std::vector<Input> AllInputs;
   llvm::StringMap<unsigned> PrimaryInputsByName;
   std::vector<unsigned> PrimaryInputsInOrder;
@@ -20,6 +19,7 @@ class FrontendInputsAndOutputs final {
   bool IsSingleThreadedWMO = false;
 
 public:
+
   FrontendInputsAndOutputs() = default;
   FrontendInputsAndOutputs(const FrontendInputsAndOutputs& other);
   FrontendInputsAndOutputs&
@@ -38,6 +38,7 @@ public:
 #pragma mark Inputs
 
 public:
+
   ArrayRef<Input> getAllInputs() const {
     return AllInputs;
   }
@@ -119,6 +120,7 @@ public:
 #pragma mark Inputs
 
 public:
+
   void clearInputs();
   void addInput(const Input& input);
   void

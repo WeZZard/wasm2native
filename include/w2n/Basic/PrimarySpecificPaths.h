@@ -14,6 +14,7 @@ namespace w2n {
  */
 class PrimarySpecificPaths {
 public:
+
   /// The name of the main output file,
   /// that is, the .o file for this input (or a file specified by -o).
   /// If there is no such file, contains an empty string. If the output

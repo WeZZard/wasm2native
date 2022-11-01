@@ -27,6 +27,7 @@ struct DependencyCollector {
 
   struct Reference {
   public:
+
     enum class Kind {
       Empty,
       Tombstone,
@@ -40,6 +41,7 @@ struct DependencyCollector {
     DeclBaseName name;
 
   private:
+
     Reference(Kind kind, DeclContext * subject, DeclBaseName name) :
       kind(kind),
       subject(subject),
@@ -47,6 +49,7 @@ struct DependencyCollector {
     }
 
   public:
+
     static Reference empty() {
       return {
         Kind::Empty,
@@ -62,6 +65,7 @@ struct DependencyCollector {
     }
 
   public:
+
     static Reference
     usedMember(DeclContext * subject, DeclBaseName name) {
       return {Kind::UsedMember, subject, name};
@@ -80,6 +84,7 @@ struct DependencyCollector {
     }
 
   public:
+
     struct Info {
       static inline Reference getEmptyKey() {
         return Reference::empty();
@@ -103,13 +108,16 @@ struct DependencyCollector {
   };
 
 private:
+
   DependencyRecorder& parent;
 
 public:
+
   explicit DependencyCollector(DependencyRecorder& parent);
   ~DependencyCollector();
 
 public:
+
   /// Registers a named reference from the current dependency scope to a
   /// member defined in the given \p subject type.
   ///
@@ -149,6 +157,7 @@ public:
   void addDynamicLookupName(DeclBaseName name);
 
 public:
+
   /// Retrieves the dependency recorder that created this dependency
   /// collector.
   const DependencyRecorder& getRecorder() const {

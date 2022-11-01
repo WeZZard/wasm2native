@@ -150,6 +150,7 @@ class UnifiedStatsReporter::RecursionSafeTimers {
   StringMap<RecursionSafeTimer> Timers;
 
 public:
+
   void beginTimer(StringRef Name) {
     RecursionSafeTimer& T = Timers[Name];
     if (T.RecursionDepth == 0) {
@@ -228,6 +229,7 @@ class StatsProfiler {
   Node * Curr;
 
 public:
+
   StatsProfiler() : Curr(&Root) {
   }
 

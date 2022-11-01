@@ -41,6 +41,7 @@ class DefToYAMLConverter {
   llvm::ArrayRef<const char *> Messages;
 
 public:
+
   DefToYAMLConverter(
     llvm::ArrayRef<const char *> ids,
     llvm::ArrayRef<const char *> messages
@@ -55,6 +56,7 @@ public:
 
 class LocalizationWriterInfo {
 public:
+
   using key_type = uint32_t;
   using key_type_ref = const uint32_t&;
   using data_type = std::string;
@@ -92,6 +94,7 @@ public:
 
 class LocalizationReaderInfo {
 public:
+
   using internal_key_type = uint32_t;
   using external_key_type = w2n::DiagID;
   using data_type = llvm::StringRef;
@@ -138,6 +141,7 @@ class SerializedLocalizationWriter {
   llvm::OnDiskChainedHashTableGenerator<LocalizationWriterInfo> generator;
 
 public:
+
   /// Enqueue the given diagnostic to be included in a serialized
   /// translations file.
   ///
@@ -170,6 +174,7 @@ class LocalizationProducer {
   LocalizationProducerState state = NotInitialized;
 
 public:
+
   LocalizationProducer(bool printDiagnosticNames = false) :
     localizationSaver(localizationAllocator),
     printDiagnosticNames(printDiagnosticNames) {
@@ -194,6 +199,7 @@ public:
   }
 
 protected:
+
   LocalizationProducerState getState() const;
 
   /// Used to lazily initialize `LocalizationProducer`s.
@@ -212,6 +218,7 @@ class YAMLLocalizationProducer final : public LocalizationProducer {
   std::string filePath;
 
 public:
+
   /// The diagnostics IDs that are no longer available in `.def`
   std::vector<std::string> unknownIDs;
   explicit YAMLLocalizationProducer(
@@ -226,6 +233,7 @@ public:
   );
 
 protected:
+
   bool initializeImpl() override;
   llvm::StringRef getMessage(w2n::DiagID id) const override;
 };
@@ -238,12 +246,14 @@ class SerializedLocalizationProducer final : public LocalizationProducer {
   std::unique_ptr<SerializedLocalizationTable> SerializedTable;
 
 public:
+
   explicit SerializedLocalizationProducer(
     std::unique_ptr<llvm::MemoryBuffer> buffer,
     bool printDiagnosticNames = false
   );
 
 protected:
+
   bool initializeImpl() override;
   llvm::StringRef getMessage(w2n::DiagID id) const override;
 };
@@ -265,6 +275,7 @@ class LocalizationInput : public llvm::yaml::Input {
   operator>>(LocalizationInput& yin, T& diagnostics);
 
 public:
+
   /// A vector that keeps track of the diagnostics IDs that are available
   /// in YAML and not available in `.def` files.
   std::vector<std::string> unknownIDs;

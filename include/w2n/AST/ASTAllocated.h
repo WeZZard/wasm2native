@@ -45,6 +45,7 @@ void * allocateInASTContext(
 template <typename AlignTy>
 class LLVM_POINTER_LIKE_ALIGNMENT(ASTAllocated) ASTAllocated {
 public:
+
   // Make vanilla new/delete illegal.
 
   void * operator new(size_t Bytes) throw() = delete;

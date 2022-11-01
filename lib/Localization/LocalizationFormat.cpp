@@ -20,7 +20,6 @@
 namespace {
 
 enum LocalDiagID : uint32_t {
-
 #define DIAG(KIND, ID, Options, Text, Signature) ID,
 #include <w2n/AST/DiagnosticsAll.def>
   NumDiags

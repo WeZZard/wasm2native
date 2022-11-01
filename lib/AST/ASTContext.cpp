@@ -18,12 +18,10 @@ void * detail::allocateInASTContext(
 #pragma mark ASTContext::Implementation
 
 struct ASTContext::Implementation {
-
   /**
    * @brief Structure that captures data to different kinds of "seats".
    */
   struct Arena {
-
     ~Arena() {
     }
 

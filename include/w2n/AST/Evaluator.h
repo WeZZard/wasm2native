@@ -44,6 +44,7 @@ class PrettyStackTraceRequest : public llvm::PrettyStackTraceEntry {
   const Request& request;
 
 public:
+
   PrettyStackTraceRequest(const Request& request) : request(request) {
   }
 
@@ -60,6 +61,7 @@ template <typename Request>
 struct CyclicalRequestError :
   public llvm::ErrorInfo<CyclicalRequestError<Request>> {
 public:
+
   static char ID;
   const Request& request;
   const Evaluator& evaluator;
@@ -175,7 +177,6 @@ void reportEvaluatedRequest(
 ///
 ///            Cache the given result.
 class Evaluator {
-
   /// The diagnostics engine through which any cyclic-dependency
   /// diagnostics will be emitted.
   DiagnosticEngine& diags;
@@ -223,6 +224,7 @@ class Evaluator {
   }
 
 public:
+
   /// Construct a new evaluator that can emit cyclic-dependency
   /// diagnostics through the given diagnostics engine.
   Evaluator(DiagnosticEngine& diags, const LanguageOptions& opts);
@@ -335,6 +337,7 @@ public:
   }
 
 private:
+
   /// Diagnose a cycle detected in the evaluation of the given
   /// request.
   void diagnoseCycle(const ActiveRequest& request);
@@ -439,6 +442,7 @@ private:
   }
 
 private:
+
   template <
     typename Request,
     typename std::enable_if<!Request::isDependencySink>::type * = nullptr>

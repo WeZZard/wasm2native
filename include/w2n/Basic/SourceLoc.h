@@ -25,6 +25,7 @@ class SourceLoc {
   llvm::SMLoc Value;
 
 public:
+
   SourceLoc() {
   }
 
@@ -107,6 +108,7 @@ public:
 /// type to make sure that proper conversions happen where important.
 class SourceRange {
 public:
+
   SourceLoc Start, End;
 
   SourceRange() {
@@ -186,6 +188,7 @@ class CharSourceRange {
   unsigned ByteLength;
 
 public:
+
   /// Constructs an invalid range.
   CharSourceRange() = default;
 

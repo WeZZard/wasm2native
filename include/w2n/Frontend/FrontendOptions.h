@@ -10,8 +10,8 @@ namespace w2n {
 
 /// Options for controlling the behavior of the frontend.
 class FrontendOptions {
-
 public:
+
   enum class ActionType {
     /// @brief Just no action would be taken.
     NoneAction,
@@ -46,6 +46,7 @@ public:
   bool ReuseFrontendForMultipleCompilations = false;
 
 public:
+
   FrontendOptions() {
   }
 

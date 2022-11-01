@@ -9,6 +9,7 @@ namespace w2n {
 
 class LanguageOptions final {
 public:
+
   /// The target we are building for.
   ///
   /// This represents the minimum deployment target.

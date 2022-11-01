@@ -48,7 +48,6 @@ struct DenseMapInfo;
 
 template <typename T>
 struct DenseMapInfo<w2n::Located<T>> {
-
   static inline w2n::Located<T> getEmptyKey() {
     return w2n::Located<T>(
       DenseMapInfo<T>::getEmptyKey(),

@@ -10,9 +10,11 @@ class Identifier {
   friend class ASTContext;
 
 private:
+
   const char * Pointer;
 
 public:
+
   enum : size_t {
     NumLowBitsAvailable = 3,
     RequiredAlignment = 1 << NumLowBitsAvailable,
@@ -20,6 +22,7 @@ public:
   };
 
 private:
+
   /**
    * @brief Constructor, only accessible by \c ASTContext, which handles
    * the uniquing.
@@ -46,6 +49,7 @@ private:
   );
 
 public:
+
   explicit Identifier() : Pointer(nullptr) {
   }
 
@@ -164,6 +168,7 @@ struct PointerLikeTypeTraits;
 template <>
 struct PointerLikeTypeTraits<w2n::Identifier> {
 public:
+
   static inline void * getAsVoidPointer(w2n::Identifier I) {
     return const_cast<void *>(I.getAsOpaquePointer());
   }

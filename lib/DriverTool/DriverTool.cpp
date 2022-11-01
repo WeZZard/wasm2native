@@ -47,7 +47,6 @@ int runDriver(
   ArrayRef<const char *> Argv,
   const ArrayRef<const char *> OriginalArgv
 ) {
-
   if (Argv.size() > 1) {
     StringRef FirstArg(Argv[1]);
 

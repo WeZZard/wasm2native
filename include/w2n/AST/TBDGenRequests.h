@@ -57,6 +57,7 @@ class TBDGenDescriptor final {
   }
 
 public:
+
   /// Returns the file or module we're emitting TBD for.
   FileOrModule getFileOrModule() const {
     return Input;
@@ -111,9 +112,11 @@ class GenerateTBDRequest :
     TBDFile(TBDGenDescriptor),
     RequestFlags::Uncached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -127,9 +130,11 @@ class PublicSymbolsRequest :
     std::vector<std::string>(TBDGenDescriptor),
     RequestFlags::Uncached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -144,9 +149,11 @@ class APIGenRequest :
     apigen::API(TBDGenDescriptor),
     RequestFlags::Uncached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -158,6 +165,7 @@ private:
 /// introduces it.
 class SymbolSource {
 public:
+
   enum class Kind {
     /// A symbol introduced when emitting LLVM IR.
     IR,
@@ -172,6 +180,7 @@ public:
   Kind kind;
 
 private:
+
   union {
     irgen::LinkEntity irEntity;
   };
@@ -185,6 +194,7 @@ private:
   }
 
 public:
+
   static SymbolSource forIRLinkEntity(irgen::LinkEntity entity) {
     return SymbolSource{entity};
   }
@@ -219,6 +229,7 @@ class SymbolSourceMap {
   }
 
 public:
+
   Optional<SymbolSource> find(StringRef symbol) const {
     auto result = storage->find(symbol);
     if (result == storage->end())
@@ -249,9 +260,11 @@ class SymbolSourceMapRequest :
     SymbolSourceMap(TBDGenDescriptor),
     RequestFlags::Cached> {
 public:
+
   using SimpleRequest::SimpleRequest;
 
 private:
+
   friend SimpleRequest;
 
   // Evaluation.
@@ -259,6 +272,7 @@ private:
   evaluate(Evaluator& evaluator, TBDGenDescriptor desc) const;
 
 public:
+
   // Cached.
   bool isCached() const {
     return true;

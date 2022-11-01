@@ -19,8 +19,8 @@ class ModuleDecl :
   public DeclContext,
   public Decl,
   public ASTAllocated<ModuleDecl> {
-
 private:
+
   friend class Decl;
 
   bool IsMainModule = false;
@@ -40,6 +40,7 @@ private:
   }
 
 public:
+
   /**
    * @brief Retrieve the module name for this module
    */

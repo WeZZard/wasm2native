@@ -57,6 +57,7 @@ struct DiagnosticInfo {
     std::string Text;
 
   public:
+
     FixIt(
       CharSourceRange R, StringRef Str, ArrayRef<DiagnosticArgument> Args
     );
@@ -116,6 +117,7 @@ struct DiagnosticInfo {
 /// Abstract interface for classes that present diagnostics to the user.
 class DiagnosticConsumer {
 protected:
+
   static llvm::SMLoc getRawLoc(SourceLoc Loc);
 
   static llvm::SMRange getRawRange(SourceManager& SM, CharSourceRange R) {
@@ -129,6 +131,7 @@ protected:
   }
 
 public:
+
   virtual ~DiagnosticConsumer();
 
   /// Invoked whenever the frontend emits a diagnostic.
@@ -163,6 +166,7 @@ public:
 /// DiagnosticConsumer that discards all diagnostics.
 class NullDiagnosticConsumer : public DiagnosticConsumer {
 public:
+
   void handleDiagnostic(SourceManager& SM, const DiagnosticInfo& Info)
     override;
 };
@@ -173,6 +177,7 @@ class ForwardingDiagnosticConsumer : public DiagnosticConsumer {
   DiagnosticEngine& TargetEngine;
 
 public:
+
   ForwardingDiagnosticConsumer(DiagnosticEngine& Target);
   void handleDiagnostic(SourceManager& SM, const DiagnosticInfo& Info)
     override;
@@ -193,6 +198,7 @@ public:
 /// isn't really about the current file.
 class FileSpecificDiagnosticConsumer : public DiagnosticConsumer {
 public:
+
   class Subconsumer;
 
   /// Given a vector of subconsumers, return the most specific
@@ -232,6 +238,7 @@ public:
     bool hasAnErrorBeenConsumed = false;
 
   public:
+
     std::string getInputFileName() const {
       return inputFileName;
     }
@@ -262,12 +269,15 @@ public:
   };
 
 private:
+
   /// All consumers owned by this FileSpecificDiagnosticConsumer.
   SmallVector<Subconsumer, 4> Subconsumers;
 
 public:
+
   class ConsumerAndRange {
   private:
+
     /// The range of SourceLoc's for which diagnostics should be directed
     /// to this subconsumer. Should be const but then the sort won't
     /// compile.
@@ -278,6 +288,7 @@ public:
     /*const*/ unsigned subconsumerIndex;
 
   public:
+
     unsigned getSubconsumerIndex() const {
       return subconsumerIndex;
     }
@@ -318,6 +329,7 @@ public:
   };
 
 private:
+
   Subconsumer& operator[](const ConsumerAndRange& consumerAndRange) {
     return Subconsumers[consumerAndRange.getSubconsumerIndex()];
   }
@@ -354,12 +366,14 @@ private:
   );
 
 public:
+
   void handleDiagnostic(SourceManager& SM, const DiagnosticInfo& Info)
     override;
 
   bool finishProcessing() override;
 
 private:
+
   /// In batch mode, any error causes failure for all primary files, but
   /// Xcode will only see an error for a particular primary in that
   /// primary's serialized diagnostics file. So, tell the subconsumers to

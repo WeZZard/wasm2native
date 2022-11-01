@@ -27,7 +27,6 @@ class SearchPathOptions_t {};
  *
  */
 struct ModuleBuffers {
-
   std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer;
 
   ModuleBuffers(std::unique_ptr<llvm::MemoryBuffer> ModuleBuffer) :
@@ -36,8 +35,8 @@ struct ModuleBuffers {
 };
 
 class CompilerInvocation {
-
 private:
+
   FrontendOptions FrontendOpts;
   LanguageOptions LanguageOpts;
   SearchPathOptions_t SearchPathOpts;
@@ -45,6 +44,7 @@ private:
   TBDGenOptions TBDGenOpts;
 
 public:
+
   CompilerInvocation();
 
   /**
@@ -125,8 +125,8 @@ public:
 };
 
 class CompilerInstance {
-
 private:
+
   CompilerInvocation Invocation;
 
   SourceManager SourceMgr;
@@ -159,6 +159,7 @@ private:
   void recordPrimaryInputBuffer(unsigned BufID);
 
 public:
+
   CompilerInstance();
 
   CompilerInstance(const CompilerInstance&) = delete;
@@ -216,6 +217,7 @@ public:
   getPrimarySpecificPathsForSourceFile(const SourceFile& SF) const;
 
 private:
+
   /// Set up the file system by loading and validating all VFS overlay
   /// YAML files. If the process of validating VFS files failed, or the
   /// overlay file system could not be initialized, this function returns
@@ -252,6 +254,7 @@ private:
   Optional<ModuleBuffers> getInputBuffersIfPresent(const Input& I);
 
 private:
+
   /**
    * @brief Creates a new wasm file for the main module.
    */
@@ -267,6 +270,7 @@ private:
   ) const;
 
 public:
+
   /**
    * @brief Retrieve the main module containing the files being compiled.
    *
@@ -297,6 +301,7 @@ public:
   bool forEachFileToTypeCheck(llvm::function_ref<bool(SourceFile&)> fn);
 
 private:
+
   friend class WasmFile;
   friend class WatFile;
 

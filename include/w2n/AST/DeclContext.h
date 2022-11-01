@@ -20,7 +20,6 @@ enum class DeclContextKind {
 
 class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext :
   public ASTAllocated<DeclContext> {
-
   enum class ASTHierarchy : unsigned {
     Decl,
     FileUnit,
@@ -41,6 +40,7 @@ class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext :
   }
 
 public:
+
   LLVM_READONLY
   Decl * getAsDecl() {
     return ParentAndKind.getInt() == ASTHierarchy::Decl

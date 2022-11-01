@@ -12,7 +12,6 @@ namespace w2n {
 class ASTContext;
 
 enum class DeclKind {
-
   Module
 };
 
@@ -32,8 +31,8 @@ enum class DescriptiveDeclKind : uint8_t {
  * @brief Base class of all decls in w2n.
  */
 class LLVM_POINTER_LIKE_ALIGNMENT(Decl) Decl : public ASTAllocated<Decl> {
-
 private:
+
   DeclKind Kind;
 
   llvm::PointerUnion<DeclContext *, ASTContext *> Context;
@@ -44,6 +43,7 @@ private:
   SourceLoc getLocFromSource() const;
 
 protected:
+
   Decl(
     DeclKind Kind, llvm::PointerUnion<DeclContext *, ASTContext *> Context
   ) :
@@ -54,6 +54,7 @@ protected:
   DeclContext * getDeclContextForModule() const;
 
 public:
+
   DeclKind getKind() const {
     return Kind;
   }

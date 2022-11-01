@@ -105,7 +105,6 @@ bool parseFrontendOptions(
   DiagnosticEngine& Diagnostic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 ) {
-
   std::set<StringRef> AllInputFiles;
   bool hadDuplicates = false;
   for (const Arg * A : Args.filtered(options::OPT_INPUT)) {

@@ -279,17 +279,20 @@ class SimpleRequest<Derived, Output(Inputs...), Caching> {
   }
 
 protected:
+
   /// Retrieve the storage value directly.
   const std::tuple<Inputs...>& getStorage() const {
     return storage;
   }
 
 public:
+
   constexpr static bool isEverCached = detail::isEverCached(Caching);
   constexpr static bool hasExternalCache =
     detail::hasExternalCache(Caching);
 
 public:
+
   constexpr static bool isDependencySource =
     detail::isDependencySource(Caching);
   constexpr static bool isDependencySink =

@@ -33,6 +33,7 @@ class OptionSet {
   StorageType Storage;
 
 public:
+
   /// Create an empty option set.
   constexpr OptionSet() : Storage() {
   }
@@ -132,6 +133,7 @@ public:
   }
 
 private:
+
   template <typename T>
   static auto _checkResultTypeOperatorOr(T t) -> decltype(t | t) {
     return T();

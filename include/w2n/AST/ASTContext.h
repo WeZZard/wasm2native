@@ -21,8 +21,8 @@ namespace w2n {
  *
  */
 class ASTContext final {
-
 private:
+
   ASTContext(
     LanguageOptions& LangOpts,
     SourceManager& SourceMgr,
@@ -34,6 +34,7 @@ private:
   Implementation& getImpl() const;
 
 public:
+
   ASTContext(const ASTContext&) = delete;
   void operator=(const ASTContext&) = delete;
 
@@ -81,6 +82,7 @@ public:
 #pragma Error Handling
 
 public:
+
   bool hadError() const {
     return false;
   }
@@ -88,6 +90,7 @@ public:
 #pragma ASTContext Managed Resource Allocation
 
 private:
+
   /**
    * @brief Retrieve the allocator for the given arena.
    */
@@ -95,6 +98,7 @@ private:
   getAllocator(AllocationArena arena = AllocationArena::Permanent) const;
 
 public:
+
   /// Allocate - Allocate memory from the ASTContext bump pointer.
   void * Allocate(
     unsigned long bytes,
@@ -245,6 +249,7 @@ public:
 #pragma Getting ASTContext Managed Resources
 
 public:
+
   /**
    * @brief Return the uniqued and AST-Context-owned version of the
    *  specified string.

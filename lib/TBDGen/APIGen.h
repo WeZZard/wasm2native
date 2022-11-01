@@ -56,6 +56,7 @@ enum class APIFlags : uint8_t {
 
 class APILoc {
 public:
+
   APILoc() = default;
 
   APILoc(std::string file, unsigned line, unsigned col) :
@@ -77,6 +78,7 @@ public:
   }
 
 private:
+
   std::string file;
   unsigned line;
   unsigned col;
@@ -167,6 +169,7 @@ struct GlobalRecord : APIRecord {
 
 class API {
 public:
+
   API(const llvm::Triple& triple) : target(triple) {
   }
 
@@ -186,6 +189,7 @@ public:
   void writeAPIJSONFile(raw_ostream& os, bool PrettyPrint = false);
 
 private:
+
   const llvm::Triple target;
 
   llvm::BumpPtrAllocator allocator;

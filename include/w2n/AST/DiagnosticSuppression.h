@@ -21,6 +21,7 @@ class DiagnosticSuppression {
   DiagnosticSuppression& operator=(const DiagnosticSuppression&) = delete;
 
 public:
+
   explicit DiagnosticSuppression(DiagnosticEngine& diags);
   ~DiagnosticSuppression();
   static bool isEnabled(const DiagnosticEngine& diags);

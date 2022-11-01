@@ -34,11 +34,13 @@ class IRGenModule;
 /// file).
 class IRGenerator {
 public:
+
   const IRGenOptions& Opts;
 
   ModuleDecl& Module;
 
 private:
+
   llvm::DenseMap<SourceFile *, IRGenModule *> GenModules;
 
   // Stores the IGM from which a function is referenced the first time.
@@ -63,6 +65,7 @@ private:
   std::atomic<int> QueueIndex;
 
 public:
+
   explicit IRGenerator(const IRGenOptions& Opts, ModuleDecl& Module);
 
   /// Attempt to create an llvm::TargetMachine for the current target.
@@ -138,6 +141,7 @@ public:
   void emitLazyDefinitions();
 
 public:
+
   unsigned getFunctionOrder(FuncDecl * F) {
     auto it = FunctionOrder.find(F);
     assert(
@@ -160,6 +164,7 @@ public:
 
 class IRGenModule {
 public:
+
   static const unsigned wasmVersion = 0;
 
   std::unique_ptr<llvm::LLVMContext> LLVMContext;
@@ -207,9 +212,11 @@ public:
   ~IRGenModule();
 
 public:
+
   GeneratedModule intoGeneratedModule() &&;
 
 public:
+
   llvm::LLVMContext& getLLVMContext() const {
     return *LLVMContext;
   }
@@ -226,7 +233,9 @@ public:
   bool finalize();
 
   //--- Runtime ----------------------------------------------------------
+
 public:
+
   llvm::Module * getModule() const;
 };
 

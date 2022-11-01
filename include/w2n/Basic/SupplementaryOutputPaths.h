@@ -8,7 +8,6 @@
 
 namespace w2n {
 struct SupplementaryOutputPaths {
-
   /// The path to which we should output a Make-style dependencies file.
   /// It is valid whenever there are any inputs.
   ///

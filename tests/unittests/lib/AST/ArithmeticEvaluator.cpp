@@ -12,6 +12,7 @@ using namespace llvm;
 
 class ArithmeticExpr {
 public:
+
   enum class Kind {
     Literal,
     Binary,
@@ -21,12 +22,14 @@ public:
   Optional<double> cachedValue;
 
 protected:
+
   ArithmeticExpr(Kind kind) : kind(kind) {
   }
 };
 
 class Literal : public ArithmeticExpr {
 public:
+
   const double value;
 
   Literal(double value) : ArithmeticExpr(Kind::Literal), value(value) {
@@ -35,6 +38,7 @@ public:
 
 class Binary : public ArithmeticExpr {
 public:
+
   enum class OperatorKind {
     Sum,
     Product,

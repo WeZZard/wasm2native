@@ -60,6 +60,7 @@ struct InstallNameStore {
 /// A set of callbacks for recording APIs.
 class APIRecorder {
 public:
+
   virtual ~APIRecorder() {
   }
 
@@ -71,6 +72,7 @@ public:
 
 class SimpleAPIRecorder final : public APIRecorder {
 public:
+
   using SymbolCallbackFn = llvm::function_ref<
     void(StringRef, llvm::MachO::SymbolKind, SymbolSource)>;
 
@@ -84,6 +86,7 @@ public:
   }
 
 private:
+
   SymbolCallbackFn func;
 };
 

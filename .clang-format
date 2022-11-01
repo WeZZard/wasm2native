@@ -1,14 +1,16 @@
 BasedOnStyle: LLVM
 ColumnLimit: 74 # 4 for git diff
-AlwaysBreakTemplateDeclarations: true
 AllowAllArgumentsOnNextLine: true
 PackConstructorInitializers: CurrentLine
 AllowAllParametersOfDeclarationOnNextLine: true
 BinPackArguments: false
 BinPackParameters: false
-SeparateDefinitionBlocks: Always # Clang-format 14
+SeparateDefinitionBlocks: Always
+EmptyLineAfterAccessModifier: Always
+EmptyLineBeforeAccessModifier: Always
 AlignAfterOpenBracket: BlockIndent
-AlwaysBreakTemplateDeclarations: Yes
+AlwaysBreakTemplateDeclarations: true
+KeepEmptyLinesAtTheStartOfBlocks: false
 ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 2
 PointerAlignment: Middle
@@ -23,26 +25,29 @@ AllowShortLambdasOnASingleLine: Inline
 BreakBeforeBinaryOperators: NonAssignment
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
+BreakAfterJavaFieldAnnotations: true
 SortIncludes: CaseSensitive
 IncludeCategories:
-  - Regex:           '^(<|")(llvm|llvm-c|clang|clang-c)/'
-    Priority:        2
-    SortPriority:    2
-    CaseSensitive:   true
-  - Regex:           '^<[[:alnum:]._]+>$'
-    Priority:        3
-    SortPriority:    3
-  - Regex:           '^(<|")w2n/'
-    Priority:        4
-    SortPriority:    4
-    CaseSensitive:   true
-  - Regex:           '.*'
-    Priority:        1
-    SortPriority:    0
+  - Regex: '^(<|")(llvm|llvm-c|clang|clang-c)/'
+    Priority: 2
+    SortPriority: 2
+    CaseSensitive: true
+  - Regex: "^<[[:alnum:]._]+>$"
+    Priority: 3
+    SortPriority: 3
+  - Regex: '^(<|")w2n/'
+    Priority: 4
+    SortPriority: 4
+    CaseSensitive: true
+  - Regex: ".*"
+    Priority: 1
+    SortPriority: 0
 StatementMacros:
-  - W2N_CONSTRUCTOR
-  - W2N_NOINLINE
-  - W2N_INLINE
-  - W2N_NORETURN
+  - INLINE_ALWAYS
+  - W2N_NO_INLINE
+  - W2N_INLINABLE
+  - W2N_INLINE_ALWAYS
+  - W2N_TRANSPARENT
+  - W2N_NEVER
   - W2N_UNUSED
   - W2N_CONSTEXPR

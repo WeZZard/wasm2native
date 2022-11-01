@@ -5,6 +5,7 @@ NEEDS_CLEAN=0;
 CONFIG_ONLY=0;
 CUSTOM_PRODUCTS_TO_BUILD=();
 DEFAULT_PRODUCTS_TO_BUILD=( "LLVM" "W2N" );
+DRY_RUN=0;
 
 # $1: ARG
 function arg_parse() {
@@ -33,6 +34,9 @@ function arg_parse() {
       ;;
     "--build-wasm2native")
       CUSTOM_PRODUCTS_TO_BUILD+=("W2N");
+      ;;
+    "--dry-run")
+      DRY_RUN=1;
       ;;
   esac
 }
@@ -108,7 +112,10 @@ function clean() {
     echo "Cleaning built products in directory \"$PRODUCT_BUILD_ROOT\" but the directory itself does not exist."
     return 0
   fi
-  rm -rf $PRODUCT_BUILD_ROOT
+  echo "rm -rf $PRODUCT_BUILD_ROOT"
+  if [[ $DRY_RUN -eq 0 ]]; then
+    rm -rf $PRODUCT_BUILD_ROOT
+  fi
   return ?0
 }
 
@@ -129,15 +136,23 @@ function build() {
   PRODUCT_CMAKE_CONFIG_ARGS=${!PRODUCT_CMAKE_CONFIG_ARGS}
 
   echo "mkdir -p $PRODUCT_BUILD_ROOT"
-  mkdir -p $PRODUCT_BUILD_ROOT
+
+  if [[ $DRY_RUN -eq 0 ]]; then
+    mkdir -p $PRODUCT_BUILD_ROOT
+  fi
 
   pushd "$PRODUCT_BUILD_ROOT"
   echo "cmake -G Ninja $PRODUCT_SOURCE_ROOT ${PRODUCT_CMAKE_CONFIG_ARGS}"
-  cmake -G Ninja "$PRODUCT_SOURCE_ROOT" ${PRODUCT_CMAKE_CONFIG_ARGS}
+
+  if [[ $DRY_RUN -eq 0 ]]; then
+    cmake -G Ninja "$PRODUCT_SOURCE_ROOT" ${PRODUCT_CMAKE_CONFIG_ARGS}
+  fi
 
   if [[ $CONFIG_PRODUCT_ONLY -ne 1 ]]; then
     echo "cmake --build $PRODUCT_BUILD_ROOT"
-    cmake --build "$PRODUCT_BUILD_ROOT"
+    if [[ $DRY_RUN -eq 0 ]]; then
+      cmake --build "$PRODUCT_BUILD_ROOT"
+    fi
   fi
 
   popd

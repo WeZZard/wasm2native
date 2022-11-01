@@ -1,11 +1,10 @@
 #!/bin/sh
 
 ARG_BUILD_TYPE="Debug";
-ARG_NEEDS_CLEAN=0;
-ARG_CONFIG_ONLY=0;
-ARG_PRODUCTS=(LLVM W2N);
-
-BUILDS_ALL=1;
+NEEDS_CLEAN=0;
+CONFIG_ONLY=0;
+CUSTOM_PRODUCTS_TO_BUILD=();
+DEFAULT_PRODUCTS_TO_BUILD=( "LLVM" "W2N" );
 
 # $1: ARG
 function arg_parse() {
@@ -24,18 +23,16 @@ function arg_parse() {
       ARG_BUILD_TYPE="MinSizeRel";
       ;;
     "--clean")
-      ARG_NEEDS_CLEAN=1;
+      NEEDS_CLEAN=1;
       ;;
     "--config-only")
-      ARG_CONFIG_ONLY=1;
+      CONFIG_ONLY=1;
       ;;
     "--build-llvm")
-      ARG_PRODUCTS=(LLVM);
-      BUILDS_ALL=0;
+      CUSTOM_PRODUCTS_TO_BUILD+=("LLVM");
       ;;
     "--build-wasm2native")
-      ARG_PRODUCTS=(W2N);
-      BUILDS_ALL=0;
+      CUSTOM_PRODUCTS_TO_BUILD+=("W2N");
       ;;
   esac
 }
@@ -102,18 +99,26 @@ function countdown_for_clean_build() {
   return 0;
 }
 
-# $1: PRODUCT_NAME, $2: CLEAN, $3: ARG_CONFIG_ONLY
+# $1: PRODUCT_NAME, $2: CONFIG_ONLY
+function clean() {
+  PRODUCT_NAME=$1
+  PRODUCT_BUILD_ROOT=${PRODUCT_NAME}_BUILD_ROOT
+  PRODUCT_BUILD_ROOT=${!PRODUCT_BUILD_ROOT}
+  if [[ ! -d $PRODUCT_BUILD_ROOT ]]; then
+    echo "Cleaning built products in directory \"$PRODUCT_BUILD_ROOT\" but the directory itself does not exist."
+    return 0
+  fi
+  rm -rf $PRODUCT_BUILD_ROOT
+  return ?0
+}
+
+# $1: PRODUCT_NAME, $2: CLEAN, $3: CONFIG_ONLY
 function build() {
   PRODUCT_NAME=$1
   if [[ $2 -ne 0 ]]; then
-    CLEAN=1;
+    CONFIG_PRODUCT_ONLY=1;
   else
-    CLEAN=0;
-  fi
-  if [[ $3 -ne 0 ]]; then
-    ARG_CONFIG_ONLY=1;
-  else
-    ARG_CONFIG_ONLY=0;
+    CONFIG_PRODUCT_ONLY=0;
   fi
   
   PRODUCT_BUILD_ROOT=${PRODUCT_NAME}_BUILD_ROOT
@@ -123,11 +128,6 @@ function build() {
   PRODUCT_CMAKE_CONFIG_ARGS=${PRODUCT_NAME}_CMAKE_CONFIG_ARGS
   PRODUCT_CMAKE_CONFIG_ARGS=${!PRODUCT_CMAKE_CONFIG_ARGS}
 
-  if [[ $CLEAN -eq 1 ]]; then
-    countdown_for_clean_build 3 $PRODUCT_NAME
-    rm -rf $PRODUCT_BUILD_ROOT
-  fi
-
   echo "mkdir -p $PRODUCT_BUILD_ROOT"
   mkdir -p $PRODUCT_BUILD_ROOT
 
@@ -135,7 +135,7 @@ function build() {
   echo "cmake -G Ninja $PRODUCT_SOURCE_ROOT ${PRODUCT_CMAKE_CONFIG_ARGS}"
   cmake -G Ninja "$PRODUCT_SOURCE_ROOT" ${PRODUCT_CMAKE_CONFIG_ARGS}
 
-  if [[ $ARG_CONFIG_ONLY -ne 1 ]]; then
+  if [[ $CONFIG_PRODUCT_ONLY -ne 1 ]]; then
     echo "cmake --build $PRODUCT_BUILD_ROOT"
     cmake --build "$PRODUCT_BUILD_ROOT"
   fi
@@ -148,12 +148,21 @@ for EACH_ARG in "$@"; do
   arg_parse "$EACH_ARG"
 done
 
-if [[ $BUILDS_ALL -eq 1 && $ARG_NEEDS_CLEAN -eq 1 ]]; then
-  rm -rf $BUILD_ROOT
+# Calculates products to build
+PRODUCTS_TO_BUILD=$CUSTOM_PRODUCTS_TO_BUILD;
+if [[ "$PRODUCTS_TO_BUILD" == "" ]]; then
+  PRODUCTS_TO_BUILD=$DEFAULT_PRODUCTS_TO_BUILD;  
 fi
 
-for PRODUCT_NAME in "${ARG_PRODUCTS[@]}"; do
-  build $PRODUCT_NAME $ARG_NEEDS_CLEAN $ARG_CONFIG_ONLY
+if [[ $NEEDS_CLEAN -eq 1 ]]; then
+  countdown_for_clean_build 3 $PRODUCTS_TO_BUILD
+  for PRODUCT_NAME in "${PRODUCTS_TO_BUILD[@]}"; do
+    clean $PRODUCT_NAME
+  done
+fi
+
+for PRODUCT_NAME in "${PRODUCTS_TO_BUILD[@]}"; do
+  build $PRODUCT_NAME $CONFIG_ONLY
 done
 
 exit 0

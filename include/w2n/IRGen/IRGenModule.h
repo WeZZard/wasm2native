@@ -197,7 +197,6 @@ public:
   /// incremental compilation.
   llvm::GlobalVariable * ModuleHash;
 
-  llvm::IRBuilder<> * Builder;
   std::map<std::string, llvm::AllocaInst *> NamedValues;
 
   IRGenModule(

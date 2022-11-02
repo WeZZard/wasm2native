@@ -5,7 +5,9 @@
 #include <llvm/Support/Host.h>
 #include <llvm/Support/Path.h>
 #include <set>
+#include <w2n/AST/IRGenOptions.h>
 #include <w2n/Basic/LLVM.h>
+#include <w2n/Basic/Unimplemented.h>
 #include <w2n/Frontend/Frontend.h>
 #include <w2n/Options/Options.h>
 
@@ -215,5 +217,8 @@ bool parseIRGenOptions(
   DiagnosticEngine& Diagnostic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
 ) {
+  proto_impl<void>([&]() -> void {
+    Options.OutputKind = IRGenOutputKind::ObjectFile;
+  });
   return false;
 }

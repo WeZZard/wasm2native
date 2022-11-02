@@ -1,3 +1,5 @@
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <memory>
@@ -109,5 +111,9 @@ void IRGenModule::addLinkLibrary(const LinkLibrary& linkLib) {
 
 /// Emit all the top-level code in the source file.
 void IRGenModule::emitSourceFile(SourceFile& SF) {
-  proto_impl();
+  proto_impl<void>([&]() -> void {
+    auto Builder = llvm::IRBuilder<>(*LLVMContext);
+    auto * GlobalVar =
+      Module->getOrInsertGlobal("globalVar", Builder.getDoubleTy());
+  });
 }

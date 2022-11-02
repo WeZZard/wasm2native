@@ -199,4 +199,8 @@
 
 #define W2N_NO_RETURN     [[noreturn]]
 
+#define W2N_UNUSED        [[maybe_unused]]
+
+#define W2N_USED          __attribute__((used))
+
 #endif // W2N_BASIC_COMPILER_H

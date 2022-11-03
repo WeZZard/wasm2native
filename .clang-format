@@ -16,7 +16,7 @@ ContinuationIndentWidth: 2
 PointerAlignment: Middle
 ReferenceAlignment: Left
 Cpp11BracedListStyle: true
-AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignConsecutiveMacros: AcrossComments
 AlignOperands: AlignAfterOperator
 AllowShortEnumsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true

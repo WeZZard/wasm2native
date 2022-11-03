@@ -36,7 +36,7 @@
 // Define a TypeID where the type name and internal name are the same.
 #define W2N_REQUEST(Zone, Type, Sig, Caching, LocOptions)                \
   W2N_TYPEID_NAMED(Type, Type)
-#define W2N_TYPEID(Type)             W2N_TYPEID_NAMED(Type, Type)
+#define W2N_TYPEID(Type) W2N_TYPEID_NAMED(Type, Type)
 
 // Out-of-line definitions.
 #define W2N_TYPEID_NAMED(Type, Name) const uint64_t TypeID<Type>::value;

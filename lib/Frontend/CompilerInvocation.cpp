@@ -217,7 +217,7 @@ bool parseIRGenOptions(
   DiagnosticEngine& Diagnostic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
 ) {
-  proto_impl<void>([&]() -> void {
+  w2n_proto_implemented([&]() -> void {
     Options.OutputKind = IRGenOutputKind::ObjectFile;
   });
   return false;

@@ -149,15 +149,15 @@ __unused static Optional<llvm::MachO::PackedVersion> parsePackedVersion(
 TBDFile GenerateTBDRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 std::vector<std::string> PublicSymbolsRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  return proto_impl<std::vector<std::string>>(
-    []() -> std::vector<std::string> { return {}; }
-  );
+  return w2n_proto_implemented([]() -> std::vector<std::string> {
+    return {};
+  });
 }
 
 std::vector<std::string> w2n::getPublicSymbols(TBDGenDescriptor Desc) {
@@ -180,7 +180,7 @@ void w2n::writeTBDFile(
 apigen::API APIGenRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 void w2n::writeAPIJSONFile(
@@ -196,5 +196,5 @@ void w2n::writeAPIJSONFile(
 SymbolSourceMap SymbolSourceMapRequest::evaluate(
   Evaluator& evaluator, TBDGenDescriptor desc
 ) const {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }

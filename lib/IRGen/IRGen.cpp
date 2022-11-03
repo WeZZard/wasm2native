@@ -305,7 +305,7 @@ GeneratedModule w2n::performIRGeneration(
   ArrayRef<std::string> parallelOutputFilenames,
   llvm::GlobalVariable ** outModuleHash
 ) {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 GeneratedModule w2n::performIRGeneration(
@@ -357,7 +357,7 @@ static void initLLVMModule(const IRGenModule& IGM, ModuleDecl& ModDecl) {
 /// \c IRGenModule.
 static void
 runIRGenPreparePasses(ModuleDecl& Module, irgen::IRGenModule& IRModule) {
-  proto_impl();
+  w2n_proto_implemented();
 }
 
 static void setModuleFlags(IRGenModule& IGM) {
@@ -383,7 +383,7 @@ static void embedBitcode(llvm::Module * M, const IRGenOptions& Opts) {
   if (Opts.EmbedMode == IRGenEmbedMode::None)
     return;
 
-  proto_impl();
+  w2n_proto_implemented();
 }
 
 /// Generates LLVM IR, runs the LLVM passes and produces the output file.
@@ -486,7 +486,7 @@ IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
 GeneratedModule OptimizedIRRequest::evaluate(
   Evaluator& evaluator, IRGenDescriptor desc
 ) const {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 StringRef SymbolObjectCodeRequest::evaluate(

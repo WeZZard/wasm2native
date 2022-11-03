@@ -144,7 +144,7 @@
 #endif
 
 // Produce a string literal for the raw argument tokens.
-#define W2N_STRINGIZE_RAW(TOK)      #TOK
+#define W2N_STRINGIZE_RAW(TOK) #TOK
 
 // Produce a string literal for the macro-expanded argument tokens.
 #define W2N_STRINGIZE_EXPANDED(TOK) W2N_STRINGIZE_RAW(TOK)
@@ -197,10 +197,13 @@
 #define W2N_INLINE_ALWAYS inline __attribute__((always_inline))
 #define W2N_TRANSPARENT   inline __attribute__((always_inline))
 
-#define W2N_NO_RETURN     [[noreturn]]
+#define W2N_NO_RETURN [[noreturn]]
 
-#define W2N_UNUSED        [[maybe_unused]]
+#define W2N_UNUSED [[maybe_unused]]
+#define W2N_USED   __attribute__((used))
 
-#define W2N_USED          __attribute__((used))
+#define _W2N_PICK_MACRO_OVERLOAD_1(_0, _1, PICKED, ...)         PICKED
+#define _W2N_PICK_MACRO_OVERLOAD_2(_0, _1, _2, PICKED, ...)     PICKED
+#define _W2N_PICK_MACRO_OVERLOAD_3(_0, _1, _2, _3, PICKED, ...) PICKED
 
 #endif // W2N_BASIC_COMPILER_H

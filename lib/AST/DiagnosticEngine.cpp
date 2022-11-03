@@ -176,7 +176,7 @@ static CharSourceRange
 toCharSourceRange(SourceManager& SM, SourceRange SR) {
   // FIXME: return CharSourceRange(SM, SR.Start,
   // Lexer::getLocForEndOfToken(SM, SR.End));
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 static CharSourceRange
@@ -231,7 +231,7 @@ InFlightDiagnostic& InFlightDiagnostic::fixItInsertAfter(
 ) {
   // L = Lexer::getLocForEndOfToken(Engine->SourceMgr, L);
   // return fixItInsert(L, FormatString, Args);
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 /// Add a token-based removal fix-it to the currently-active

@@ -1,7 +1,10 @@
-#include "llvm/IR/GlobalVariable.h"
-#include "llvm/IR/IRBuilder.h"
+#include <llvm/ADT/APFloat.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/ErrorHandling.h>
+#include <cstdio>
 #include <memory>
 #include <w2n/AST/IRGenRequests.h>
 #include <w2n/Basic/Unimplemented.h>
@@ -41,25 +44,25 @@ IRGenModule * IRGenerator::getGenModule(DeclContext * DC) {
 }
 
 IRGenModule * IRGenerator::getGenModule(FuncDecl * f) {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 void IRGenerator::emitGlobalTopLevel(
   const std::vector<std::string>& LinkerDirectives
 ) {
-  proto_impl();
+  w2n_proto_implemented();
 }
 
 void IRGenerator::emitEntryPointInfo() {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 void IRGenerator::emitCoverageMapping() {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 void IRGenerator::emitLazyDefinitions() {
-  proto_impl();
+  w2n_proto_implemented();
 }
 
 #pragma mark - IRGenModule
@@ -96,24 +99,60 @@ llvm::Module * IRGenModule::getModule() const {
 }
 
 void IRGenModule::emitCoverageMapping() {
-  proto_impl();
+  w2n_proto_implemented();
 }
 
 bool IRGenModule::finalize() {
-  return proto_impl<bool>([]() -> bool { return true; });
+  return w2n_proto_implemented([]() -> bool { return true; });
 }
 
 void IRGenModule::addLinkLibrary(const LinkLibrary& linkLib) {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }
 
 #pragma mark Gen Decls
 
 /// Emit all the top-level code in the source file.
 void IRGenModule::emitSourceFile(SourceFile& SF) {
-  proto_impl<void>([&]() -> void {
+  w2n_proto_implemented([&]() -> void {
     auto Builder = llvm::IRBuilder<>(*LLVMContext);
-    auto * GlobalVar =
-      Module->getOrInsertGlobal("globalVar", Builder.getDoubleTy());
+    auto * GlobalVarValue =
+      llvm::ConstantFP::get(*LLVMContext, llvm::APFloat(1.0));
+    Module->getOrInsertGlobal(
+      "kGlobalVar",
+      Builder.getDoubleTy(),
+      [&]() -> llvm::GlobalVariable * {
+        return new llvm::GlobalVariable(
+          *Module,
+          Builder.getDoubleTy(),
+          true,
+          llvm::GlobalValue::PrivateLinkage,
+          GlobalVarValue,
+          "kGlobalVar1"
+        );
+      }
+    );
+    Module->dump();
+    Module->getOrInsertGlobal("kGlobalVar2", Builder.getDoubleTy());
+    Module->dump();
+    new llvm::GlobalVariable(
+      *Module,
+      Builder.getDoubleTy(),
+      true,
+      llvm::GlobalValue::PrivateLinkage,
+      GlobalVarValue,
+      "kGlobalVar3"
+    );
+    Module->dump();
+    auto * kGlobalVar4 = new llvm::GlobalVariable(
+      Builder.getDoubleTy(),
+      true,
+      llvm::GlobalValue::PrivateLinkage,
+      GlobalVarValue,
+      "kGlobalVar4"
+    );
+    Module->getGlobalList().push_back(kGlobalVar4);
+    Module->dump();
+    printf("\n");
   });
 }

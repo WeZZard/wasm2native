@@ -220,7 +220,7 @@ public:
   );
 
   ArrayRef<Decl *> getTopLevelDecls() const override {
-    w2n_not_implemented();
+    w2n_unimplemented();
   }
 };
 

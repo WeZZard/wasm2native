@@ -60,5 +60,5 @@ void ModuleDecl::collectLinkLibraries(LinkLibraryCallback callback
 void SourceFile::collectLinkLibraries(
   ModuleDecl::LinkLibraryCallback callback
 ) const {
-  w2n_not_implemented();
+  w2n_unimplemented();
 }

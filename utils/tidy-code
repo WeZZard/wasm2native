@@ -11,17 +11,37 @@ if [[ "$CLANG_TIDY_PATH" == "" ]]; then
   CLANG_TIDY_PATH=/opt/homebrew/opt/llvm/bin/clang-tidy
 fi
 
-# Find all files in THIS_DIR which end in .ino, .cpp, etc., as specified
-# in the regular expression just below
-FILE_LIST="$(find "$PROJECT_ROOT" | grep -E ".*(\.cpp|\.c)$")"
+FILE_LIST=()
 
-echo -e "Files found to lint = \n\"\"\"\n$FILE_LIST\n\"\"\""
+for EACH_ARG in "$@"; do
+  FILE_LIST+=($EACH_ARG)
+done
+
+FILES=""
+
+if [[ $FILE_LIST == "" ]]; then
+  # Find all files in THIS_DIR which end in .ino, .cpp, etc., as specified
+  # in the regular expression just below
+  DEFAULT_FILES="$(find "$PROJECT_ROOT" | grep -E ".*(\.cpp|\.c)$")"
+  FILES=$DEFAULT_FILES
+else
+  for EACH_FILE in "$FILE_LIST"; do
+    if [[ $FILES == "" ]]; then
+      FILES="$EACH_FILE"
+    else
+      FILES="$FILES $EACH_FILE"
+    fi
+  done
+fi
+
+echo -e "Files to lint:\n$FILES"
 
 # Format each file.
-# - NB: do NOT put quotes around `$FILE_LIST` below or else the `clang-tidy` command will 
-#   mistakenly see the entire blob of newline-separated file names as a SINGLE file name instead 
-#   of as a new-line separated list of *many* file names!
+# - NB: do NOT put quotes around `$FILES` below or else the `clang-tidy` 
+#   command will mistakenly see the entire blob of newline-separated file
+#   names as a SINGLE file name instead of as a new-line separated list of
+#   *many* file names!
 $CLANG_TIDY_PATH -p $COMPILE_COMMANDS_PATH \
   --config-file=$CONFIG_PATH \
   --use-color --quiet \
-  $FILE_LIST
+  $FILES

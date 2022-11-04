@@ -1,34 +1,199 @@
-Checks: "clang-diagnostic-*,clang-analyzer-*,llvm-*"
+Checks: '
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  readability-*,
+  llvm-*,
+  darwin-*,
+  -readability-convert-member-functions-to-static,
+'
 CheckOptions:
-  ##############################################################################
-  # READABILITY
-  ##############################################################################
+  ########################################################################
+  # LLVM
+  ########################################################################
+  - key: llvm-header-guard.HeaderFileExtensions
+    value: "h"
+  - key: llvm-namespace-comment
+    value: "ShortNamespaceLines"
+  ########################################################################
+  # Darwin
+  ########################################################################
+  - key: darwin-avoid-spinlock
+    value: true
+  - key: darwin-dispatch-once-nonstatic
+    value: true
+  ########################################################################
+  # Readability
+  ########################################################################
   - key: readability-avoid-const-params-in-decls
     value: true
-  - key: readability-braces-around-statements.ShortStatementLines
-    value: 4
+  - key: readability-braces-around-statements
+    value: true
   - key: readability-const-return-type
+    value: true
+  - key: readability-container-contains
+    value: true
+  - key: readability-container-data-pointer
     value: true
   - key: readability-container-size-empty
     value: true
-  - key: readability-convert-member-functions-to-static
-    value: true
   - key: readability-delete-null-pointer
     value: true
+  - key: readability-duplicate-include
+    value: true
   - key: readability-else-after-return
+    value: true # FIXME: Symmetry also improves readibility.
+  ########################################################################
+  # Readability - Function Cognitive Complexity Began
+  ########################################################################
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 5
+  - key: readability-function-cognitive-complexity.DescribeBasicIncrements
     value: true
-  - key: readability-else-after-return.WarnOnConditionVariables
+  - key: readability-function-cognitive-complexity.IgnoreMacros
     value: true
-  - key: readability-function-cognitive-complexity
+  ########################################################################
+  # Readability - Function Cognitive Complexity Ended
+  ########################################################################
+  ########################################################################
+  # Readability - Identifier Length Began
+  ########################################################################
+  - key: readability-identifier-length.MinimumVariableNameLength
+    value: 1
+  - key: readability-identifier-length.MinimumParameterNameLength
+    value: 1
+  - key: readability-identifier-length.MinimumLoopCounterNameLength
+    value: 1
+  - key: readability-identifier-length.MinimumExceptionNameLength
+    value: 1
+  ########################################################################
+  # Readability - Identifier Length Ended
+  ########################################################################
+  ########################################################################
+  # Readability - Identifier Naming Began
+  ########################################################################
+  - key: readability-identifier-naming
+    value: CamelCase
+  - key: readability-identifier-naming.AbstractClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassMemberCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstantMemberCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstantParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstantPointerParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstexprFunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstexprMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalConstantPointerCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalFunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.GlobalPointerCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.InlineNamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.LocalConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.LocalConstantPointerCase
+    value: CamelCase
+  - key: readability-identifier-naming.LocalPointerCase
+    value: CamelCase
+  - key: readability-identifier-naming.LocalVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: CamelCase
+  - key: readability-identifier-naming.MacroDefinitionPrefix
+    value: W2N
+  - key: readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: (_)?w2n.+
+  - key: readability-identifier-naming.MemberCase
+    value: CamelCase
+  - key: readability-identifier-naming.MethodCase
+    value: camelBack
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.ParameterPackCase
+    value: CamelCase
+  - key: readability-identifier-naming.PointerParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: CamelCase
+  - key: readability-identifier-naming.PrivateMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: CamelCase
+  - key: readability-identifier-naming.ProtectedMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.PublicMemberCase
+    value: CamelCase
+  - key: readability-identifier-naming.PublicMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.ScopedEnumConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.StaticConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.StaticVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.TemplateTemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeTemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key: readability-identifier-naming.ValueTemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.VariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.VirtualMethodCase
+    value: camelBack
+  ########################################################################
+  # Readability - Identifier Naming Ended
+  ########################################################################
+  - key: readability-implicit-bool-conversion
     value: true
-  - key: readability-implicit-bool-conversion.AllowIntegerConditions
-    value: true
-  - key: readability-implicit-bool-conversion.AllowPointerConditions
+  - key: readability-inconsistent-declaration-parameter-name
     value: true
   - key: readability-inconsistent-declaration-parameter-name
     value: true
   - key: readability-isolate-declaration
-    value: false
+    value: true
+  - key: readability-magic-numbers
+    value: true
   - key: readability-magic-numbers
     value: true
   - key: readability-make-member-function-const
@@ -39,8 +204,14 @@ CheckOptions:
     value: true
   - key: readability-named-parameter
     value: true
+  - key: readability-named-parameter
+    value: true
   - key: readability-non-const-parameter
     value: true
+  - key: readability-qualified-auto
+    value: true
+  - key: readability-redundant-access-specifiers
+    value: false
   - key: readability-redundant-control-flow
     value: true
   - key: readability-redundant-declaration
@@ -57,10 +228,21 @@ CheckOptions:
     value: true
   - key: readability-redundant-string-init
     value: true
+  - key: readability-redundant-string-init.StringNames
+    value: ::std::basic_string;::std::basic_string_view,::llvm::StringRef
   - key: readability-simplify-boolean-expr
     value: true
   - key: readability-simplify-subscript-expr
     value: true
+  - key: readability-simplify-subscript-expr.Types
+    value: '
+    ::std::basic_string;
+    ::std::basic_string_view;
+    ::std::vector;
+    ::std::array;
+    ::llvm::ArrayRef;
+    ::llvm::MutableArrayRef;
+    '
   - key: readability-static-accessed-through-instance
     value: true
   - key: readability-static-definition-in-anonymous-namespace
@@ -71,321 +253,7 @@ CheckOptions:
     value: false
   - key: readability-uniqueptr-delete-release
     value: true
-  - key: readability-uniqueptr-delete-release.PreferResetCall
-    value: true
   - key: readability-uppercase-literal-suffix
     value: true
   - key: readability-use-anyofallof
-    value: true
-  - key: readability-qualified-auto
-    value: true
-  ##############################################################################
-  # Modernize
-  ##############################################################################
-  - key: modernize-avoid-bind
-    value: true
-  - key: modernize-avoid-c-arrays
-    value: true
-  - key: modernize-concat-nested-namespaces
-    value: true
-  - key: modernize-deprecated-headers
-    value: true
-  - key: modernize-deprecated-ios-base-aliases
-    value: true
-  - key: modernize-loop-convert
-    value: true
-  - key: modernize-make-shared
-    value: true
-  - key: modernize-make-unique
-    value: true
-  - key: modernize-pass-by-value
-    value: true
-  - key: modernize-raw-string-literal
-    value: true
-  - key: modernize-redundant-void-arg
-    value: true
-  - key: modernize-replace-auto-ptr
-    value: true
-  - key: modernize-replace-disallow-copy-and-assign-macro
-    value: true
-  - key: modernize-replace-random-shuffle
-    value: true
-  - key: modernize-return-braced-init-list
-    value: false
-  - key: modernize-shrink-to-fit
-    value: true
-  - key: modernize-unary-static-assert
-    value: true
-  - key: modernize-use-auto
-    value: true
-  - key: modernize-use-bool-literals
-    value: true
-  - key: modernize-use-default-member-init
-    value: true
-  - key: modernize-use-emplace
-    value: true
-  - key: modernize-use-equals-default
-    value: true
-  - key: modernize-use-equals-delete
-    value: true
-  - key: modernize-use-nodiscard
-    value: true
-  - key: modernize-use-noexcept
-    value: true
-  - key: modernize-use-nullptr
-    value: true
-  - key: modernize-use-override
-    value: true
-  - key: modernize-use-trailing-return-type
-    value: true
-  - key: modernize-use-transparent-functors
-    value: true
-  - key: modernize-use-uncaught-exceptions
-    value: true
-  - key: modernize-use-using
-    value: true
-  ##############################################################################
-  # LLVM
-  ##############################################################################
-  - key: llvm-header-guard.HeaderFileExtensions
-    value: "h,def"
-  - key: llvm-include-order
-    value: true
-  - key: llvm-namespace-comment
-    value: true
-  - key: llvm-prefer-isa-or-dyn-cast-in-conditionals
-    value: true
-  - key: llvm-prefer-isa-or-dyn-cast-in-conditionals.AddConstToQualified
-    value: true
-  ##############################################################################
-  # Darwin
-  ##############################################################################
-  - key: darwin-avoid-spinlock
-    value: true
-  - key: darwin-dispatch-once-nonstatic
-    value: true
-  ##############################################################################
-  # Clang Analyzer
-  ##############################################################################
-  - key: clang-analyzer-apiModeling.StdCLibraryFunctions
-    value: true
-  - key: clang-analyzer-apiModeling.TrustNonnull
-    value: true
-  - key: clang-analyzer-apiModeling.llvm.ReturnValue
-    value: true
-  - key: clang-analyzer-apiModeling.llvm.CastValue
-    value: true
-  - key: clang-analyzer-apiModeling.google.GTest
-    value: true
-  - key: clang-analyzer-core.CallAndMessage
-    value: true
-  - key: clang-analyzer-core.CallAndMessageModeling
-    value: true
-  - key: clang-analyzer-core.DivideZero
-    value: true
-  - key: clang-analyzer-core.DynamicTypePropagation
-    value: true
-  - key: clang-analyzer-core.NonNullParamChecker
-    value: true
-  - key: clang-analyzer-core.NonnilStringConstants
-    value: true
-  - key: clang-analyzer-core.NullDereference
-    value: true
-  - key: clang-analyzer-core.StackAddrEscapeBase
-    value: true
-  - key: clang-analyzer-core.StackAddressEscape
-    value: true
-  - key: clang-analyzer-core.UndefinedBinaryOperatorResult
-    value: true
-  - key: clang-analyzer-core.VLASize
-    value: true
-  - key: clang-analyzer-core.builtin.BuiltinFunctions
-    value: true
-  - key: clang-analyzer-core.builtin.NoReturnFunctions
-    value: true
-  - key: clang-analyzer-core.uninitialized.ArraySubscript
-    value: true
-  - key: clang-analyzer-core.uninitialized.Assign
-    value: true
-  - key: clang-analyzer-core.uninitialized.Branch
-    value: true
-  - key: clang-analyzer-core.uninitialized.CapturedBlockVariable
-    value: true
-  - key: clang-analyzer-core.uninitialized.UndefReturn
-    value: true
-  - key: clang-analyzer-cplusplus.InnerPointer
-    value: true
-  - key: clang-analyzer-cplusplus.Move
-    value: true
-  - key: clang-analyzer-cplusplus.NewDelete
-    value: true
-  - key: clang-analyzer-cplusplus.NewDeleteLeaks
-    value: true
-  - key: clang-analyzer-cplusplus.PlacementNew
-    value: true
-  - key: clang-analyzer-cplusplus.PureVirtualCall
-    value: true
-  - key: clang-analyzer-cplusplus.SelfAssignment
-    value: true
-  - key: clang-analyzer-cplusplus.SmartPtrModeling
-    value: true
-  - key: clang-analyzer-cplusplus.VirtualCallModeling
-    value: true
-  - key: clang-analyzer-deadcode.DeadStores
-    value: true
-  - key: clang-analyzer-fuchsia.HandleChecker
-    value: true
-  - key: clang-analyzer-nullability.NullPassedToNonnull
-    value: true
-  - key: clang-analyzer-nullability.NullReturnedFromNonnull
-    value: true
-  - key: clang-analyzer-nullability.NullabilityBase
-    value: true
-  - key: clang-analyzer-nullability.NullableDereferenced
-    value: true
-  - key: clang-analyzer-nullability.NullablePassedToNonnull
-    value: true
-  - key: clang-analyzer-nullability.NullableReturnedFromNonnull
-    value: true
-  - key: clang-analyzer-optin.cplusplus.UninitializedObject
-    value: true
-  - key: clang-analyzer-optin.cplusplus.VirtualCall
-    value: true
-  - key: clang-analyzer-optin.mpi.MPI-Checker
-    value: true
-  - key: clang-analyzer-optin.osx.OSObjectCStyleCast
-    value: true
-  - key: clang-analyzer-optin.osx.cocoa.localizability.EmptyLocalizationContextChecker
-    value: true
-  - key: clang-analyzer-optin.osx.cocoa.localizability.NonLocalizedStringChecker
-    value: true
-  - key: clang-analyzer-optin.performance.GCDAntipattern
-    value: true
-  - key: clang-analyzer-optin.performance.Padding
-    value: true
-  - key: clang-analyzer-optin.portability.UnixAPI
-    value: true
-  - key: clang-analyzer-osx.API
-    value: true
-  - key: clang-analyzer-osx.MIG
-    value: true
-  - key: clang-analyzer-osx.NSOrCFErrorDerefChecker
-    value: true
-  - key: clang-analyzer-osx.NumberObjectConversion
-    value: true
-  - key: clang-analyzer-osx.OSObjectRetainCount
-    value: true
-  - key: clang-analyzer-osx.ObjCProperty
-    value: true
-  - key: clang-analyzer-osx.SecKeychainAPI
-    value: true
-  - key: clang-analyzer-osx.cocoa.AtSync
-    value: true
-  - key: clang-analyzer-osx.cocoa.AutoreleaseWrite
-    value: true
-  - key: clang-analyzer-osx.cocoa.ClassRelease
-    value: true
-  - key: clang-analyzer-osx.cocoa.Dealloc
-    value: true
-  - key: clang-analyzer-osx.cocoa.IncompatibleMethodTypes
-    value: true
-  - key: clang-analyzer-osx.cocoa.Loops
-    value: true
-  - key: clang-analyzer-osx.cocoa.MissingSuperCall
-    value: true
-  - key: clang-analyzer-osx.cocoa.NSAutoreleasePool
-    value: true
-  - key: clang-analyzer-osx.cocoa.NSError
-    value: true
-  - key: clang-analyzer-osx.cocoa.NilArg
-    value: true
-  - key: clang-analyzer-osx.cocoa.NonNilReturnValue
-    value: true
-  - key: clang-analyzer-osx.cocoa.ObjCGenerics
-    value: true
-  - key: clang-analyzer-osx.cocoa.RetainCount
-    value: true
-  - key: clang-analyzer-osx.cocoa.RetainCountBase
-    value: true
-  - key: clang-analyzer-osx.cocoa.RunLoopAutoreleaseLeak
-    value: true
-  - key: clang-analyzer-osx.cocoa.SelfInit
-    value: true
-  - key: clang-analyzer-osx.cocoa.SuperDealloc
-    value: true
-  - key: clang-analyzer-osx.cocoa.UnusedIvars
-    value: true
-  - key: clang-analyzer-osx.cocoa.VariadicMethodTypes
-    value: true
-  - key: clang-analyzer-osx.coreFoundation.CFError
-    value: true
-  - key: clang-analyzer-osx.coreFoundation.CFNumber
-    value: true
-  - key: clang-analyzer-osx.coreFoundation.CFRetainRelease
-    value: true
-  - key: clang-analyzer-osx.coreFoundation.containers.OutOfBounds
-    value: true
-  - key: clang-analyzer-osx.coreFoundation.containers.PointerSizedValues
-    value: true
-  - key: clang-analyzer-security.FloatLoopCounter
-    value: true
-  - key: clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
-    value: true
-  - key: clang-analyzer-security.insecureAPI.SecuritySyntaxChecker
-    value: true
-  - key: clang-analyzer-security.insecureAPI.UncheckedReturn
-    value: true
-  - key: clang-analyzer-security.insecureAPI.bcmp
-    value: true
-  - key: clang-analyzer-security.insecureAPI.bcopy
-    value: true
-  - key: clang-analyzer-security.insecureAPI.bzero
-    value: true
-  - key: clang-analyzer-security.insecureAPI.decodeValueOfObjCType
-    value: true
-  - key: clang-analyzer-security.insecureAPI.getpw
-    value: true
-  - key: clang-analyzer-security.insecureAPI.gets
-    value: true
-  - key: clang-analyzer-security.insecureAPI.mkstemp
-    value: true
-  - key: clang-analyzer-security.insecureAPI.mktemp
-    value: true
-  - key: clang-analyzer-security.insecureAPI.rand
-    value: true
-  - key: clang-analyzer-security.insecureAPI.strcpy
-    value: true
-  - key: clang-analyzer-security.insecureAPI.vfork
-    value: true
-  - key: clang-analyzer-unix.API
-    value: true
-  - key: clang-analyzer-unix.DynamicMemoryModeling
-    value: true
-  - key: clang-analyzer-unix.Malloc
-    value: true
-  - key: clang-analyzer-unix.MallocSizeof
-    value: true
-  - key: clang-analyzer-unix.MismatchedDeallocator
-    value: true
-  - key: clang-analyzer-unix.Vfork
-    value: true
-  - key: clang-analyzer-unix.cstring.BadSizeArg
-    value: true
-  - key: clang-analyzer-unix.cstring.CStringModeling
-    value: true
-  - key: clang-analyzer-unix.cstring.NullArg
-    value: true
-  - key: clang-analyzer-valist.CopyToSelf
-    value: true
-  - key: clang-analyzer-valist.Uninitialized
-    value: true
-  - key: clang-analyzer-valist.Unterminated
-    value: true
-  - key: clang-analyzer-valist.ValistBase
-    value: true
-  - key: clang-analyzer-webkit.NoUncountedMemberChecker
-    value: true
-  - key: clang-analyzer-webkit.RefCntblBaseVirtualDtor
-    value: true
-  - key: clang-analyzer-webkit.UncountedLambdaCapturesChecker
     value: true

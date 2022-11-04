@@ -9,30 +9,55 @@ CLANG_TIDY_PATH=$(which clang-tidy)
 if [[ "$CLANG_TIDY_PATH" == "" ]]; then
   # FIXME: Hard coded Homebrew installation point on macOS Ventura
   CLANG_TIDY_PATH=/opt/homebrew/opt/llvm/bin/clang-tidy
+  if [[ ! -f $CLANG_TIDY_PATH ]]; then
+    echo "Cannot find clang-tidy on your system."
+    exit 1
+  fi
 fi
 
 FILE_LIST=()
+FILES=""
+CLANG_TIDY_ARGS=()
+
+function parse_arg() {
+  EACH_ARG=$1
+  if [[ $EACH_ARG == "--fix" ]]; then
+    CLANG_TIDY_ARGS+=('--fix')
+  elif [[ -f $EACH_ARG ]]; then
+    FILE_LIST+=($EACH_ARG)
+  else
+    echo "Unrecognized argument: $EACH_ARG."
+    return 1
+  fi
+  return 0
+}
 
 for EACH_ARG in "$@"; do
-  FILE_LIST+=($EACH_ARG)
+  parse_arg $EACH_ARG
+  RET_VAL=$?
+  if [[ $RET_VAL -ne 0 ]]; then
+    exit $RET_VAL
+  fi
 done
 
-FILES=""
+function resolve_files() {
+  if [[ $FILE_LIST == "" ]]; then
+    # Find all files in PROJECT_ROOT which end in .cpp and .c., as 
+    # specified in the regular expression just below
+    FILES="$(find "$PROJECT_ROOT" | grep -E ".*(\.cpp|\.c)$")"
+  else
+    for EACH_FILE in "$FILE_LIST"; do
+      if [[ $FILES == "" ]]; then
+        FILES="$EACH_FILE"
+      else
+        FILES="$FILES $EACH_FILE"
+      fi
+    done
+  fi
+  return 0
+}
 
-if [[ $FILE_LIST == "" ]]; then
-  # Find all files in THIS_DIR which end in .ino, .cpp, etc., as specified
-  # in the regular expression just below
-  DEFAULT_FILES="$(find "$PROJECT_ROOT" | grep -E ".*(\.cpp|\.c)$")"
-  FILES=$DEFAULT_FILES
-else
-  for EACH_FILE in "$FILE_LIST"; do
-    if [[ $FILES == "" ]]; then
-      FILES="$EACH_FILE"
-    else
-      FILES="$FILES $EACH_FILE"
-    fi
-  done
-fi
+resolve_files
 
 echo -e "Files to lint:\n$FILES"
 
@@ -44,4 +69,5 @@ echo -e "Files to lint:\n$FILES"
 $CLANG_TIDY_PATH -p $COMPILE_COMMANDS_PATH \
   --config-file=$CONFIG_PATH \
   --use-color --quiet \
+  $CLANG_TIDY_ARGS \
   $FILES

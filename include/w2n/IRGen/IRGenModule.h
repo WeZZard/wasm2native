@@ -7,11 +7,13 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Target/TargetMachine.h>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/LinkLibrary.h>
 #include <w2n/AST/SourceFile.h>
+#include <w2n/Basic/FileSystem.h>
 
 namespace w2n {
 
@@ -41,6 +43,8 @@ public:
 
 private:
 
+  static constexpr const uint8_t AssumedMaxQueueCount = 8;
+
   llvm::DenseMap<SourceFile *, IRGenModule *> GenModules;
 
   // Stores the IGM from which a function is referenced the first time.
@@ -60,7 +64,7 @@ private:
   llvm::DenseMap<FuncDecl *, unsigned> FunctionOrder;
 
   /// The queue of IRGenModules for multi-threaded compilation.
-  SmallVector<IRGenModule *, 8> Queue;
+  SmallVector<IRGenModule *, AssumedMaxQueueCount> Queue;
 
   std::atomic<int> QueueIndex;
 
@@ -82,10 +86,10 @@ public:
     return IGM;
   }
 
-  SourceFile * getSourceFile(IRGenModule * module) {
-    for (auto pair : GenModules) {
-      if (pair.second == module) {
-        return pair.first;
+  SourceFile * getSourceFile(IRGenModule * Module) {
+    for (auto Pair : GenModules) {
+      if (Pair.second == Module) {
+        return Pair.first;
       }
     }
     return nullptr;
@@ -94,13 +98,13 @@ public:
   /// Get an IRGenModule for a declaration context.
   /// Returns the IRGenModule of the containing source file, or if this
   /// cannot be determined, returns the primary IRGenModule.
-  IRGenModule * getGenModule(DeclContext * ctxt);
+  IRGenModule * getGenModule(DeclContext * DC);
 
   /// Get an IRGenModule for a function.
   /// Returns the IRGenModule of the containing source file, or if this
   /// cannot be determined, returns the IGM from which the function is
   /// referenced the first time.
-  IRGenModule * getGenModule(FuncDecl * f);
+  IRGenModule * getGenModule(FuncDecl * F);
 
   /// Returns the primary IRGenModule. This is the first added
   /// IRGenModule. It is used for everything which cannot be correlated to
@@ -140,23 +144,21 @@ public:
   /// Emit everything which is reachable from already emitted IR.
   void emitLazyDefinitions();
 
-public:
-
   unsigned getFunctionOrder(FuncDecl * F) {
-    auto it = FunctionOrder.find(F);
+    auto It = FunctionOrder.find(F);
     assert(
-      it != FunctionOrder.end()
+      It != FunctionOrder.end()
       && "no order number for SIL function definition?"
     );
-    return it->second;
+    return It->second;
   }
 
   /// In multi-threaded compilation fetch the next IRGenModule from the
   /// queue.
   IRGenModule * fetchFromQueue() {
-    int idx = QueueIndex++;
-    if (idx < (int)Queue.size()) {
-      return Queue[idx];
+    int Idx = QueueIndex++;
+    if (Idx < (int)Queue.size()) {
+      return Queue[Idx];
     }
     return nullptr;
   }
@@ -165,7 +167,7 @@ public:
 class IRGenModule {
 public:
 
-  static const unsigned wasmVersion = 0;
+  static const unsigned WasmVersion = 0;
 
   std::unique_ptr<llvm::LLVMContext> LLVMContext;
 
@@ -185,9 +187,9 @@ public:
 
   llvm::StringMap<ModuleDecl *> OriginalModules;
 
-  llvm::SmallString<128> OutputFilename;
+  llvm::SmallString<CommonPathLength> OutputFilename;
 
-  llvm::SmallString<128> MainInputFilenameForDebugInfo;
+  llvm::SmallString<CommonPathLength> MainInputFilenameForDebugInfo;
 
   // FIXME: TargetInfo
 
@@ -210,11 +212,7 @@ public:
 
   ~IRGenModule();
 
-public:
-
   GeneratedModule intoGeneratedModule() &&;
-
-public:
 
   llvm::LLVMContext& getLLVMContext() const {
     return *LLVMContext;
@@ -222,7 +220,7 @@ public:
 
   void emitSourceFile(SourceFile& SF);
   // FIXME: void emitSynthesizedFileUnit(SynthesizedFileUnit& SFU);
-  void addLinkLibrary(const LinkLibrary& linkLib);
+  void addLinkLibrary(const LinkLibrary& LinkLib);
   void emitCoverageMapping();
 
   /// Attempt to finalize the module.
@@ -232,8 +230,6 @@ public:
   bool finalize();
 
   //--- Runtime ----------------------------------------------------------
-
-public:
 
   llvm::Module * getModule() const;
 };

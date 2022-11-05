@@ -7,6 +7,12 @@
 #include <functional>
 #include <w2n/Basic/Compiler.h>
 
+#define w2n_assert(EXPR, ...)                                            \
+  (__builtin_expect(!(EXPR), 0) ? w2n::details::report_assertion(        \
+     __func__, __ASSERT_FILE_NAME, __LINE__, #EXPR, __VA_ARGS__          \
+   )                                                                     \
+                                : (void)0)
+
 #define w2n_unimplemented()                                              \
   ::llvm::llvm_unreachable_internal(                                     \
     "not implemented.", __FILE__, __LINE__                               \
@@ -29,7 +35,7 @@
 ///   implementation.
 ///
 #define w2n_proto_implemented(...)                                       \
-  _W2N_PICK_MACRO_OVERLOAD_2(                                            \
+  _W2N_PICK_MACRO_OVERLOAD_3(                                            \
     _0,                                                                  \
     ##__VA_ARGS__,                                                       \
     _w2n_proto_implemented_2,                                            \
@@ -60,8 +66,18 @@ namespace w2n {
 namespace details {
 
 void report_prototype_implementation(
-  const char * file, unsigned line, const char * reason
+  const char * File, unsigned Line, const char * Reason
 );
+
+W2N_NO_RETURN
+void report_assertion(
+  const char * Function,
+  const char * File,
+  int Line,
+  const char * Expression,
+  const char * Fmt,
+  ...
+) __cold __disable_tail_calls;
 
 } // namespace details
 
@@ -73,13 +89,13 @@ void report_prototype_implementation(
 template <typename Result>
 W2N_INLINE_ALWAYS
 Result proto_implemented(
-  const char * file,
-  unsigned line,
-  std::function<Result(void)> body,
-  const char * reason
+  const char * File,
+  unsigned Line,
+  std::function<Result(void)> Body,
+  const char * Reason
 ) {
-  details::report_prototype_implementation(file, line, reason);
-  return body();
+  details::report_prototype_implementation(File, Line, Reason);
+  return Body();
 }
 
 // clang-format on

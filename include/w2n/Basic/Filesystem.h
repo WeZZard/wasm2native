@@ -4,6 +4,7 @@
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/MemoryBuffer.h>
+#include <cstdint>
 #include <system_error>
 
 namespace llvm {
@@ -18,6 +19,10 @@ class FileSystem;
 } // namespace llvm
 
 namespace w2n {
+
+/// Max length of a path for the most of times. \c 128 is guessed.
+constexpr const uint8_t CommonPathLength = 128;
+
 /// Invokes \p action with a raw_ostream that refers to a temporary file,
 /// which is then renamed into place as \p outputPath when the action
 /// completes.
@@ -33,8 +38,8 @@ namespace w2n {
 /// As a special case, an output path of "-" is treated as referring to
 /// stdout.
 std::error_code atomicallyWritingToFile(
-  llvm::StringRef outputPath,
-  llvm::function_ref<void(llvm::raw_pwrite_stream&)> action
+  llvm::StringRef OutputPath,
+  llvm::function_ref<void(llvm::raw_pwrite_stream&)> Action
 );
 
 /// Moves a file from \p source to \p destination, unless there is already
@@ -43,7 +48,7 @@ std::error_code atomicallyWritingToFile(
 /// In the latter case, the file at \p source is deleted. If an error
 /// occurs, the file at \p source will still be present at \p source.
 std::error_code moveFileIfDifferent(
-  const llvm::Twine& source, const llvm::Twine& destination
+  const llvm::Twine& Source, const llvm::Twine& Destination
 );
 
 enum class FileDifference : uint8_t {
@@ -66,9 +71,9 @@ enum class FileDifference : uint8_t {
 /// destination file return a \c DifferentFile result, rather than an
 /// error.
 llvm::ErrorOr<FileDifference> areFilesDifferent(
-  const llvm::Twine& source,
-  const llvm::Twine& destination,
-  bool allowDestinationErrors
+  const llvm::Twine& Source,
+  const llvm::Twine& Destination,
+  bool AllowDestinationErrors
 );
 
 namespace vfs {

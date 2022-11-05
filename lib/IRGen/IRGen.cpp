@@ -41,13 +41,15 @@ void diagnoseSync(
   Diag<ArgTypes...> ID,
   typename w2n::detail::PassArgument<ArgTypes>::type... Args
 ) {
-  if (DiagMutex)
+  if (DiagMutex) {
     DiagMutex->lock();
+  }
 
   Diags.diagnose(Loc, ID, std::move(Args)...);
 
-  if (DiagMutex)
+  if (DiagMutex) {
     DiagMutex->unlock();
+  }
 }
 
 bool w2n::performLLVM(
@@ -85,13 +87,14 @@ bool w2n::performLLVM(
       return false;
     }
   } else {
-    assert(
-      Opts.OutputKind == IRGenOutputKind::Module && "no output specified"
+    w2n_assert(
+      Opts.OutputKind == IRGenOutputKind::Module, "no output specified"
     );
   }
 
-  if (!RawOS)
+  if (!RawOS) {
     return false;
+  }
 
   return compileAndWriteLLVM(
     Module, TargetMachine, Opts, Stats, Diags, *RawOS, DiagMutex
@@ -183,12 +186,14 @@ bool w2n::compileAndWriteLLVM(
 
   EmitPasses.run(*Module);
 
-  if (Stats) {
-    if (DiagMutex)
+  if (Stats != nullptr) {
+    if (DiagMutex != nullptr) {
       DiagMutex->lock();
+    }
     Stats->getFrontendCounters().NumLLVMBytesOutput += Out.tell();
-    if (DiagMutex)
+    if (DiagMutex != nullptr) {
       DiagMutex->unlock();
+    }
   }
   return false;
 }
@@ -238,20 +243,20 @@ w2n::createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx) {
   TargetOptions TargetOpts;
   std::string CPU;
   std::string EffectiveClangTriple;
-  std::vector<std::string> targetFeaturesArray;
-  std::tie(TargetOpts, CPU, targetFeaturesArray, EffectiveClangTriple) =
+  std::vector<std::string> TargetFeaturesArray;
+  std::tie(TargetOpts, CPU, TargetFeaturesArray, EffectiveClangTriple) =
     getIRTargetOptions(Opts, Ctx);
   const llvm::Triple& EffectiveTriple =
     llvm::Triple(EffectiveClangTriple);
-  std::string targetFeatures;
-  if (!targetFeaturesArray.empty()) {
-    llvm::SubtargetFeatures features;
-    for (const std::string& feature : targetFeaturesArray) {
+  std::string TargetFeatures;
+  if (!TargetFeaturesArray.empty()) {
+    llvm::SubtargetFeatures Features;
+    for (const std::string& Feature : TargetFeaturesArray) {
       // FIXME: thumb-mode: if (!shouldRemoveTargetFeature(feature)) {
-      features.AddFeature(feature);
+      Features.AddFeature(Feature);
       // }
     }
-    targetFeatures = features.getString();
+    TargetFeatures = Features.getString();
   }
 
   // TODO: Set up pointer-authentication
@@ -259,7 +264,7 @@ w2n::createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx) {
   std::string Error;
   const Target * Target =
     TargetRegistry::lookupTarget(EffectiveTriple.str(), Error);
-  if (!Target) {
+  if (Target == nullptr) {
     Ctx.Diags.diagnose(
       SourceLoc(), diag::no_llvm_target, EffectiveTriple.str(), Error
     );
@@ -269,21 +274,22 @@ w2n::createTargetMachine(const IRGenOptions& Opts, ASTContext& Ctx) {
   // On Cygwin 64 bit, dlls are loaded above the max address for 32 bits.
   // This means that the default CodeModel causes generated code to
   // segfault when run.
-  Optional<CodeModel::Model> cmodel = None;
-  if (EffectiveTriple.isArch64Bit() && EffectiveTriple.isWindowsCygwinEnvironment())
-    cmodel = CodeModel::Large;
+  Optional<CodeModel::Model> CModel = None;
+  if (EffectiveTriple.isArch64Bit() && EffectiveTriple.isWindowsCygwinEnvironment()) {
+    CModel = CodeModel::Large;
+  }
 
   // Create a target machine.
   llvm::TargetMachine * TargetMachine = Target->createTargetMachine(
     EffectiveTriple.str(),
     CPU,
-    targetFeatures,
+    TargetFeatures,
     TargetOpts,
     Reloc::PIC_,
-    cmodel,
+    CModel,
     OptLevel
   );
-  if (!TargetMachine) {
+  if (TargetMachine == nullptr) {
     Ctx.Diags.diagnose(
       SourceLoc(),
       diag::no_llvm_target,
@@ -302,32 +308,32 @@ GeneratedModule w2n::performIRGeneration(
   ModuleDecl * Mod,
   StringRef ModuleName,
   const PrimarySpecificPaths& PSPs,
-  ArrayRef<std::string> parallelOutputFilenames,
-  llvm::GlobalVariable ** outModuleHash
+  ArrayRef<std::string> ParallelOutputFilenames,
+  llvm::GlobalVariable ** OutModuleHash
 ) {
   w2n_unimplemented();
 }
 
 GeneratedModule w2n::performIRGeneration(
-  FileUnit * file,
+  FileUnit * File,
   const IRGenOptions& Opts,
   const TBDGenOptions& TBDOpts,
   ModuleDecl * Mod,
   StringRef ModuleName,
   const PrimarySpecificPaths& PSPs,
-  llvm::GlobalVariable ** outModuleHash
+  llvm::GlobalVariable ** OutModuleHash
 ) {
-  auto desc = IRGenDescriptor::forFile(
-    file,
+  auto Desc = IRGenDescriptor::forFile(
+    File,
     Opts,
     TBDOpts,
-    file->getModule(),
+    File->getModule(),
     ModuleName,
     PSPs,
     /*symsToEmit*/ None,
-    outModuleHash
+    OutModuleHash
   );
-  return llvm::cantFail(file->getASTContext().Eval(IRGenRequest{desc}));
+  return llvm::cantFail(File->getASTContext().Eval(IRGenRequest{Desc}));
 }
 
 static void initLLVMModule(const IRGenModule& IGM, ModuleDecl& ModDecl) {
@@ -339,10 +345,11 @@ static void initLLVMModule(const IRGenModule& IGM, ModuleDecl& ModDecl) {
   Module->setTargetTriple(TargetMachine.getTargetTriple().getTriple());
 
   if (IGM.Context.LangOpts.SDKVersion) {
-    if (Module->getSDKVersion().empty())
+    if (Module->getSDKVersion().empty()) {
       Module->setSDKVersion(*IGM.Context.LangOpts.SDKVersion);
-    else
+    } else {
       assert(Module->getSDKVersion() == *IGM.Context.LangOpts.SDKVersion);
+    }
   }
 
   // Set the module's string representation.
@@ -366,7 +373,7 @@ static void setModuleFlags(IRGenModule& IGM) {
   // These module flags don't affect code generation; they just let us
   // error during LTO if the user tries to combine files across ABIs.
   Module->addModuleFlag(
-    llvm::Module::Error, "WebAssembly Version", IRGenModule::wasmVersion
+    llvm::Module::Error, "WebAssembly Version", IRGenModule::WasmVersion
   );
 
   // FIXME: Virtual Function Elimation Flag
@@ -380,8 +387,9 @@ std::unique_ptr<llvm::TargetMachine> IRGenerator::createTargetMachine() {
 // __LLVM,__bitcode section and save the command-line options in the
 // __LLVM,__swift_cmdline section.
 static void embedBitcode(llvm::Module * M, const IRGenOptions& Opts) {
-  if (Opts.EmbedMode == IRGenEmbedMode::None)
+  if (Opts.EmbedMode == IRGenEmbedMode::None) {
     return;
+  }
 
   w2n_proto_implemented();
 }
@@ -389,10 +397,10 @@ static void embedBitcode(llvm::Module * M, const IRGenOptions& Opts) {
 /// Generates LLVM IR, runs the LLVM passes and produces the output file.
 /// All this is done in a single thread.
 GeneratedModule
-IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
-  const auto& Opts = desc.Opts;
-  const auto& PSPs = desc.PSPs;
-  auto * M = desc.getParentModule();
+IRGenRequest::evaluate(Evaluator& Eval, IRGenDescriptor Desc) const {
+  const auto& Opts = Desc.Opts;
+  const auto& PSPs = Desc.PSPs;
+  auto * M = Desc.getParentModule();
   auto& Ctx = M->getASTContext();
   assert(!Ctx.hadError());
 
@@ -400,24 +408,25 @@ IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
 
   // If we've been provided a SILModule, use it. Otherwise request the
   // lowered SIL for the file or module.
-  auto * SILMod = desc.Mod;
+  auto * SILMod = Desc.Mod;
 
-  auto filesToEmit = desc.getFilesToEmit();
-  auto * primaryFile =
-    dyn_cast_or_null<SourceFile>(desc.Ctx.dyn_cast<FileUnit *>());
+  auto FilesToEmit = Desc.getFilesToEmit();
+  auto * PrimaryFile =
+    dyn_cast_or_null<SourceFile>(Desc.Ctx.dyn_cast<FileUnit *>());
 
-  IRGenerator irgen(Opts, *SILMod);
+  IRGenerator IRGen(Opts, *SILMod);
 
-  auto targetMachine = irgen.createTargetMachine();
-  if (!targetMachine)
+  auto TargetMachine = IRGen.createTargetMachine();
+  if (!TargetMachine) {
     return GeneratedModule::null();
+  }
 
   // Create the IR emitter.
   IRGenModule IGM(
-    irgen,
-    std::move(targetMachine),
-    primaryFile,
-    desc.ModuleName,
+    IRGen,
+    std::move(TargetMachine),
+    PrimaryFile,
+    Desc.ModuleName,
     PSPs.OutputFilename,
     PSPs.MainInputFilenameForDebugInfo
   );
@@ -428,24 +437,24 @@ IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
   runIRGenPreparePasses(*SILMod, IGM);
 
   {
-    FrontendStatsTracer tracer(Ctx.Stats, "IRGen");
+    FrontendStatsTracer Tracer(Ctx.Stats, "IRGen");
 
     // Emit the module contents.
-    irgen.emitGlobalTopLevel(desc.getLinkerDirectives());
+    IRGen.emitGlobalTopLevel(Desc.getLinkerDirectives());
 
-    for (auto * file : filesToEmit) {
-      if (auto * nextSF = dyn_cast<SourceFile>(file)) {
-        IGM.emitSourceFile(*nextSF);
+    for (auto * File : FilesToEmit) {
+      if (auto * NextSf = dyn_cast<SourceFile>(File)) {
+        IGM.emitSourceFile(*NextSf);
         // FIXME: file->getSynthesizedFile() : IGM.emitSynthesizedFileUnit
       } else {
-        file->collectLinkLibraries([&IGM](LinkLibrary LinkLib) {
+        File->collectLinkLibraries([&IGM](LinkLibrary LinkLib) {
           IGM.addLinkLibrary(LinkLib);
         });
       }
     }
 
     // Okay, emit any definitions that we suddenly need.
-    irgen.emitLazyDefinitions();
+    IRGen.emitLazyDefinitions();
 
     // TODO: emiting IR using IGM or irgen
 
@@ -461,54 +470,56 @@ IRGenRequest::evaluate(Evaluator& evaluator, IRGenDescriptor desc) const {
     std::for_each(
       Opts.LinkLibraries.begin(),
       Opts.LinkLibraries.end(),
-      [&](LinkLibrary linkLib) { IGM.addLinkLibrary(linkLib); }
+      [&](LinkLibrary LinkLib) { IGM.addLinkLibrary(LinkLib); }
     );
 
-    if (!IGM.finalize())
+    if (!IGM.finalize()) {
       return GeneratedModule::null();
+    }
 
     setModuleFlags(IGM);
   }
 
   // Bail out if there are any errors.
-  if (Ctx.hadError())
+  if (Ctx.hadError()) {
     return GeneratedModule::null();
+  }
 
   embedBitcode(IGM.getModule(), Opts);
 
   // TODO: Turn the module hash into an actual output.
-  if (auto ** outModuleHash = desc.outModuleHash) {
-    *outModuleHash = IGM.ModuleHash;
+  if (auto ** OutModuleHash = Desc.outModuleHash) {
+    *OutModuleHash = IGM.ModuleHash;
   }
   return std::move(IGM).intoGeneratedModule();
 }
 
 GeneratedModule OptimizedIRRequest::evaluate(
-  Evaluator& evaluator, IRGenDescriptor desc
+  Evaluator& Eval, IRGenDescriptor Desc
 ) const {
   w2n_unimplemented();
 }
 
 StringRef SymbolObjectCodeRequest::evaluate(
-  Evaluator& evaluator, IRGenDescriptor desc
+  Evaluator& Eval, IRGenDescriptor Desc
 ) const {
-  auto& ctx = desc.getParentModule()->getASTContext();
-  auto mod = cantFail(evaluator(OptimizedIRRequest{desc}));
-  auto * targetMachine = mod.getTargetMachine();
+  auto& Ctx = Desc.getParentModule()->getASTContext();
+  auto Mod = cantFail(Eval(OptimizedIRRequest{Desc}));
+  auto * TargetMachine = Mod.getTargetMachine();
 
   // Add the passes to emit the LLVM module as object code.
   // TODO: Use compileAndWriteLLVM.
-  legacy::PassManager emitPasses;
-  emitPasses.add(createTargetTransformInfoWrapperPass(
-    targetMachine->getTargetIRAnalysis()
+  legacy::PassManager EmitPasses;
+  EmitPasses.add(createTargetTransformInfoWrapperPass(
+    TargetMachine->getTargetIRAnalysis()
   ));
 
-  SmallString<0> output;
-  raw_svector_ostream os(output);
-  targetMachine->addPassesToEmitFile(
-    emitPasses, os, nullptr, CGFT_ObjectFile
+  SmallString<0> Output;
+  raw_svector_ostream OS(Output);
+  TargetMachine->addPassesToEmitFile(
+    EmitPasses, OS, nullptr, CGFT_ObjectFile
   );
-  emitPasses.run(*mod.getModule());
-  os << '\0';
-  return ctx.AllocateCopy(output.str());
+  EmitPasses.run(*Mod.getModule());
+  OS << '\0';
+  return Ctx.AllocateCopy(Output.str());
 }

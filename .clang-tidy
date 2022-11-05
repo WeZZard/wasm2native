@@ -111,6 +111,8 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.GlobalFunctionCase
     value: camelBack
+  - key: readability-identifier-naming.GlobalFunctionIgnoredRegexp
+    value: proto_implemented|report_prototype_implementation
   - key: readability-identifier-naming.GlobalPointerCase
     value: CamelCase
   - key: readability-identifier-naming.GlobalVariableCase

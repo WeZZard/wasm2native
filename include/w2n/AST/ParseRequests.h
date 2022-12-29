@@ -2,6 +2,7 @@
 #define W2N_AST_PARSE_REQUESTS_H
 
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/EvaluatorDependencies.h>
 #include <w2n/AST/SimpleRequest.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/Basic/StableHasher.h>
@@ -32,8 +33,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  WasmFileParsingResult
-  evaluate(Evaluator& evaluator, WasmFile * SF) const;
+  WasmFileParsingResult evaluate(Evaluator& Eval, WasmFile * SF) const;
 
 public:
 
@@ -43,7 +43,7 @@ public:
   }
 
   Optional<WasmFileParsingResult> getCachedResult() const;
-  void cacheResult(WasmFileParsingResult result) const;
+  void cacheResult(WasmFileParsingResult Result) const;
 
 public:
 
@@ -57,6 +57,13 @@ public:
 #include <w2n/Basic/DefineTypeIDZone.h>
 #undef W2N_TYPEID_ZONE
 #undef W2N_TYPEID_HEADER
+
+/// Report that a request of the given kind is being evaluated, so it
+/// can be recorded by the stats reporter.
+template <typename Request>
+void reportEvaluatedRequest(
+  UnifiedStatsReporter& Stats, const Request& Req
+);
 
 // Set up reporting of evaluated requests.
 #define W2N_REQUEST(Zone, RequestType, Sig, Caching, LocOptions)         \

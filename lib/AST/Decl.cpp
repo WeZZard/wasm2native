@@ -22,19 +22,23 @@ inline char checkSourceRangeType(SourceRange (Class::*)() const);
 inline TwoChars checkSourceRangeType(SourceRange (Decl::*)() const);
 
 DescriptiveDeclKind Decl::getDescriptiveKind() const {
-#define TRIVIAL_KIND(Kind)                                               \
-  case DeclKind::Kind: return DescriptiveDeclKind::Kind
+#define W2N_TRIVIAL_KIND(Kind)                                           \
+  case DeclKind::Kind:                                                   \
+    return DescriptiveDeclKind::Kind
 
-  switch (getKind()) { TRIVIAL_KIND(Module); }
+#define DECL(Id, _) W2N_TRIVIAL_KIND(Id);
+  switch (getKind()) {
+#include <w2n/AST/DeclNodes.def>
+  }
 
 #undef TRIVIAL_KIND
   llvm_unreachable("bad DescriptiveDeclKind");
 }
 
 StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) const {
-#define ENTRY(Kind, String)                                              \
+#define W2N_ENTRY(Kind, String)                                          \
   case DescriptiveDeclKind::Kind: return String
-  switch (K) { ENTRY(Module, "module"); }
+  switch (K) { W2N_ENTRY(Module, "module"); }
 #undef ENTRY
   llvm_unreachable("bad DescriptiveDeclKind");
 }
@@ -50,15 +54,18 @@ SourceLoc Decl::getLoc(bool SerializedOK) const {
     #ID "Decl is re-defining getLoc()"                                   \
   );
 #include <w2n/AST/DeclNodes.def>
-  if (isa<ModuleDecl>(this))
+  if (isa<ModuleDecl>(this)) {
     return SourceLoc();
+  }
   // When the decl is context-free, we should get loc from source buffer.
-  if (!getDeclContext())
+  if (getDeclContext() == nullptr) {
     return getLocFromSource();
+  }
   FileUnit * File =
     dyn_cast<FileUnit>(getDeclContext()->getModuleScopeContext());
-  if (!File)
+  if (File == nullptr) {
     return getLocFromSource();
+  }
   switch (File->getKind()) {
   case FileUnitKind::Source: return getLocFromSource();
   case FileUnitKind::Builtin: return SourceLoc();
@@ -81,19 +88,24 @@ SourceLoc Decl::getLocFromSource() const {
   llvm_unreachable("Unknown decl kind");
 }
 
-void w2n::simple_display(llvm::raw_ostream& out, const Decl * decl) {
-  if (!decl) {
-    out << "(null)";
+void w2n::simple_display(llvm::raw_ostream& Out, const Decl * Decl) {
+  if (Decl == nullptr) {
+    Out << "(null)";
     return;
   }
 
-  out << "(unknown decl)";
+  Out << "(unknown decl)";
 }
 
 SourceLoc w2n::extractNearestSourceLoc(const Decl * D) {
-  auto loc = D->getLoc(/*SerializedOK=*/false);
-  if (loc.isValid())
-    return loc;
+  auto Loc = D->getLoc(/*SerializedOK=*/false);
+  if (Loc.isValid()) {
+    return Loc;
+  }
 
   return extractNearestSourceLoc(D->getDeclContext());
 }
+
+#pragma mark - SectionDecl
+
+#pragma mark - Subclasses of SectionDecl

@@ -298,7 +298,7 @@ public:
   bool performParseAndResolveImportsOnly();
 
   /// If \p fn returns true, exits early and returns true.
-  bool forEachFileToTypeCheck(llvm::function_ref<bool(SourceFile&)> fn);
+  bool forEachFileToTypeCheck(llvm::function_ref<bool(SourceFile&)> Fn);
 
 private:
 

@@ -4,6 +4,7 @@
 #ifndef W2N_BASIC_MALLOC_H
 #define W2N_BASIC_MALLOC_H
 
+#include <__utility/pair.h>
 #include <cassert>
 #if defined(_WIN32)
 #include <malloc.h>

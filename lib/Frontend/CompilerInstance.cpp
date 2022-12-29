@@ -10,9 +10,9 @@
 using namespace w2n;
 
 const PrimarySpecificPaths&
-CompilerInvocation::getPrimarySpecificPathsForPrimary(StringRef filename
+CompilerInvocation::getPrimarySpecificPathsForPrimary(StringRef Filename
 ) const {
-  return getFrontendOptions().getPrimarySpecificPathsForPrimary(filename);
+  return getFrontendOptions().getPrimarySpecificPathsForPrimary(Filename);
 }
 
 const PrimarySpecificPaths&
@@ -77,16 +77,14 @@ bool CompilerInstance::setUpInputs() {
       getRecordedBufferID(EachInput, ShouldRecover, HasEachFailed);
     HasFailed |= HasEachFailed;
 
-    if (!BufferID.has_value() || !EachInput.isPrimary())
+    if (!BufferID.has_value() || !EachInput.isPrimary()) {
       continue;
+    }
 
     recordPrimaryInputBuffer(*BufferID);
   }
 
-  if (HasFailed)
-    return true;
-
-  return false;
+  return HasFailed;
 }
 
 bool CompilerInstance::setUpASTContextIfNeeded() {
@@ -105,9 +103,9 @@ bool CompilerInstance::setUpASTContextIfNeeded() {
 Optional<unsigned> CompilerInstance::getRecordedBufferID(
   const Input& I, bool ShouldRecover, bool& Failed
 ) {
-  if (!I.getBuffer()) {
-    if (Optional<unsigned> existingBufferID = SourceMgr.getIDForBufferIdentifier(I.getFileName())) {
-      return existingBufferID;
+  if (I.getBuffer() == nullptr) {
+    if (Optional<unsigned> ExistingBufferId = SourceMgr.getIDForBufferIdentifier(I.getFileName())) {
+      return ExistingBufferId;
     }
   }
   auto BuffersForInput = getInputBuffersIfPresent(I);
@@ -125,25 +123,25 @@ Optional<unsigned> CompilerInstance::getRecordedBufferID(
   }
 
   // Transfer ownership of the MemoryBuffer to the SourceMgr.
-  unsigned bufferID =
+  unsigned BufferId =
     SourceMgr.addNewSourceBuffer(std::move(BuffersForInput->ModuleBuffer)
     );
 
-  InputSourceCodeBufferIDs.push_back(bufferID);
-  return bufferID;
+  InputSourceCodeBufferIDs.push_back(BufferId);
+  return BufferId;
 }
 
 Optional<ModuleBuffers>
 CompilerInstance::getInputBuffersIfPresent(const Input& I) {
-  if (auto * b = I.getBuffer()) {
+  if (auto * B = I.getBuffer()) {
     return ModuleBuffers(llvm::MemoryBuffer::getMemBufferCopy(
-      b->getBuffer(), b->getBufferIdentifier()
+      B->getBuffer(), B->getBufferIdentifier()
     ));
   }
   // FIXME: Working with filenames is fragile, maybe use the real path
   // or have some kind of FileManager.
   using FileOrError = llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>>;
-  FileOrError inputFileOrErr = w2n::vfs::getFileOrSTDIN(
+  FileOrError InputFileOrErr = w2n::vfs::getFileOrSTDIN(
     getFileSystem(),
     I.getFileName(),
     /*FileSize*/ -1,
@@ -152,16 +150,16 @@ CompilerInstance::getInputBuffersIfPresent(const Input& I) {
     /*Bad File Descriptor Retry*/
     getInvocation().getFrontendOptions().BadFileDescriptorRetryCount
   );
-  if (!inputFileOrErr) {
+  if (!InputFileOrErr) {
     // Diagnose error open input file.
     return None;
   }
 
-  return ModuleBuffers(std::move(*inputFileOrErr));
+  return ModuleBuffers(std::move(*InputFileOrErr));
 }
 
 ModuleDecl * CompilerInstance::getMainModule() const {
-  if (!MainModule) {
+  if (MainModule == nullptr) {
     Identifier Id = Context->getIdentifier(Invocation.getModuleName());
     MainModule = ModuleDecl::createMainModule(*Context, Id);
 
@@ -171,8 +169,9 @@ ModuleDecl * CompilerInstance::getMainModule() const {
     // Create and add the module's files.
     SmallVector<FileUnit *, 16> Files;
     if (!createFilesForMainModule(MainModule, Files)) {
-      for (auto * EachFile : Files)
+      for (auto * EachFile : Files) {
         MainModule->addFile(*EachFile);
+      }
     } else {
       // If we failed to load a partial module, mark the main module as
       // having "failed to load", as it will contain no files. Note that
@@ -198,8 +197,9 @@ bool CompilerInstance::createFilesForMainModule(
   // should compute this list of source files lazily.
   for (auto BufferID : InputSourceCodeBufferIDs) {
     // Skip the main buffer, we've already handled it.
-    if (BufferID == MainBufferID)
+    if (BufferID == MainBufferID) {
       continue;
+    }
 
     // FIXME: Probe file kind when .wat file support was added.
     auto * File = createSourceFileForMainModule(
@@ -217,7 +217,7 @@ SourceFile * CompilerInstance::createSourceFileForMainModule(
   bool IsMainBuffer
 ) const {
   auto IsPrimary = BufferID && isPrimaryInput(*BufferID);
-  auto& LangOpts = this->getInvocation().getLanguageOptions();
+  const auto& LangOpts = this->getInvocation().getLanguageOptions();
   auto ParsingOpts = SourceFile::getDefaultParsingOptions(Kind, LangOpts);
   auto * InputFile = SourceFile::createSourceFile(
     Kind, *this, *Module, BufferID, ParsingOpts, IsPrimary
@@ -242,21 +242,22 @@ void CompilerInstance::performSemanticAnalysis() {
 }
 
 bool CompilerInstance::performParseAndResolveImportsOnly() {
-  FrontendStatsTracer tracer(
+  FrontendStatsTracer Tracer(
     getStatsReporter(), "parse-and-resolve-imports"
   );
 
-  auto * mainModule = getMainModule();
+  auto * MainModule = getMainModule();
 
   // Resolve imports for all the source files.
-  for (auto * file : mainModule->getFiles()) {
-    if (auto * SF = dyn_cast<SourceFile>(file))
+  for (auto * File : MainModule->getFiles()) {
+    if (auto * SF = dyn_cast<SourceFile>(File)) {
       performImportResolution(*SF);
+    }
   }
 
   assert(
     llvm::all_of(
-      mainModule->getFiles(),
+      MainModule->getFiles(),
       [](const FileUnit * File) -> bool {
         auto * SF = dyn_cast<SourceFile>(File);
         if (!SF)
@@ -266,17 +267,18 @@ bool CompilerInstance::performParseAndResolveImportsOnly() {
     )
     && "some files have not yet had their imports resolved"
   );
-  mainModule->setHasResolvedImports();
+  MainModule->setHasResolvedImports();
 
   return Context->hadError();
 }
 
 bool CompilerInstance::forEachFileToTypeCheck(
-  llvm::function_ref<bool(SourceFile&)> fn
+  llvm::function_ref<bool(SourceFile&)> Fn
 ) {
   for (auto * SF : getPrimarySourceFiles()) {
-    if (fn(*SF))
+    if (Fn(*SF)) {
       return true;
+    }
   }
   return false;
 }
@@ -300,9 +302,9 @@ void CompilerInstance::finishTypeChecking() {
 }
 
 const PrimarySpecificPaths&
-CompilerInstance::getPrimarySpecificPathsForPrimary(StringRef filename
+CompilerInstance::getPrimarySpecificPathsForPrimary(StringRef Filename
 ) const {
-  return Invocation.getPrimarySpecificPathsForPrimary(filename);
+  return Invocation.getPrimarySpecificPathsForPrimary(Filename);
 }
 
 const PrimarySpecificPaths&

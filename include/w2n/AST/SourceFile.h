@@ -124,8 +124,9 @@ public:
   /// already been parsed, or \c None if they haven't. Should only be used
   /// for dumping.
   Optional<ArrayRef<Decl *>> getCachedTopLevelDecls() const {
-    if (!Decls)
+    if (!Decls) {
       return None;
+    }
     return llvm::makeArrayRef(*Decls);
   }
 

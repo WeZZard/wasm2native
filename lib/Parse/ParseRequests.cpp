@@ -4,6 +4,7 @@
 #include <w2n/AST/Evaluator.h>
 #include <w2n/AST/ParseRequests.h>
 #include <w2n/Basic/Defer.h>
+#include <w2n/Basic/SourceManager.h>
 #include <w2n/Parse/Parser.h>
 
 using namespace w2n;
@@ -21,36 +22,38 @@ namespace w2n {
 // ParseWasmFileRequest computation.
 //----------------------------------------------------------------------------//
 
-WasmFileParsingResult ParseWasmFileRequest::evaluate(
-  Evaluator& evaluator, WasmFile * SF
-) const {
+WasmFileParsingResult
+ParseWasmFileRequest::evaluate(Evaluator& Eval, WasmFile * SF) const {
   assert(SF);
-  auto& ctx = SF->getASTContext();
-  auto bufferID = SF->getBufferID();
+  auto& Ctx = SF->getASTContext();
+  auto BufferId = SF->getBufferID();
 
   // If there's no buffer, there's nothing to parse.
-  if (!bufferID)
+  if (!BufferId) {
     return {};
+  }
 
   // If we've been asked to silence warnings, do so now. This is needed
   // for secondary files, which can be parsed multiple times.
-  auto& diags = ctx.Diags;
-  auto didSuppressWarnings = diags.getSuppressWarnings();
-  auto shouldSuppress = SF->getParsingOptions().contains(
+  auto& Diags = Ctx.Diags;
+  auto DidSuppressWarnings = Diags.getSuppressWarnings();
+  auto ShouldSuppress = SF->getParsingOptions().contains(
     SourceFile::ParsingFlags::SuppressWarnings
   );
-  diags.setSuppressWarnings(didSuppressWarnings || shouldSuppress);
+  Diags.setSuppressWarnings(DidSuppressWarnings || ShouldSuppress);
   W2N_DEFER {
-    diags.setSuppressWarnings(didSuppressWarnings);
+    Diags.setSuppressWarnings(DidSuppressWarnings);
   };
 
-  // FIXME: WasmParser parser(*bufferID, *SF, &diags);
-  // PrettyStackTraceParser StackTrace(parser);
+  auto Parser = WasmParser::createWasmParser(*BufferId, *SF, &Diags);
+  // FIXME: PrettyStackTraceParser StackTrace(Parser);
 
-  SmallVector<Decl *, 128> decls;
-  // FIXME: parser.parseTopLevel(decls);
+#define W2N_STACK_DECLS_COUNT 128
 
-  return WasmFileParsingResult{ctx.AllocateCopy(decls), None, None};
+  SmallVector<Decl *, W2N_STACK_DECLS_COUNT> Decls;
+  Parser->parseTopLevel(Decls);
+
+  return WasmFileParsingResult{Ctx.AllocateCopy(Decls), None, None};
 }
 
 evaluator::DependencySource ParseWasmFileRequest::readDependencySource(
@@ -63,17 +66,18 @@ Optional<WasmFileParsingResult>
 ParseWasmFileRequest::getCachedResult() const {
   auto * SF = std::get<0>(getStorage());
   auto Decls = SF->getCachedTopLevelDecls();
-  if (!Decls)
+  if (!Decls) {
     return None;
+  }
 
   return WasmFileParsingResult{*Decls, None, None};
 }
 
-void ParseWasmFileRequest::cacheResult(WasmFileParsingResult result
+void ParseWasmFileRequest::cacheResult(WasmFileParsingResult Result
 ) const {
   auto * SF = std::get<0>(getStorage());
   assert(!SF->hasCachedTopLevelDecls());
-  SF->setCachedTopLevelDecls(std::vector<Decl *>(result.TopLevelDecls));
+  SF->setCachedTopLevelDecls(std::vector<Decl *>(Result.TopLevelDecls));
 
   // Verify the parsed source file.
   // FIXME: verify(*SF);
@@ -85,7 +89,7 @@ void ParseWasmFileRequest::cacheResult(WasmFileParsingResult result
 
 // Define request evaluation functions for each of the type checker
 // requests.
-static AbstractRequestFunction * parseRequestFunctions[] = {
+static AbstractRequestFunction * ParseRequestFunctions[] = {
 #define W2N_REQUEST(Zone, Name, Sig, Caching, LocOptions)                \
   reinterpret_cast<AbstractRequestFunction *>(&Name::evaluateRequest),
 #include <w2n/AST/ParseTypeIDZone.def>
@@ -93,5 +97,5 @@ static AbstractRequestFunction * parseRequestFunctions[] = {
 };
 
 void w2n::registerParseRequestFunctions(Evaluator& Eval) {
-  Eval.registerRequestFunctions(Zone::Parse, parseRequestFunctions);
+  Eval.registerRequestFunctions(Zone::Parse, ParseRequestFunctions);
 }

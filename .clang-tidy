@@ -112,7 +112,12 @@ CheckOptions:
   - key: readability-identifier-naming.GlobalFunctionCase
     value: camelBack
   - key: readability-identifier-naming.GlobalFunctionIgnoredRegexp
-    value: proto_implemented|report_prototype_implementation|report_assertion
+    # Multi-line regex literal: double quote is required, `\` to break.
+    value: "\
+proto_implemented\
+|report_prototype_implementation\
+|report_assertion\
+|simple_display"
   - key: readability-identifier-naming.GlobalPointerCase
     value: CamelCase
   - key: readability-identifier-naming.GlobalVariableCase
@@ -128,11 +133,20 @@ CheckOptions:
   - key: readability-identifier-naming.LocalVariableCase
     value: CamelCase
   - key: readability-identifier-naming.MacroDefinitionCase
-    value: CamelCase
+    value: UPPER_CASE
   - key: readability-identifier-naming.MacroDefinitionPrefix
-    value: W2N
+    value: W2N_
   - key: readability-identifier-naming.MacroDefinitionIgnoredRegexp
-    value: (_)?w2n.+
+    # Multi-line regex literal: double quote is required, `\` to break.
+    value: "\
+((_)?w2n_[a-zA-Z0-9][a-zA-Z0-9_]+)\
+|DECL\
+|STMT\
+|EXPR\
+|TYPE\
+|FIRST_(DECL|STMT|EXPR|TYPE)\
+|LAST_(DECL|STMT|EXPR|TYPE)\
+|(DECL|STMT|EXPR|TYPE)_RANGE"
   - key: readability-identifier-naming.MemberCase
     value: CamelCase
   - key: readability-identifier-naming.MethodCase

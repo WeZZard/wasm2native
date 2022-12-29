@@ -202,6 +202,12 @@
 #define W2N_UNUSED [[maybe_unused]]
 #define W2N_USED   __attribute__((used))
 
+#define W2N_DISABLE_TAIL_CALLS __attribute__((__disable_tail_calls__))
+#define W2N_NOT_TAIL_CALLED    __attribute__((__not_tail_called__))
+
+#define W2N_LIKELY_CALLED   __attribute__((__hot__))
+#define W2N_UNLIKELY_CALLED __attribute__((__cold__))
+
 #define _W2N_PICK_MACRO_OVERLOAD_1(_0, PICKED, ...)             PICKED
 #define _W2N_PICK_MACRO_OVERLOAD_2(_0, _1, PICKED, ...)         PICKED
 #define _W2N_PICK_MACRO_OVERLOAD_3(_0, _1, _2, PICKED, ...)     PICKED

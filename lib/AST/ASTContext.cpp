@@ -1,6 +1,7 @@
 #include <llvm/ADT/MapVector.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTContext.h>
+#include <w2n/AST/Type.h>
 
 using namespace w2n;
 
@@ -50,6 +51,20 @@ struct ASTContext::Implementation {
 
   Arena Permanent;
 
+  I32Type * I32Type;
+
+  I64Type * I64Type;
+
+  F32Type * F32Type;
+
+  F64Type * F64Type;
+
+  V128Type * V128Type;
+
+  FuncRefType * FuncRefType;
+
+  ExternRefType * ExternRefType;
+
   Implementation() : IdentifierTable(Allocator) {
   }
 
@@ -91,7 +106,7 @@ void ASTContext::operator delete(void * Data) throw() {
 }
 
 ASTContext * ASTContext::get(
-  LanguageOptions& langOpts,
+  LanguageOptions& LangOpts,
   SourceManager& SourceMgr,
   DiagnosticEngine& Diags
 ) {
@@ -108,25 +123,25 @@ ASTContext * ASTContext::get(
     llvm::alignAddr(ImplAddr, llvm::Align(alignof(Implementation)))
   );
   new (ImplAddr) Implementation();
-  return new (RetAddr) ASTContext(langOpts, SourceMgr, Diags);
+  return new (RetAddr) ASTContext(LangOpts, SourceMgr, Diags);
 }
 
-llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena arena
+llvm::BumpPtrAllocator& ASTContext::getAllocator(AllocationArena Arena
 ) const {
-  switch (arena) {
+  switch (Arena) {
   case AllocationArena::Permanent: return getImpl().Allocator;
   }
   llvm_unreachable("bad AllocationArena");
 }
 
 /// Set a new stats reporter.
-void ASTContext::setStatsReporter(UnifiedStatsReporter * stats) {
-  if (stats) {
-    stats->getFrontendCounters().NumASTBytesAllocated =
+void ASTContext::setStatsReporter(UnifiedStatsReporter * NewValue) {
+  if (NewValue != nullptr) {
+    NewValue->getFrontendCounters().NumASTBytesAllocated =
       getAllocator().getBytesAllocated();
   }
-  Eval.setStatsReporter(stats);
-  Stats = stats;
+  Eval.setStatsReporter(NewValue);
+  Stats = NewValue;
 }
 
 void ASTContext::addLoadedModule(ModuleDecl * Module) {
@@ -149,3 +164,27 @@ Identifier ASTContext::getIdentifier(StringRef Str) const {
   auto I = getImpl().IdentifierTable.insert(pair).first;
   return Identifier(I->getKeyData());
 }
+
+Type * ASTContext::getTypeForKind(TypeKind Kind) const {
+  switch (Kind) {
+  case TypeKind::I32: return getI32Type();
+  case TypeKind::I64: return getI64Type();
+  case TypeKind::F32: return getF32Type();
+  case TypeKind::F64: return getF64Type();
+  case TypeKind::V128: return getV128Type();
+  case TypeKind::FuncRef: return getFuncRefType();
+  case TypeKind::ExternRef: return getExternRefType();
+  }
+}
+
+#define TYPE(Id, Parent)                                                 \
+  Id##Type * ASTContext::get##Id##Type() const {                         \
+    if (getImpl().Id##Type != nullptr) {                                 \
+      return getImpl().Id##Type;                                         \
+    }                                                                    \
+                                                                         \
+    getImpl().Id##Type =                                                 \
+      Id##Type::create(const_cast<ASTContext&>(*this));                  \
+    return getImpl().Id##Type;                                           \
+  }
+#include <w2n/AST/TypeNodes.def>

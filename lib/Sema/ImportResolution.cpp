@@ -31,8 +31,9 @@ void w2n::performImportResolution(SourceFile& SF) {
   // ImportResolver resolver(SF);
 
   // Resolve each import declaration.
-  for (auto * D : SF.getTopLevelDecls())
+  for (auto * D : SF.getTopLevelDecls()) {
     __unused auto * _ = D; // resolver.visit(D);
+  }
 
   // FIXME: SF.setImports(resolver.getFinishedImports());
 

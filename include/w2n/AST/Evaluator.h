@@ -110,7 +110,7 @@ typename Request::OutputType evaluateOrDefault(
 /// can be recorded by the stats reporter.
 template <typename Request>
 void reportEvaluatedRequest(
-  UnifiedStatsReporter& stats, const Request& request
+  UnifiedStatsReporter& Stats, const Request& Req
 ) {
 }
 

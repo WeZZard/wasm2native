@@ -90,7 +90,7 @@ int w2n::performFrontend(
 }
 
 bool performCompile(CompilerInstance& Instance, int& ReturnValue) {
-  bool hadError = performAction(Instance, ReturnValue);
+  bool HadError = performAction(Instance, ReturnValue);
   const auto& Invocation = Instance.getInvocation();
   const auto& FrontendOpts = Invocation.getFrontendOptions();
   const FrontendOptions::ActionType Action = FrontendOpts.RequestedAction;
@@ -99,9 +99,9 @@ bool performCompile(CompilerInstance& Instance, int& ReturnValue) {
   // have already performed these actions.
   if (Instance.hasASTContext() && FrontendOptions::doesActionPerformEndOfPipelineActions(Action)) {
     performEndOfPipelineActions(Instance);
-    hadError |= Instance.getASTContext().hadError();
+    HadError |= Instance.getASTContext().hadError();
   }
-  return hadError;
+  return HadError;
 }
 
 bool performAction(CompilerInstance& Instance, int& ReturnValue) {

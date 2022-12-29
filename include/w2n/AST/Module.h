@@ -1,6 +1,10 @@
 #ifndef W2N_AST_MODULE_H
 #define W2N_AST_MODULE_H
 
+#include <_types/_uint32_t.h>
+#include "llvm/ADT/None.h"
+#include "llvm/ADT/Optional.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <llvm/ADT/ArrayRef.h>
 #include <w2n/AST/Decl.h>
@@ -29,9 +33,15 @@ private:
 
   bool HasResolvedImports = false;
 
+  llvm::Optional<uint32_t> Magic;
+
+  llvm::Optional<uint32_t> Version;
+
   Identifier Name;
 
   SmallVector<FileUnit *, 2> Files;
+
+  llvm::SmallVector<SectionDecl *> SectionDecls;
 
   ModuleDecl(Identifier Name, ASTContext& Context);
 
@@ -40,6 +50,22 @@ private:
   }
 
 public:
+
+  bool hasMagic() const {
+    return Magic.has_value();
+  }
+
+  llvm::Optional<uint32_t> getMagic() const {
+    return Magic;
+  }
+
+  bool hasVersion() const {
+    return Version.has_value();
+  }
+
+  llvm::Optional<uint32_t> getVersion() const {
+    return Version;
+  }
 
   /**
    * @brief Retrieve the module name for this module
@@ -81,6 +107,18 @@ public:
 
   void addFile(FileUnit& NewFile);
 
+  const llvm::SmallVector<SectionDecl *>& getSectionDecls() const {
+    return SectionDecls;
+  }
+
+  llvm::SmallVector<SectionDecl *>& getSectionDecls() {
+    return SectionDecls;
+  }
+
+  void addSectionDecl(SectionDecl * SectionDecl) {
+    SectionDecls.push_back(SectionDecl);
+  }
+
   /**
    * @brief Returns \c true if there was an error trying to load this
    * module.
@@ -107,11 +145,12 @@ public:
 
   /// Generate the list of libraries needed to link this module, based on
   /// its imports.
-  void collectLinkLibraries(LinkLibraryCallback callback) const;
+  void collectLinkLibraries(LinkLibraryCallback Callback) const;
 
   static bool classof(const DeclContext * DC) {
-    if (const auto * D = DC->getAsDecl())
+    if (const auto * D = DC->getAsDecl()) {
       return classof(D);
+    }
     return false;
   }
 
@@ -124,20 +163,22 @@ public:
 };
 
 inline bool DeclContext::isModuleContext() const {
-  if (const auto * D = getAsDecl())
+  if (const auto * D = getAsDecl()) {
     return ModuleDecl::classof(D);
+  }
   return false;
 }
 
 inline bool DeclContext::isModuleScopeContext() const {
-  if (ParentAndKind.getInt() == ASTHierarchy::FileUnit)
+  if (ParentAndKind.getInt() == ASTHierarchy::FileUnit) {
     return true;
+  }
   return isModuleContext();
 }
 
 /// Extract the source location from the given module declaration.
-inline SourceLoc extractNearestSourceLoc(const ModuleDecl * mod) {
-  return extractNearestSourceLoc(static_cast<const Decl *>(mod));
+inline SourceLoc extractNearestSourceLoc(const ModuleDecl * Mod) {
+  return extractNearestSourceLoc(static_cast<const Decl *>(Mod));
 }
 
 } // namespace w2n

@@ -70,6 +70,8 @@ void report_prototype_implementation(
 );
 
 W2N_NO_RETURN
+W2N_DISABLE_TAIL_CALLS
+W2N_UNLIKELY_CALLED
 void report_assertion(
   const char * Function,
   const char * File,
@@ -77,7 +79,7 @@ void report_assertion(
   const char * Expression,
   const char * Fmt,
   ...
-) __cold __disable_tail_calls;
+);
 
 } // namespace details
 

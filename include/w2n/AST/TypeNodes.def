@@ -1,0 +1,50 @@
+/// This file defines macros used for macro-metaprogramming with
+/// types.
+
+/// TYPE(Id, Parent)
+
+/// An abstract type node is an abstract base class in the hierarchy; it
+/// is never a most-derived type, and it does not have an enumerator in
+/// TypeKind.
+///
+/// Most metaprograms do not care about abstract type, so the default is
+/// to ignore them.
+#ifndef ABSTRACT_TYPE
+#define ABSTRACT_TYPE(Id, Parent)
+#endif
+
+/// A convenience for determining the range of types.  These will always
+/// appear immediately after the last member.
+#ifndef TYPE_RANGE
+#define TYPE_RANGE(Id, First, Last)
+#endif
+
+#ifndef LAST_TYPE
+#define LAST_TYPE(Id)
+#endif
+
+// clang-format off
+
+ABSTRACT_TYPE(Value, Type)
+  ABSTRACT_TYPE(Number, Value)
+    TYPE(I32, Number)
+    TYPE(I64, Number)
+    TYPE(F32, Number)
+    TYPE(F64, Number)
+    TYPE_RANGE(Number, I32, F64)
+  ABSTRACT_TYPE(Vector, Value)
+    TYPE(V128, Vector)
+    TYPE_RANGE(Vector, V128, V128)
+  ABSTRACT_TYPE(Reference, Value)
+    TYPE(FuncRef, Reference)
+    TYPE(ExternRef, Reference)
+    TYPE_RANGE(Reference, FuncRef, ExternRef)
+  TYPE_RANGE(Value, I32, ExternRef)
+
+LAST_TYPE(ExternRef)
+
+// clang-format on
+
+#undef TYPE
+#undef LAST_TYPE
+#undef TYPE_RANGE

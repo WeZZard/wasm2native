@@ -1,3 +1,4 @@
+#include <w2n/AST/ParseRequests.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/Frontend/Frontend.h>
 
@@ -79,7 +80,12 @@ WasmFile::getDefaultParsingOptions(const LanguageOptions& Opts) {
 }
 
 ArrayRef<Decl *> WasmFile::getTopLevelDecls() const {
-  return ArrayRef<Decl *>(); // FIXME: not implemented
+  auto& Ctx = getASTContext();
+  auto * MutableThis = const_cast<WasmFile *>(this);
+  return evaluateOrDefault(
+           Ctx.Eval, ParseWasmFileRequest{MutableThis}, {}
+  )
+    .TopLevelDecls;
 }
 
 WatFile::WatFile(

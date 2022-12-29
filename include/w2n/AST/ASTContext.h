@@ -8,6 +8,7 @@
 #include <w2n/AST/Evaluator.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/Type.h>
 #include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/LanguageOptions.h>
 #include <w2n/Basic/Malloc.h>
@@ -65,7 +66,7 @@ public:
     DiagnosticEngine& Diags
   );
 
-#pragma Public Members
+#pragma mark Public Members
 
   /// The language options used for translation.
   const LanguageOptions& LangOpts;
@@ -79,7 +80,7 @@ public:
   /// The request-evaluator that is used to process various requests.
   Evaluator Eval;
 
-#pragma Error Handling
+#pragma mark Error Handling
 
 public:
 
@@ -87,7 +88,7 @@ public:
     return false;
   }
 
-#pragma ASTContext Managed Resource Allocation
+#pragma mark ASTContext Managed Resource Allocation
 
 private:
 
@@ -229,24 +230,24 @@ public:
   }
 
   /// Set a new stats reporter.
-  void setStatsReporter(UnifiedStatsReporter * stats);
+  void setStatsReporter(UnifiedStatsReporter * NewValue);
 
-#pragma Configure Compilations
+#pragma mark Configure Compilations
 
   void addLoadedModule(ModuleDecl * Module);
 
   /// Add a cleanup function to be called when the ASTContext is
   /// deallocated.
-  void addCleanup(std::function<void(void)> cleanup);
+  void addCleanup(std::function<void(void)> Cleanup);
 
   /// Add a cleanup to run the given object's destructor when the
   /// ASTContext is deallocated.
   template <typename T>
-  void addDestructorCleanup(T& object) {
-    addCleanup([&object] { object.~T(); });
+  void addDestructorCleanup(T& Object) {
+    addCleanup([&Object] { Object.~T(); });
   }
 
-#pragma Getting ASTContext Managed Resources
+#pragma mark Getting ASTContext Managed Resources
 
 public:
 
@@ -258,6 +259,15 @@ public:
    * @return Identifier
    */
   Identifier getIdentifier(StringRef Str) const;
+
+#pragma mark Getting ASTContext Managed types
+
+public:
+
+  Type * getTypeForKind(TypeKind Kind) const;
+
+#define TYPE(Id, Parent) Id##Type * get##Id##Type() const;
+#include <w2n/AST/TypeNodes.def>
 };
 
 } // namespace w2n

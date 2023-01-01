@@ -88,10 +88,17 @@ ABSTRACT_DECL(Value, Decl)
       SECTION_DECL(DataSection, SectionDecl)
       SECTION_DECL(DataCountSection, SectionDecl)
       DECL_RANGE(Section, CustomSection, DataCountSection)
-    DECL(FuncType, Type)
-    DECL_RANGE(Type, Module, FuncType)
+    VALUE_DECL(FuncType, TypeDecl)
+    ABSTRACT_DECL(Import, TypeDecl)
+      VALUE_DECL(ImportFunc, ImportDecl)
+      VALUE_DECL(ImportTable, ImportDecl)
+      VALUE_DECL(ImportMemory, ImportDecl)
+      VALUE_DECL(ImportGlobal, ImportDecl)
+      DECL_RANGE(Import, ImportFunc, ImportGlobal)
+    DECL_RANGE(Type, Module, ImportGlobal)
+  DECL_RANGE(Value, Module, ImportGlobal)
 
-LAST_DECL(Module)
+LAST_DECL(ImportGlobal)
 
 // clang-format on
 

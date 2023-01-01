@@ -13,6 +13,22 @@
 #define ABSTRACT_TYPE(Id, Parent)
 #endif
 
+#ifndef VALUE_TYPE
+#define VALUE_TYPE(Id, Parent) TYPE(Id, Parent)
+#endif
+
+#ifndef NUMBER_TYPE
+#define NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
+#endif
+
+#ifndef VECTOR_TYPE
+#define VECTOR_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
+#endif
+
+#ifndef REFERENCE_TYPE
+#define REFERENCE_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
+#endif
+
 /// A convenience for determining the range of types.  These will always
 /// appear immediately after the last member.
 #ifndef TYPE_RANGE
@@ -27,24 +43,36 @@
 
 ABSTRACT_TYPE(Value, Type)
   ABSTRACT_TYPE(Number, Value)
-    TYPE(I32, Number)
-    TYPE(I64, Number)
-    TYPE(F32, Number)
-    TYPE(F64, Number)
+    NUMBER_TYPE(I32, Number)
+    NUMBER_TYPE(I64, Number)
+    NUMBER_TYPE(F32, Number)
+    NUMBER_TYPE(F64, Number)
     TYPE_RANGE(Number, I32, F64)
   ABSTRACT_TYPE(Vector, Value)
-    TYPE(V128, Vector)
+    VECTOR_TYPE(V128, Vector)
     TYPE_RANGE(Vector, V128, V128)
   ABSTRACT_TYPE(Reference, Value)
-    TYPE(FuncRef, Reference)
-    TYPE(ExternRef, Reference)
+    REFERENCE_TYPE(FuncRef, Reference)
+    REFERENCE_TYPE(ExternRef, Reference)
     TYPE_RANGE(Reference, FuncRef, ExternRef)
   TYPE_RANGE(Value, I32, ExternRef)
 
-LAST_TYPE(ExternRef)
+TYPE(Result, Type)
+TYPE(Func, Type)
+TYPE(Limits, Type)
+TYPE(Memory, Type)
+TYPE(Table, Type)
+TYPE(Global, Type)
+
+LAST_TYPE(Memory)
 
 // clang-format on
 
 #undef TYPE
-#undef LAST_TYPE
+#undef ABSTRACT_TYPE
+#undef VALUE_TYPE
+#undef NUMBER_TYPE
+#undef VECTOR_TYPE
+#undef REFERENCE_TYPE
 #undef TYPE_RANGE
+#undef LAST_TYPE

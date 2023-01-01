@@ -4,8 +4,10 @@
 #include <_types/_uint32_t.h>
 #include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/StringRef.h>
+#include <cstdint>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/DeclContext.h>
+#include <w2n/AST/Identifier.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/InlineBitfield.h>
@@ -135,10 +137,32 @@ SourceLoc extractNearestSourceLoc(const Decl * Decl);
 
 void simple_display(llvm::raw_ostream& Out, const Decl * Decl);
 
-class SectionDecl : public Decl {
+class ValueDecl : public Decl {
 protected:
 
-  SectionDecl(DeclKind Kind, ASTContext * Ctx) : Decl(Kind, Ctx) {
+  ValueDecl(DeclKind Kind, ASTContext * Ctx) : Decl(Kind, Ctx) {
+  }
+
+public:
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, ValueDecl);
+};
+
+class TypeDecl : public ValueDecl {
+protected:
+
+  TypeDecl(DeclKind Kind, ASTContext * Ctx) : ValueDecl(Kind, Ctx) {
+  }
+
+public:
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, TypeDecl);
+};
+
+class SectionDecl : public TypeDecl {
+protected:
+
+  SectionDecl(DeclKind Kind, ASTContext * Ctx) : TypeDecl(Kind, Ctx) {
   }
 
 public:
@@ -155,20 +179,26 @@ class FuncTypeDecl;
 class TypeSectionDecl final : public SectionDecl {
 private:
 
-  std::vector<FuncTypeDecl *> TypeDecls;
+  std::vector<FuncTypeDecl *> Types;
 
-  TypeSectionDecl(
-    ASTContext * Ctx, std::vector<FuncTypeDecl *> TypeDecls
-  ) :
+  TypeSectionDecl(ASTContext * Ctx, std::vector<FuncTypeDecl *> Types) :
     SectionDecl(DeclKind::TypeSection, Ctx),
-    TypeDecls(TypeDecls) {
+    Types(Types) {
   }
 
 public:
 
   static TypeSectionDecl *
-  create(ASTContext& Ctx, std::vector<FuncTypeDecl *> TypeDecls) {
-    return new (Ctx) TypeSectionDecl(&Ctx, TypeDecls);
+  create(ASTContext& Ctx, std::vector<FuncTypeDecl *> Types) {
+    return new (Ctx) TypeSectionDecl(&Ctx, Types);
+  }
+
+  std::vector<FuncTypeDecl *>& getTypes() {
+    return Types;
+  }
+
+  const std::vector<FuncTypeDecl *>& getTypes() const {
+    return Types;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
@@ -176,8 +206,32 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, TypeSection);
 };
 
+class ImportDecl;
+
 class ImportSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<ImportDecl *> Imports;
+
+  ImportSectionDecl(ASTContext * Ctx, std::vector<ImportDecl *> Imports) :
+    SectionDecl(DeclKind::ImportSection, Ctx),
+    Imports(Imports) {
+  }
+
 public:
+
+  static ImportSectionDecl *
+  create(ASTContext& Ctx, std::vector<ImportDecl *> Imports) {
+    return new (Ctx) ImportSectionDecl(&Ctx, Imports);
+  }
+
+  std::vector<ImportDecl *>& getImports() {
+    return Imports;
+  }
+
+  const std::vector<ImportDecl *>& getImports() const {
+    return Imports;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
@@ -272,51 +326,227 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, CustomSection);
 };
 
-class FuncTypeDecl final : public Decl {
+class FuncTypeDecl final : public TypeDecl {
 private:
 
-  SmallVector<Type *, 4> Parameters;
+  FuncType * Ty;
 
-  SmallVector<Type *, 1> Returns;
-
-  FuncTypeDecl(
-    ASTContext * Context,
-    SmallVector<Type *, 4> Parameters,
-    SmallVector<Type *, 1> Returns
-  ) :
-    Decl(DeclKind::FuncType, Context),
-    Parameters(Parameters),
-    Returns(Returns){};
+  FuncTypeDecl(ASTContext * Context, FuncType * Ty) :
+    TypeDecl(DeclKind::FuncType, Context),
+    Ty(Ty){};
 
 public:
 
-  static FuncTypeDecl * create(
-    ASTContext& Context,
-    SmallVector<Type *, 4> Parameters,
-    SmallVector<Type *, 1> Returns
-  ) {
-    return new (Context) FuncTypeDecl(&Context, Parameters, Returns);
+  static FuncTypeDecl * create(ASTContext& Context, FuncType * Ty) {
+    return new (Context) FuncTypeDecl(&Context, Ty);
   }
 
-  SmallVector<Type *, 4>& getParameters() {
-    return Parameters;
+  FuncType * getType() {
+    return Ty;
   }
 
-  const SmallVector<Type *, 4>& getParameters() const {
-    return Parameters;
-  }
-
-  SmallVector<Type *, 1>& getReturns() {
-    return Returns;
-  }
-
-  const SmallVector<Type *, 1>& getReturns() const {
-    return Returns;
+  const FuncType * getType() const {
+    return Ty;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, FuncType);
+};
+
+class ImportDecl : public TypeDecl {
+private:
+
+  Identifier Module;
+
+  Identifier Name;
+
+protected:
+
+  ImportDecl(
+    DeclKind Kind,
+    ASTContext * Context,
+    Identifier Module,
+    Identifier Name
+  ) :
+    TypeDecl(Kind, Context),
+    Module(Module),
+    Name(Name){};
+
+public:
+
+  Identifier getModule() {
+    return Module;
+  }
+
+  Identifier getModule() const {
+    return Module;
+  }
+
+  Identifier getName() {
+    return Name;
+  }
+
+  Identifier getName() const {
+    return Name;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, ImportDecl);
+};
+
+class ImportFuncDecl final : public ImportDecl {
+private:
+
+  Identifier Module;
+
+  Identifier Name;
+
+  uint32_t TypeIndex;
+
+  ImportFuncDecl(
+    ASTContext * Context,
+    Identifier Module,
+    Identifier Name,
+    uint32_t TypeIndex
+  ) :
+    ImportDecl(DeclKind::ImportFunc, Context, Module, Name),
+    TypeIndex(TypeIndex){};
+
+public:
+
+  uint32_t getTypeIndex() const {
+    return TypeIndex;
+  }
+
+  static ImportFuncDecl * create(
+    ASTContext& Context,
+    Identifier Module,
+    Identifier Name,
+    uint32_t TypeIndex
+  ) {
+    return new (Context)
+      ImportFuncDecl(&Context, Module, Name, TypeIndex);
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportFunc);
+};
+
+class ImportTableDecl final : public ImportDecl {
+private:
+
+  Identifier Module;
+
+  Identifier Name;
+
+  TableType * Type;
+
+  ImportTableDecl(
+    ASTContext * Context,
+    Identifier Module,
+    Identifier Name,
+    TableType * Type
+  ) :
+    ImportDecl(DeclKind::ImportTable, Context, Module, Name),
+    Type(Type){};
+
+public:
+
+  TableType * getType() const {
+    return Type;
+  }
+
+  static ImportTableDecl * create(
+    ASTContext& Context,
+    Identifier Module,
+    Identifier Name,
+    TableType * Type
+  ) {
+    return new (Context) ImportTableDecl(&Context, Module, Name, Type);
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportTable);
+};
+
+class ImportMemoryDecl final : public ImportDecl {
+private:
+
+  Identifier Module;
+
+  Identifier Name;
+
+  MemoryType * Type;
+
+  ImportMemoryDecl(
+    ASTContext * Context,
+    Identifier Module,
+    Identifier Name,
+    MemoryType * Type
+  ) :
+    ImportDecl(DeclKind::ImportMemory, Context, Module, Name),
+    Type(Type){};
+
+public:
+
+  MemoryType * getType() const {
+    return Type;
+  }
+
+  static ImportMemoryDecl * create(
+    ASTContext& Context,
+    Identifier Module,
+    Identifier Name,
+    MemoryType * Type
+  ) {
+    return new (Context) ImportMemoryDecl(&Context, Module, Name, Type);
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportMemory);
+};
+
+class ImportGlobalDecl final : public ImportDecl {
+private:
+
+  Identifier Module;
+
+  Identifier Name;
+
+  GlobalType * Type;
+
+  ImportGlobalDecl(
+    ASTContext * Context,
+    Identifier Module,
+    Identifier Name,
+    GlobalType * Type
+  ) :
+    ImportDecl(DeclKind::ImportGlobal, Context, Module, Name),
+    Type(Type){};
+
+public:
+
+  GlobalType * getType() const {
+    return Type;
+  }
+
+  static ImportGlobalDecl * create(
+    ASTContext& Context,
+    Identifier Module,
+    Identifier Name,
+    GlobalType * Type
+  ) {
+    return new (Context) ImportGlobalDecl(&Context, Module, Name, Type);
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportGlobal);
 };
 
 } // namespace w2n

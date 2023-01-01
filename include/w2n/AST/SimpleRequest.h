@@ -339,8 +339,7 @@ public:
 
   friend llvm::hash_code hash_value(const SimpleRequest& request) {
     using llvm::hash_combine;
-
-    return hash_combine(TypeID<Derived>::value, request.storage);
+    return hash_combine(request.storage);
   }
 
   friend void

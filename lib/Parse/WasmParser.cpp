@@ -1,3 +1,4 @@
+#include "llvm/ADT/Optional.h"
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/BinaryFormat/Wasm.h>
 #include <llvm/Object/ObjectFile.h>
@@ -9,12 +10,14 @@
 #include <llvm/Support/MemoryBufferRef.h>
 #include <cstddef>
 #include <memory>
+#include <vector>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
-#include <w2n/AST/Identifier.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
+#include <w2n/AST/Type.h>
 #include <w2n/Basic/ImplicitTrailingObject.h>
+#include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/SourceLoc.h>
 #include <w2n/Basic/SourceManager.h>
 #include <w2n/Basic/Unimplemented.h>
@@ -144,16 +147,16 @@ static uint8_t readOpcode(ReadContext& Ctx) {
   return readUint8(Ctx);
 }
 
-static TypeKind getTypeKind(unsigned RawType) {
+static ValueTypeKind getValueTypeKind(unsigned RawType) {
   switch (RawType) {
-  case llvm::wasm::WASM_TYPE_I32: return TypeKind::I32;
-  case llvm::wasm::WASM_TYPE_I64: return TypeKind::I64;
-  case llvm::wasm::WASM_TYPE_F32: return TypeKind::F32;
-  case llvm::wasm::WASM_TYPE_F64: return TypeKind::F64;
-  case llvm::wasm::WASM_TYPE_V128: return TypeKind::V128;
-  case llvm::wasm::WASM_TYPE_FUNCREF: return TypeKind::FuncRef;
-  case llvm::wasm::WASM_TYPE_EXTERNREF: return TypeKind::ExternRef;
-  default: llvm_unreachable("Invalid raw type.");
+  case llvm::wasm::WASM_TYPE_I32: return ValueTypeKind::I32;
+  case llvm::wasm::WASM_TYPE_I64: return ValueTypeKind::I64;
+  case llvm::wasm::WASM_TYPE_F32: return ValueTypeKind::F32;
+  case llvm::wasm::WASM_TYPE_F64: return ValueTypeKind::F64;
+  case llvm::wasm::WASM_TYPE_V128: return ValueTypeKind::V128;
+  case llvm::wasm::WASM_TYPE_FUNCREF: return ValueTypeKind::FuncRef;
+  case llvm::wasm::WASM_TYPE_EXTERNREF: return ValueTypeKind::ExternRef;
+  default: llvm_unreachable("Invalid raw value type.");
   }
 }
 
@@ -166,6 +169,14 @@ public:
 
   std::unique_ptr<WasmObjectFile> WasmObject;
 
+#define DECL(Id, Parent)
+#define SECTION_DECL(Id, _) Id##Decl * Parsed##Id##Decl;
+#include <w2n/AST/DeclNodes.def>
+
+  uint32_t NumImportedFunctions;
+  uint32_t NumImportedGlobals;
+  uint32_t NumImportedTables;
+
   explicit Implementation(WasmParser * Parser) : Parser(Parser) {
   }
 
@@ -176,6 +187,67 @@ public:
   const ASTContext& getContext() const {
     return Parser->File.getASTContext();
   }
+
+#pragma mark Parsing Types
+
+  ValueType * parseValueType(ReadContext& Ctx) {
+    uint32_t RawKind = readUint8(Ctx);
+    ValueTypeKind Kind = getValueTypeKind(RawKind);
+    return getContext().getValueTypeForKind(Kind);
+  }
+
+  LimitsType * parseLimits(ReadContext& Ctx) {
+    uint32_t Flags = readVaruint32(Ctx);
+    uint64_t Minimum = readVaruint64(Ctx);
+    llvm::Optional<uint64_t> Maximum;
+    if ((Flags & llvm::wasm::WASM_LIMITS_FLAG_HAS_MAX) != 0) {
+      Maximum = readVaruint64(Ctx);
+    }
+    if ((Flags & llvm::wasm::WASM_LIMITS_FLAG_IS_64) != 0) {
+      llvm_unreachable("64-bit memory is currently not supported.");
+    }
+    return getContext().getLimits(Minimum, Maximum);
+  }
+
+  TableType * parseTableType(ReadContext& Ctx) {
+    ValueType * ElemType = parseValueType(Ctx);
+    ReferenceType * ElementType = dyn_cast<ReferenceType>(ElemType);
+    if (ElementType == nullptr) {
+      llvm_unreachable("invalid table element type");
+    }
+    LimitsType * Limits = parseLimits(Ctx);
+    return getContext().getTableType(ElementType, Limits);
+  }
+
+  MemoryType * parseMemoryType(ReadContext& Ctx) {
+    LimitsType * Limits = parseLimits(Ctx);
+    return getContext().getMemoryType(Limits);
+  }
+
+  GlobalType * parseGlobalType(ReadContext& Ctx) {
+    ValueType * Type = parseValueType(Ctx);
+    bool IsMutable = readVaruint1(Ctx) != 0;
+    return getContext().getGlobalType(Type, IsMutable);
+  }
+
+  ResultType * parseResultType(ReadContext& Ctx) {
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<ValueType *> ValueTypes;
+    ValueTypes.reserve(Count);
+    while (Count-- != 0) {
+      ValueType * Type = parseValueType(Ctx);
+      ValueTypes.push_back(Type);
+    }
+    return getContext().getResultType(ValueTypes);
+  }
+
+  FuncType * parseFuncType(ReadContext& Ctx) {
+    ResultType * Params = parseResultType(Ctx);
+    ResultType * Returns = parseResultType(Ctx);
+    return getContext().getFuncType(Params, Returns);
+  }
+
+#pragma mark Parsing Sections
 
   /**
    * @brief \c ModuleDecl in .wasm format is an imaginary AST node since
@@ -190,10 +262,8 @@ public:
   ModuleDecl * parseModuleDecl() {
     llvm::SmallVector<SectionDecl *> SectionDecls;
     parseSectionDecls(SectionDecls);
-    const char * Filename = Parser->File.getFilename().data();
-    Identifier ModuleName = Identifier::getFromOpaquePointer(
-      reinterpret_cast<void *>(const_cast<char *>(Filename))
-    );
+    StringRef Filename = Parser->File.getFilename();
+    Identifier ModuleName = getContext().getIdentifier(Filename);
     ModuleDecl * Mod =
       ModuleDecl::create(ModuleName, Parser->File.getASTContext());
     for (auto& EachSectionDecl : SectionDecls) {
@@ -217,25 +287,9 @@ public:
       if (Form != llvm::wasm::WASM_TYPE_FUNC) {
         llvm_unreachable("invalid signature type");
       }
-      uint32_t ParamCount = readVaruint32(Ctx);
-      llvm::SmallVector<Type *, 4> Params;
-      Params.reserve(ParamCount);
-      while (ParamCount-- != 0) {
-        uint32_t ParamType = readUint8(Ctx);
-        TypeKind Kind = getTypeKind(ParamType);
-        Type * Type = getContext().getTypeForKind(Kind);
-        Params.push_back(Type);
-      }
-      uint32_t ReturnCount = readVaruint32(Ctx);
-      llvm::SmallVector<Type *, 1> Returns;
-      while (ReturnCount-- != 0) {
-        uint32_t ReturnType = readUint8(Ctx);
-        TypeKind Kind = getTypeKind(ReturnType);
-        Type * Type = getContext().getTypeForKind(Kind);
-        Returns.push_back(Type);
-      }
+      FuncType * Ty = parseFuncType(Ctx);
       FuncTypeDecl * FuncTypeDecl =
-        FuncTypeDecl::create(getContext(), Params, Returns);
+        FuncTypeDecl::create(getContext(), Ty);
       FuncTypeDecls.push_back(std::move(FuncTypeDecl));
     }
     if (Ctx.Ptr != Ctx.End) {
@@ -246,7 +300,54 @@ public:
 
   ImportSectionDecl *
   parseImportSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t Count = readVaruint32(Ctx);
+    size_t NumTypes = ParsedTypeSectionDecl->getTypes().size();
+    std::vector<ImportDecl *> Imports;
+    Imports.reserve(Count);
+    for (uint32_t I = 0; I < Count; I++) {
+      ImportDecl * Import;
+      Identifier Module = getContext().getIdentifier(readString(Ctx));
+      Identifier Name = getContext().getIdentifier(readString(Ctx));
+      uint8_t Kind = readUint8(Ctx);
+      switch (Kind) {
+      case llvm::wasm::WASM_EXTERNAL_FUNCTION: {
+        NumImportedFunctions++;
+        uint32_t SigIndex = readVaruint32(Ctx);
+        if (SigIndex >= NumTypes) {
+          llvm_unreachable("invalid function type");
+        }
+        Import =
+          ImportFuncDecl::create(getContext(), Module, Name, SigIndex);
+        break;
+      }
+      case llvm::wasm::WASM_EXTERNAL_TABLE: {
+        NumImportedTables++;
+        TableType * TableTy = parseTableType(Ctx);
+        Import =
+          ImportTableDecl::create(getContext(), Module, Name, TableTy);
+        break;
+      }
+      case llvm::wasm::WASM_EXTERNAL_MEMORY: {
+        MemoryType * Memory = parseMemoryType(Ctx);
+        Import =
+          ImportMemoryDecl::create(getContext(), Module, Name, Memory);
+        break;
+      }
+      case llvm::wasm::WASM_EXTERNAL_GLOBAL: {
+        NumImportedGlobals++;
+        GlobalType * GlobalTy = parseGlobalType(Ctx);
+        Import =
+          ImportGlobalDecl::create(getContext(), Module, Name, GlobalTy);
+        break;
+      }
+      default: llvm_unreachable("unexpected import kind");
+      }
+      Imports.push_back(Import);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("import section ended prematurely");
+    }
+    return ImportSectionDecl::create(getContext(), Imports);
   }
 
   FuncSectionDecl *
@@ -315,10 +416,12 @@ public:
     Ctx.End = Ctx.Start + Section.Content.size();
     Ctx.Ptr = Ctx.Start;
 
+    switch (Section.Type) {
 #define DECL(Id, Parent)
 #define SECTION_DECL(Id, _)                                              \
-  case W2N_FORMAT_GET_SEC_TYPE(Id): return parse##Id##Decl(Section, Ctx);
-    switch (Section.Type) {
+  case W2N_FORMAT_GET_SEC_TYPE(Id):                                      \
+    Parsed##Id##Decl = parse##Id##Decl(Section, Ctx);                    \
+    return Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
     case llvm::wasm::WASM_SEC_TAG:
       llvm_unreachable("Tag section is not supported yet.");
@@ -352,10 +455,10 @@ WasmParser::WasmParser(
   File(SF),
   SourceMgr(SF.getASTContext().SourceMgr),
   LexerDiags(LexerDiags) {
-  StringRef Identifier = SF.getFilename();
+  StringRef Filename = SF.getFilename();
   StringRef Contents =
     SourceMgr.extractText(SourceMgr.getRangeForBuffer(BufferID));
-  auto Object = llvm::MemoryBufferRef(Contents, Identifier);
+  auto Object = llvm::MemoryBufferRef(Contents, Filename);
   auto ObjectFile =
     llvm::cantFail(ObjectFile::createWasmObjectFile(Object));
   getImpl().WasmObject = std::move(ObjectFile);

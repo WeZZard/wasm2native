@@ -1,20 +1,105 @@
+#include <llvm/ADT/DenseMapInfo.h>
+#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/MapVector.h>
+#include <llvm/Support/ErrorHandling.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Type.h>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 
 #pragma mark ASTAllocated
 
 void * detail::allocateInASTContext(
-  size_t bytes,
-  const ASTContext& ctx,
-  AllocationArena arena,
-  unsigned alignment
+  size_t Bytes,
+  const ASTContext& Ctx,
+  AllocationArena Arena,
+  unsigned Alignment
 ) {
-  return ctx.Allocate(bytes, alignment, arena);
+  return Ctx.Allocate(Bytes, Alignment, Arena);
 }
+
+namespace w2n {
+
+#pragma mark Type Keys
+
+template <typename... Inputs>
+class TypeKey {
+  friend struct llvm::DenseMapInfo<TypeKey>;
+
+  enum class StorageKind : uint8_t {
+    Normal,
+    Empty,
+    Tombstone
+  };
+  StorageKind Kind;
+
+  std::tuple<Inputs...> Storage;
+
+  TypeKey(StorageKind Kind) : Kind(Kind), Storage() {
+  }
+
+public:
+
+  static TypeKey getEmpty() {
+    return TypeKey(StorageKind::Empty);
+  }
+
+  static TypeKey getTombstone() {
+    return TypeKey(StorageKind::Tombstone);
+  }
+
+  TypeKey(const Inputs&... Storage) :
+    Kind(StorageKind::Normal),
+    Storage(Storage...) {
+  }
+};
+
+using ResultTypeKey = TypeKey<std::vector<ValueType *>>;
+
+using FuncTypeKey = TypeKey<ResultType *, ResultType *>;
+
+using TableTypeKey = TypeKey<ReferenceType *, LimitsType *>;
+
+using LimitsKey = TypeKey<uint64_t, llvm::Optional<uint64_t>>;
+
+using GlobalTypeKey = TypeKey<ValueType *, bool>;
+
+using MemoryTypeKey = TypeKey<LimitsType *>;
+
+/// \c TypeKey storage hash support.
+template <typename T>
+hash_code hash_value(const std::vector<T *>& Vec) {
+  return llvm::hash_combine_range(Vec.begin(), Vec.end());
+}
+
+} // namespace w2n
+
+namespace llvm {
+
+template <typename... Inputs>
+struct DenseMapInfo<TypeKey<Inputs...>> {
+  using Key = TypeKey<Inputs...>;
+
+  static inline Key getEmptyKey() {
+    return Key::getEmpty();
+  }
+
+  static inline Key getTombstoneKey() {
+    return Key::getTombstone();
+  }
+
+  static unsigned getHashValue(const Key& K) {
+    return llvm::hash_combine(K.Kind, K.Storage);
+  }
+
+  static bool isEqual(const Key& Lhs, const Key& Rhs) {
+    return Lhs.Kind == Rhs.Kind && Lhs.Storage == Rhs.Storage;
+  }
+};
+
+} // namespace llvm
 
 #pragma mark ASTContext::Implementation
 
@@ -51,19 +136,23 @@ struct ASTContext::Implementation {
 
   Arena Permanent;
 
-  I32Type * I32Type;
+  // ASTContext owned ValueType storages
 
-  I64Type * I64Type;
+#define TYPE(Id, Parent)
+#define VALUE_TYPE(Id, Parent) Id##Type * Id##Type;
+#include <w2n/AST/TypeNodes.def>
 
-  F32Type * F32Type;
+  llvm::DenseMap<ResultTypeKey, ResultType *> ResultTypes;
 
-  F64Type * F64Type;
+  llvm::DenseMap<FuncTypeKey, FuncType *> FuncTypes;
 
-  V128Type * V128Type;
+  llvm::DenseMap<TableTypeKey, TableType *> TableTypes;
 
-  FuncRefType * FuncRefType;
+  llvm::DenseMap<LimitsKey, LimitsType *> Limits;
 
-  ExternRefType * ExternRefType;
+  llvm::DenseMap<GlobalTypeKey, GlobalType *> GlobalTypes;
+
+  llvm::DenseMap<MemoryTypeKey, MemoryType *> MemoryTypes;
 
   Implementation() : IdentifierTable(Allocator) {
   }
@@ -93,12 +182,12 @@ ASTContext::~ASTContext() {
 }
 
 ASTContext::Implementation& ASTContext::getImpl() const {
-  auto * pointer =
+  auto * Pointer =
     reinterpret_cast<char *>(const_cast<ASTContext *>(this));
-  auto offset = llvm::alignAddr(
+  auto Offset = llvm::alignAddr(
     (void *)sizeof(*this), llvm::Align(alignof(Implementation))
   );
-  return *reinterpret_cast<Implementation *>(pointer + offset);
+  return *reinterpret_cast<Implementation *>(Pointer + Offset);
 }
 
 void ASTContext::operator delete(void * Data) throw() {
@@ -151,33 +240,35 @@ void ASTContext::addLoadedModule(ModuleDecl * Module) {
   getImpl().LoadedModules[Module->getName()] = Module;
 }
 
-void ASTContext::addCleanup(std::function<void(void)> cleanup) {
-  getImpl().Cleanups.push_back(std::move(cleanup));
+void ASTContext::addCleanup(std::function<void(void)> Cleanup) {
+  getImpl().Cleanups.push_back(std::move(Cleanup));
 }
 
 Identifier ASTContext::getIdentifier(StringRef Str) const {
   // Make sure null pointers stay null.
-  if (Str.data() == nullptr)
+  if (Str.data() == nullptr) {
     return Identifier(nullptr);
+  }
 
-  auto pair = std::make_pair(Str, Identifier::Aligner());
-  auto I = getImpl().IdentifierTable.insert(pair).first;
+  auto Pair = std::make_pair(Str, Identifier::Aligner());
+  auto I = getImpl().IdentifierTable.insert(Pair).first;
   return Identifier(I->getKeyData());
 }
 
-Type * ASTContext::getTypeForKind(TypeKind Kind) const {
+ValueType * ASTContext::getValueTypeForKind(ValueTypeKind Kind) const {
   switch (Kind) {
-  case TypeKind::I32: return getI32Type();
-  case TypeKind::I64: return getI64Type();
-  case TypeKind::F32: return getF32Type();
-  case TypeKind::F64: return getF64Type();
-  case TypeKind::V128: return getV128Type();
-  case TypeKind::FuncRef: return getFuncRefType();
-  case TypeKind::ExternRef: return getExternRefType();
+  case ValueTypeKind::I32: return getI32Type();
+  case ValueTypeKind::I64: return getI64Type();
+  case ValueTypeKind::F32: return getF32Type();
+  case ValueTypeKind::F64: return getF64Type();
+  case ValueTypeKind::V128: return getV128Type();
+  case ValueTypeKind::FuncRef: return getFuncRefType();
+  case ValueTypeKind::ExternRef: return getExternRefType();
   }
 }
 
-#define TYPE(Id, Parent)                                                 \
+#define TYPE(Id, Parent)
+#define VALUE_TYPE(Id, Parent)                                           \
   Id##Type * ASTContext::get##Id##Type() const {                         \
     if (getImpl().Id##Type != nullptr) {                                 \
       return getImpl().Id##Type;                                         \
@@ -188,3 +279,82 @@ Type * ASTContext::getTypeForKind(TypeKind Kind) const {
     return getImpl().Id##Type;                                           \
   }
 #include <w2n/AST/TypeNodes.def>
+
+ResultType * ASTContext::getResultType(std::vector<ValueType *> ValueTypes
+) const {
+  auto Key = ResultTypeKey(ValueTypes);
+  auto Iter = getImpl().ResultTypes.find(Key);
+  if (Iter != getImpl().ResultTypes.end()) {
+    return Iter->getSecond();
+  }
+  ResultType * Ty =
+    ResultType::create(const_cast<ASTContext&>(*this), ValueTypes);
+  getImpl().ResultTypes.insert({Key, Ty});
+  return Ty;
+}
+
+FuncType *
+ASTContext::getFuncType(ResultType * Params, ResultType * Returns) const {
+  auto Key = FuncTypeKey(Params, Returns);
+  auto Iter = getImpl().FuncTypes.find(Key);
+  if (Iter != getImpl().FuncTypes.end()) {
+    return Iter->getSecond();
+  }
+  FuncType * Ty =
+    FuncType::create(const_cast<ASTContext&>(*this), Params, Returns);
+  getImpl().FuncTypes.insert({Key, Ty});
+  return Ty;
+}
+
+GlobalType *
+ASTContext::getGlobalType(ValueType * Type, bool IsMutable) const {
+  auto Key = GlobalTypeKey(Type, IsMutable);
+  auto Iter = getImpl().GlobalTypes.find(Key);
+  if (Iter != getImpl().GlobalTypes.end()) {
+    return Iter->getSecond();
+  }
+  GlobalType * Ty =
+    GlobalType::create(const_cast<ASTContext&>(*this), Type, IsMutable);
+  getImpl().GlobalTypes.insert({Key, Ty});
+  return Ty;
+}
+
+LimitsType *
+ASTContext::getLimits(uint64_t Min, llvm::Optional<uint64_t> Max) const {
+  auto Key = LimitsKey(Min, Max);
+  auto Iter = getImpl().Limits.find(Key);
+  if (Iter != getImpl().Limits.end()) {
+    return Iter->getSecond();
+  }
+  LimitsType * Limits =
+    LimitsType::create(const_cast<ASTContext&>(*this), Min, Max);
+  getImpl().Limits.insert({Key, Limits});
+  return Limits;
+}
+
+TableType * ASTContext::getTableType(
+  ReferenceType * ElementType, LimitsType * Limits
+) const {
+  auto Key = TableTypeKey(ElementType, Limits);
+  auto Iter = getImpl().TableTypes.find(Key);
+  if (Iter != getImpl().TableTypes.end()) {
+    return Iter->getSecond();
+  }
+  TableType * Ty = TableType::create(
+    const_cast<ASTContext&>(*this), ElementType, Limits
+  );
+  getImpl().TableTypes.insert({Key, Ty});
+  return Ty;
+}
+
+MemoryType * ASTContext::getMemoryType(LimitsType * Limits) const {
+  auto Key = MemoryTypeKey(Limits);
+  auto Iter = getImpl().MemoryTypes.find(Key);
+  if (Iter != getImpl().MemoryTypes.end()) {
+    return Iter->getSecond();
+  }
+  MemoryType * Ty =
+    MemoryType::create(const_cast<ASTContext&>(*this), Limits);
+  getImpl().MemoryTypes.insert({Key, Ty});
+  return Ty;
+}

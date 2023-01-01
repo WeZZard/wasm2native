@@ -1,6 +1,7 @@
 #ifndef W2N_AST_ASTCONTEXT_H
 #define W2N_AST_ASTCONTEXT_H
 
+#include "llvm/ADT/Optional.h"
 #include <llvm/ADT/SetVector.h>
 #include <llvm/Support/Allocator.h>
 #include <w2n/AST/ASTAllocated.h>
@@ -260,14 +261,32 @@ public:
    */
   Identifier getIdentifier(StringRef Str) const;
 
-#pragma mark Getting ASTContext Managed types
+  /**
+   * @brief Return the uniqued and AST-Context-owned \c ValueType instance
+   * for given \c ValueTypeKind .
+   *
+   * @param Kind
+   * @return ValueType *
+   */
+  ValueType * getValueTypeForKind(ValueTypeKind Kind) const;
 
-public:
-
-  Type * getTypeForKind(TypeKind Kind) const;
-
-#define TYPE(Id, Parent) Id##Type * get##Id##Type() const;
+#define TYPE(Id, Parent)
+#define VALUE_TYPE(Id, Parent) Id##Type * get##Id##Type() const;
 #include <w2n/AST/TypeNodes.def>
+
+  ResultType * getResultType(std::vector<ValueType *> ValueTypes) const;
+
+  FuncType * getFuncType(ResultType * Params, ResultType * Returns) const;
+
+  GlobalType * getGlobalType(ValueType * Type, bool IsMutable) const;
+
+  LimitsType *
+  getLimits(uint64_t Min, llvm::Optional<uint64_t> Max) const;
+
+  TableType *
+  getTableType(ReferenceType * ElementType, LimitsType * Limits) const;
+
+  MemoryType * getMemoryType(LimitsType * Limits) const;
 };
 
 } // namespace w2n

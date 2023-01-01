@@ -139,7 +139,7 @@ struct ASTContext::Implementation {
   // ASTContext owned ValueType storages
 
 #define TYPE(Id, Parent)
-#define VALUE_TYPE(Id, Parent) Id##Type * Id##Type;
+#define VALUE_TYPE(Id, Parent) Id##Type * Id##Type = nullptr;
 #include <w2n/AST/TypeNodes.def>
 
   llvm::DenseMap<ResultTypeKey, ResultType *> ResultTypes;

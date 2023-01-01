@@ -173,9 +173,14 @@ public:
 #define SECTION_DECL(Id, _) Id##Decl * Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
 
-  uint32_t NumImportedFunctions;
-  uint32_t NumImportedGlobals;
-  uint32_t NumImportedTables;
+  uint32_t NumTypes = 0;
+  uint32_t NumImportedFunctions = 0;
+  uint32_t NumImportedGlobals = 0;
+  uint32_t NumImportedTables = 0;
+  uint32_t CodeSection = 0;
+  uint32_t DataSection = 0;
+  uint32_t GlobalSection = 0;
+  uint32_t TableSection = 0;
 
   explicit Implementation(WasmParser * Parser) : Parser(Parser) {
   }
@@ -247,6 +252,30 @@ public:
     return getContext().getFuncType(Params, Returns);
   }
 
+#pragma mark Parsing Function
+
+  FuncDecl * parseFuncDecl(ReadContext& Ctx) {
+    uint32_t TypeIndex = readVaruint32(Ctx);
+    if (TypeIndex >= NumTypes) {
+      llvm_unreachable("invalid function type");
+    }
+    return FuncDecl::create(getContext(), TypeIndex);
+  }
+
+#pragma mark Parsing Table
+
+  TableDecl * parseTableDecl(ReadContext& Ctx) {
+    TableType * Ty = parseTableType(Ctx);
+    return TableDecl::create(getContext(), Ty);
+  }
+
+#pragma mark Parsing Memory
+
+  MemoryDecl * parseMemoryDecl(ReadContext& Ctx) {
+    MemoryType * Ty = parseMemoryType(Ctx);
+    return MemoryDecl::create(getContext(), Ty);
+  }
+
 #pragma mark Parsing Sections
 
   /**
@@ -272,14 +301,17 @@ public:
     return Mod;
   }
 
-  CustomSectionDecl *
-  parseCustomSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  CustomSectionDecl * parseCustomSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
-  TypeSectionDecl *
-  parseTypeSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  TypeSectionDecl * parseTypeSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     uint32_t Count = readVaruint32(Ctx);
+    NumTypes = Count;
     std::vector<FuncTypeDecl *> FuncTypeDecls;
     FuncTypeDecls.reserve(Count);
     while (Count-- != 0) {
@@ -298,8 +330,9 @@ public:
     return TypeSectionDecl::create(getContext(), FuncTypeDecls);
   }
 
-  ImportSectionDecl *
-  parseImportSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  ImportSectionDecl * parseImportSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     uint32_t Count = readVaruint32(Ctx);
     size_t NumTypes = ParsedTypeSectionDecl->getTypes().size();
     std::vector<ImportDecl *> Imports;
@@ -350,53 +383,93 @@ public:
     return ImportSectionDecl::create(getContext(), Imports);
   }
 
-  FuncSectionDecl *
-  parseFuncSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  FuncSectionDecl * parseFuncSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<FuncDecl *> Functions;
+    Functions.reserve(Count);
+    while ((Count--) != 0) {
+      FuncDecl * F = parseFuncDecl(Ctx);
+      Functions.push_back(F);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("function section ended prematurely");
+    }
+    return FuncSectionDecl::create(getContext(), Functions);
+  }
+
+  TableSectionDecl * parseTableSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
+    TableSection = SectionIdx;
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<TableDecl *> Tables;
+    Tables.reserve(Count);
+    while ((Count--) != 0) {
+      TableDecl * Table = parseTableDecl(Ctx);
+      Tables.push_back(Table);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("table section ended prematurely");
+    }
+    return TableSectionDecl::create(getContext(), Tables);
+  }
+
+  MemorySectionDecl * parseMemorySectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<MemoryDecl *> Mems;
+    Mems.reserve(Count);
+    while ((Count--) != 0) {
+      MemoryDecl * Mem = parseMemoryDecl(Ctx);
+      Mems.push_back(Mem);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("memory section ended prematurely");
+    }
+    return MemorySectionDecl::create(getContext(), Mems);
+  }
+
+  GlobalSectionDecl * parseGlobalSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
-  TableSectionDecl *
-  parseTableSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  ExportSectionDecl * parseExportSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
-  MemorySectionDecl *
-  parseMemorySectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  StartSectionDecl * parseStartSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
-  GlobalSectionDecl *
-  parseGlobalSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  ElementSectionDecl * parseElementSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
-  ExportSectionDecl *
-  parseExportSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  CodeSectionDecl * parseCodeSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
-  StartSectionDecl *
-  parseStartSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
-    w2n_unimplemented();
-  }
-
-  ElementSectionDecl *
-  parseElementSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
-    w2n_unimplemented();
-  }
-
-  CodeSectionDecl *
-  parseCodeSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
-    w2n_unimplemented();
-  }
-
-  DataSectionDecl *
-  parseDataSectionDecl(const WasmSection& Section, ReadContext& Ctx) {
+  DataSectionDecl * parseDataSectionDecl(
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
+  ) {
     w2n_unimplemented();
   }
 
   DataCountSectionDecl * parseDataCountSectionDecl(
-    const WasmSection& Section, ReadContext& Ctx
+    const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
     w2n_unimplemented();
   }
@@ -410,7 +483,8 @@ public:
    *
    * \endverbatim
    */
-  SectionDecl * parseSectionDecl(const WasmSection& Section) {
+  SectionDecl *
+  parseSectionDecl(const WasmSection& Section, size_t SectionIdx) {
     ReadContext Ctx;
     Ctx.Start = Section.Content.data();
     Ctx.End = Ctx.Start + Section.Content.size();
@@ -420,7 +494,7 @@ public:
 #define DECL(Id, Parent)
 #define SECTION_DECL(Id, _)                                              \
   case W2N_FORMAT_GET_SEC_TYPE(Id):                                      \
-    Parsed##Id##Decl = parse##Id##Decl(Section, Ctx);                    \
+    Parsed##Id##Decl = parse##Id##Decl(Section, Ctx, SectionIdx);        \
     return Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
     case llvm::wasm::WASM_SEC_TAG:
@@ -433,13 +507,15 @@ public:
   void parseSectionDecls(llvm::SmallVectorImpl<SectionDecl *>& Sections) {
     section_iterator CurrentSect = WasmObject->section_begin();
     const section_iterator SectEnd = WasmObject->section_end();
+    size_t SectionIdx = 0;
     while (CurrentSect != SectEnd) {
-      const auto& Sec = WasmObject->getWasmSection(*CurrentSect);
-      SectionDecl * SectionDecl = parseSectionDecl(Sec);
+      const auto& Section = WasmObject->getWasmSection(*CurrentSect);
+      SectionDecl * SectionDecl = parseSectionDecl(Section, SectionIdx);
       if (SectionDecl != nullptr) {
         Sections.push_back(SectionDecl);
       }
       CurrentSect = CurrentSect.operator++();
+      SectionIdx++;
     }
   }
 };

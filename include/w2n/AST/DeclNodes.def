@@ -96,9 +96,12 @@ ABSTRACT_DECL(Value, Decl)
       VALUE_DECL(ImportGlobal, ImportDecl)
       DECL_RANGE(Import, ImportFunc, ImportGlobal)
     DECL_RANGE(Type, Module, ImportGlobal)
-  DECL_RANGE(Value, Module, ImportGlobal)
+    VALUE_DECL(Func, TypeDecl)
+    VALUE_DECL(Table, TypeDecl)
+    VALUE_DECL(Memory, TypeDecl)
+  DECL_RANGE(Value, Module, Memory)
 
-LAST_DECL(ImportGlobal)
+LAST_DECL(Memory)
 
 // clang-format on
 

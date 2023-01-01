@@ -238,24 +238,98 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportSection);
 };
 
+class FuncDecl;
+
 class FuncSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<FuncDecl *> Functions;
+
+  FuncSectionDecl(ASTContext * Ctx, std::vector<FuncDecl *> Functions) :
+    SectionDecl(DeclKind::FuncSection, Ctx),
+    Functions(Functions) {
+  }
+
 public:
+
+  static FuncSectionDecl *
+  create(ASTContext& Ctx, std::vector<FuncDecl *> Functions) {
+    return new (Ctx) FuncSectionDecl(&Ctx, Functions);
+  }
+
+  std::vector<FuncDecl *>& getFunctions() {
+    return Functions;
+  }
+
+  const std::vector<FuncDecl *>& getFunctions() const {
+    return Functions;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, FuncSection);
 };
 
+class TableDecl;
+
 class TableSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<TableDecl *> Tables;
+
+  TableSectionDecl(ASTContext * Ctx, std::vector<TableDecl *> Tables) :
+    SectionDecl(DeclKind::TableSection, Ctx),
+    Tables(Tables) {
+  }
+
 public:
+
+  static TableSectionDecl *
+  create(ASTContext& Ctx, std::vector<TableDecl *> Tables) {
+    return new (Ctx) TableSectionDecl(&Ctx, Tables);
+  }
+
+  std::vector<TableDecl *>& getTables() {
+    return Tables;
+  }
+
+  const std::vector<TableDecl *>& getTables() const {
+    return Tables;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, TableSection);
 };
 
+class MemoryDecl;
+
 class MemorySectionDecl final : public SectionDecl {
+private:
+
+  std::vector<MemoryDecl *> Memories;
+
+  MemorySectionDecl(
+    ASTContext * Ctx, std::vector<MemoryDecl *> Memories
+  ) :
+    SectionDecl(DeclKind::MemorySection, Ctx),
+    Memories(Memories) {
+  }
+
 public:
+
+  static MemorySectionDecl *
+  create(ASTContext& Ctx, std::vector<MemoryDecl *> Memories) {
+    return new (Ctx) MemorySectionDecl(&Ctx, Memories);
+  }
+
+  std::vector<MemoryDecl *>& getMemories() {
+    return Memories;
+  }
+
+  const std::vector<MemoryDecl *>& getMemories() const {
+    return Memories;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
@@ -547,6 +621,81 @@ public:
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportGlobal);
+};
+
+class FuncDecl final : public TypeDecl {
+private:
+
+  uint32_t TypeIndex;
+
+  FuncDecl(ASTContext * Context, uint32_t TypeIndex) :
+    TypeDecl(DeclKind::Func, Context),
+    TypeIndex(TypeIndex) {
+  }
+
+public:
+
+  static FuncDecl * create(ASTContext& Context, uint32_t TypeIndex) {
+    return new (Context) FuncDecl(&Context, TypeIndex);
+  }
+
+  uint32_t getTypeIndex() const {
+    return TypeIndex;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Func);
+};
+
+class TableDecl final : public TypeDecl {
+private:
+
+  TableType * Type;
+
+  TableDecl(ASTContext * Context, TableType * Type) :
+    TypeDecl(DeclKind::Func, Context),
+    Type(Type) {
+  }
+
+public:
+
+  static TableDecl * create(ASTContext& Context, TableType * Type) {
+    return new (Context) TableDecl(&Context, Type);
+  }
+
+  TableType * getType() const {
+    return Type;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Table);
+};
+
+class MemoryDecl final : public TypeDecl {
+private:
+
+  MemoryType * Type;
+
+  MemoryDecl(ASTContext * Context, MemoryType * Type) :
+    TypeDecl(DeclKind::Func, Context),
+    Type(Type) {
+  }
+
+public:
+
+  static MemoryDecl * create(ASTContext& Context, MemoryType * Type) {
+    return new (Context) MemoryDecl(&Context, Type);
+  }
+
+  MemoryType * getType() const {
+    return Type;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Table);
 };
 
 } // namespace w2n

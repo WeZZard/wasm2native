@@ -99,9 +99,11 @@ ABSTRACT_DECL(Value, Decl)
     VALUE_DECL(Func, TypeDecl)
     VALUE_DECL(Table, TypeDecl)
     VALUE_DECL(Memory, TypeDecl)
-  DECL_RANGE(Value, Module, Memory)
+    VALUE_DECL(Global, TypeDecl)
+    VALUE_DECL(CodeBody, TypeDecl)
+  DECL_RANGE(Value, Module, CodeBody)
 
-LAST_DECL(Memory)
+LAST_DECL(CodeBody)
 
 // clang-format on
 

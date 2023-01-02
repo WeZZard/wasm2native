@@ -1,3 +1,5 @@
+#include <_types/_uint8_t.h>
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Optional.h"
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/BinaryFormat/Wasm.h>
@@ -13,8 +15,12 @@
 #include <vector>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/Expr.h>
+#include <w2n/AST/InstNode.h>
+#include <w2n/AST/Instructions.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/SourceFile.h>
+#include <w2n/AST/Stmt.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/ImplicitTrailingObject.h>
 #include <w2n/Basic/LLVM.h>
@@ -276,6 +282,134 @@ public:
     return MemoryDecl::create(getContext(), Ty);
   }
 
+#pragma mark Parsing Code Body
+
+  CodeBodyDecl * parseCodeBody(ReadContext& Ctx) {
+    std::vector<InstNode> Instructions;
+    InstNode Instruction = nullptr;
+    while (Instruction.isNull() || !Instruction.isEnd()) {
+      Instruction = parseInstruction(Ctx);
+      Instructions.push_back(Instruction);
+    }
+    return CodeBodyDecl::create(getContext(), Instructions);
+  }
+
+#pragma mark Parsing Instructions
+
+  InstNode parseInstruction(ReadContext& Ctx) {
+    Instruction Opcode = Instruction(readOpcode(Ctx));
+    switch (Opcode) {
+#define INST(Id, Opcode0, ...)                                           \
+  case Instruction::Id:                                                  \
+    return parse##Id(Ctx);
+#include <w2n/AST/Instructions.def>
+    }
+  }
+
+  UnreachableStmt * parseUnreachable(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  BlockStmt * parseBlock(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  LoopStmt * parseLoop(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  IfStmt * parseIf(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  EndStmt * parseEnd(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  BrStmt * parseBr(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  BrIfStmt * parseBrIf(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  BrTableStmt * parseBrTable(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  ReturnStmt * parseReturn(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallExpr * parseCall(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallIndirectExpr * parseCallIndirect(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  DropExpr * parseDrop(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  LocalGetExpr * parseLocalGet(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  LocalSetExpr * parseLocalSet(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  GlobalGetExpr * parseGlobalGet(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  GlobalSetExpr * parseGlobalSet(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  LoadExpr * parseI32Load(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  LoadExpr * parseI32Load8u(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  StoreExpr * parseI32Store(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  ConstExpr * parseI32Const(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallBuiltinExpr * parseI32Eqz(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallBuiltinExpr * parseI32Eq(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallBuiltinExpr * parseI32Ne(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallBuiltinExpr * parseI32Add(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallBuiltinExpr * parseI32Sub(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
+  CallBuiltinExpr * parseI32And(ReadContext& Ctx) {
+    w2n_unimplemented();
+  }
+
 #pragma mark Parsing Sections
 
   /**
@@ -432,10 +566,27 @@ public:
     return MemorySectionDecl::create(getContext(), Mems);
   }
 
+  GlobalDecl * parseGlobalDecl(ReadContext& Ctx) {
+    GlobalType * Ty = parseGlobalType(Ctx);
+    CodeBodyDecl * Init = parseCodeBody(Ctx);
+    return GlobalDecl::create(getContext(), Ty, Init);
+  }
+
   GlobalSectionDecl * parseGlobalSectionDecl(
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
-    w2n_unimplemented();
+    GlobalSection = SectionIdx;
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<GlobalDecl *> Globals;
+    Globals.reserve(Count);
+    while ((Count--) != 0) {
+      GlobalDecl * Global = parseGlobalDecl(Ctx);
+      Globals.push_back(Global);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("global section ended prematurely");
+    }
+    return GlobalSectionDecl::create(getContext(), Globals);
   }
 
   ExportSectionDecl * parseExportSectionDecl(

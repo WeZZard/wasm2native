@@ -1,0 +1,105 @@
+
+
+/// MVP Instructions
+/// ----------------
+///
+/// Control Instructions
+/// ====================
+/// unreachable
+/// block
+/// loop
+/// br
+/// br_if
+/// br_table
+/// return
+/// call
+/// end
+///
+/// Paramatric Instructions
+/// =======================
+/// drop
+///
+/// Variable Instructions
+/// =====================
+/// local.get
+/// local.set
+/// global.get
+/// global.set
+///
+/// Memory Instructions
+/// ===================
+/// i32.load
+/// i32.load8_u
+/// i32.store
+///
+/// Numeric Instructions
+/// ===================
+/// i32.const
+///
+/// i32.eqz
+/// i32.eq
+/// i32.ne
+///
+/// i32.add
+/// i32.sub
+/// i32.and
+///
+
+/// #define INST(Id, Opcode0, ...)
+#ifndef INST
+#define INST(Id, Opcode0, ...)
+#endif
+
+#define CTRL_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
+
+#define PARAM_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
+
+#define VAR_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
+
+#define MEM_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
+
+#define NUM_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
+
+CTRL_INST(Unreachable, 0x00)
+CTRL_INST(Block, 0x02, BlockType)
+CTRL_INST(Loop, 0x03, BlockType)
+CTRL_INST(If, 0x04, BlockType)
+CTRL_INST(End, 0x0B)
+CTRL_INST(Br, 0x0C, LabelIdx)
+CTRL_INST(BrIf, 0x0D, LabelIdx)
+CTRL_INST(BrTable, 0x0E, Vec<LabelIdx>, LabelIdx)
+CTRL_INST(Return, 0x0F)
+CTRL_INST(Call, 0x10, FuncIdx)
+CTRL_INST(CallIndirect, 0x11, TypeIdx, TableIdx)
+
+PARAM_INST(Drop, 0x1A)
+
+VAR_INST(LocalGet, 0x20, LocalIdx)
+VAR_INST(LocalSet, 0x21, LocalIdx)
+VAR_INST(GlobalGet, 0x23, GlobalIdx)
+VAR_INST(GlobalSet, 0x24, GlobalIdx)
+
+MEM_INST(I32Load, 0x28, MemArg)
+MEM_INST(I32Load8u, 0x2D, MemArg)
+
+MEM_INST(I32Store, 0x36, MemArg)
+
+NUM_INST(I32Const, 0x41, I32)
+
+NUM_INST(I32Eqz, 0x45)
+NUM_INST(I32Eq, 0x46)
+NUM_INST(I32Ne, 0x47)
+
+NUM_INST(I32Add, 0x6A)
+NUM_INST(I32Sub, 0x6B)
+NUM_INST(I32And, 0x71)
+
+#undef CTRL_INST
+#undef PARAM_INST
+#undef VAR_INST
+#undef MEM_INST
+#undef NUM_INST
+
+#ifdef INST
+#undef INST
+#endif

@@ -23,12 +23,16 @@ class ASTAllocated;
 class ASTContext;
 class Decl;
 class DeclContext;
+class Expr;
 class FileUnit;
+class Stmt;
 
 /// We frequently use three tag bits on all of these types.
 constexpr size_t ASTAllocatedAlignInBits = 3;
 constexpr size_t DeclAlignInBits = 3;
 constexpr size_t DeclContextAlignInBits = 3;
+constexpr size_t ExprAlignInBits = 3;
+constexpr size_t StmtAlignInBits = 3;
 
 constexpr size_t ASTContextAlignInBits = 2;
 
@@ -78,6 +82,8 @@ struct PointerLikeTypeTraits;
   }
 
 LLVM_DECLARE_TYPE_ALIGNMENT(w2n::Decl, w2n::DeclAlignInBits)
+LLVM_DECLARE_TYPE_ALIGNMENT(w2n::Expr, w2n::ExprAlignInBits)
+LLVM_DECLARE_TYPE_ALIGNMENT(w2n::Stmt, w2n::StmtAlignInBits)
 
 LLVM_DECLARE_TEMPLATE_TYPE_ALIGNMENT_1(
   w2n::ASTAllocated, w2n::ASTAllocatedAlignInBits

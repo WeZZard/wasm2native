@@ -8,6 +8,7 @@
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Identifier.h>
+#include <w2n/AST/InstNode.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/InlineBitfield.h>
@@ -336,8 +337,32 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, MemorySection);
 };
 
+class GlobalDecl;
+
 class GlobalSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<GlobalDecl *> Globals;
+
+  GlobalSectionDecl(ASTContext * Ctx, std::vector<GlobalDecl *> Globals) :
+    SectionDecl(DeclKind::GlobalSection, Ctx),
+    Globals(Globals) {
+  }
+
 public:
+
+  static GlobalSectionDecl *
+  create(ASTContext& Ctx, std::vector<GlobalDecl *> Globals) {
+    return new (Ctx) GlobalSectionDecl(&Ctx, Globals);
+  }
+
+  std::vector<GlobalDecl *>& getGlobals() {
+    return Globals;
+  }
+
+  const std::vector<GlobalDecl *>& getGlobals() const {
+    return Globals;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
@@ -695,7 +720,84 @@ public:
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Table);
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Memory);
+};
+
+class CodeBodyDecl;
+
+class GlobalDecl final : public TypeDecl {
+private:
+
+  GlobalType * Type;
+
+  CodeBodyDecl * Init;
+
+  GlobalDecl(
+    ASTContext * Context, GlobalType * Type, CodeBodyDecl * Init
+  ) :
+    TypeDecl(DeclKind::Global, Context),
+    Type(Type),
+    Init(Init) {
+  }
+
+public:
+
+  static GlobalDecl *
+  create(ASTContext& Context, GlobalType * Type, CodeBodyDecl * Init) {
+    return new (Context) GlobalDecl(&Context, Type, Init);
+  }
+
+  GlobalType * getType() {
+    return Type;
+  }
+
+  const GlobalType * getType() const {
+    return Type;
+  }
+
+  CodeBodyDecl * getInit() {
+    return Init;
+  }
+
+  const CodeBodyDecl * getInit() const {
+    return Init;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Global);
+};
+
+class InstNode;
+
+class CodeBodyDecl : public TypeDecl {
+private:
+
+  std::vector<InstNode> Instructions;
+
+  CodeBodyDecl(ASTContext * Context, std::vector<InstNode> Instructions) :
+    TypeDecl(DeclKind::CodeBody, Context),
+    Instructions(Instructions) {
+  }
+
+public:
+
+  static CodeBodyDecl *
+  create(ASTContext& Context, std::vector<InstNode> Instructions) {
+    return new (Context) CodeBodyDecl(&Context, Instructions);
+  }
+
+  std::vector<InstNode>& getInstructions() {
+    return Instructions;
+  }
+
+  const std::vector<InstNode>& getInstructions() const {
+    return Instructions;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, CodeBody);
 };
 
 } // namespace w2n

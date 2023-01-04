@@ -605,10 +605,42 @@ public:
     return GlobalSectionDecl::create(getContext(), Globals);
   }
 
+  ExportDecl * parseExportDecl(ReadContext& Ctx) {
+    Identifier Name = getContext().getIdentifier(readString(Ctx));
+    uint8_t Kind = readUint8(Ctx);
+    uint32_t Index = readVaruint32(Ctx);
+    switch (Kind) {
+    case llvm::wasm::WASM_EXTERNAL_FUNCTION:
+      // FIXME: !isDefinedFunctionIndex(Index) -> invalid function export
+      return ExportFuncDecl::create(getContext(), Name, Index);
+    case llvm::wasm::WASM_EXTERNAL_GLOBAL:
+      // FIXME: !isValidGlobalIndex(Index) -> invalid global export
+      return ExportGlobalDecl::create(getContext(), Name, Index);
+    case llvm::wasm::WASM_EXTERNAL_TAG:
+      llvm_unreachable("tag is not supported");
+      break;
+    case llvm::wasm::WASM_EXTERNAL_MEMORY:
+      return ExportMemoryDecl::create(getContext(), Name, Index);
+    case llvm::wasm::WASM_EXTERNAL_TABLE:
+      return ExportTableDecl::create(getContext(), Name, Index);
+    default: llvm_unreachable("unexpected export kind");
+    }
+  }
+
   ExportSectionDecl * parseExportSectionDecl(
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
-    w2n_unimplemented();
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<ExportDecl *> Exports;
+    Exports.reserve(Count);
+    for (uint32_t I = 0; I < Count; I++) {
+      ExportDecl * Ex = parseExportDecl(Ctx);
+      Exports.push_back(Ex);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("export section ended prematurely");
+    }
+    return ExportSectionDecl::create(getContext(), Exports);
   }
 
   StartSectionDecl * parseStartSectionDecl(

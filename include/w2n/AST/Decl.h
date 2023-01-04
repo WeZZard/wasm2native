@@ -369,8 +369,32 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, GlobalSection);
 };
 
+class ExportDecl;
+
 class ExportSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<ExportDecl *> Exports;
+
+  ExportSectionDecl(ASTContext * Ctx, std::vector<ExportDecl *> Exports) :
+    SectionDecl(DeclKind::ExportSection, Ctx),
+    Exports(Exports) {
+  }
+
 public:
+
+  static ExportSectionDecl *
+  create(ASTContext& Ctx, std::vector<ExportDecl *> Exports) {
+    return new (Ctx) ExportSectionDecl(&Ctx, Exports);
+  }
+
+  std::vector<ExportDecl *>& getGlobals() {
+    return Exports;
+  }
+
+  const std::vector<ExportDecl *>& getGlobals() const {
+    return Exports;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
@@ -766,6 +790,145 @@ public:
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Global);
+};
+
+class ExportDecl : public TypeDecl {
+private:
+
+  Identifier Name;
+
+protected:
+
+  ExportDecl(DeclKind Kind, ASTContext * Context, Identifier Name) :
+    TypeDecl(Kind, Context),
+    Name(Name) {
+  }
+
+public:
+
+  Identifier& getName() {
+    return Name;
+  }
+
+  const Identifier& getName() const {
+    return Name;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, ExportDecl);
+};
+
+class ExportFuncDecl : public ExportDecl {
+private:
+
+  uint32_t TypeIndex;
+
+  ExportFuncDecl(
+    ASTContext * Context, Identifier Name, uint32_t TypeIndex
+  ) :
+    ExportDecl(DeclKind::ExportFunc, Context, Name),
+    TypeIndex(TypeIndex) {
+  }
+
+public:
+
+  static ExportFuncDecl *
+  create(ASTContext& Context, Identifier Name, uint32_t TypeIndex) {
+    return new (Context) ExportFuncDecl(&Context, Name, TypeIndex);
+  }
+
+  uint32_t getTypeIndex() const {
+    return TypeIndex;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ExportFunc);
+};
+
+class ExportTableDecl : public ExportDecl {
+private:
+
+  uint32_t TableIndex;
+
+  ExportTableDecl(
+    ASTContext * Context, Identifier Name, uint32_t TableIndex
+  ) :
+    ExportDecl(DeclKind::ExportTable, Context, Name),
+    TableIndex(TableIndex) {
+  }
+
+public:
+
+  static ExportTableDecl *
+  create(ASTContext& Context, Identifier Name, uint32_t TableIndex) {
+    return new (Context) ExportTableDecl(&Context, Name, TableIndex);
+  }
+
+  uint32_t getTableIndex() const {
+    return TableIndex;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ExportTable);
+};
+
+class ExportMemoryDecl : public ExportDecl {
+private:
+
+  uint32_t MemoryIndex;
+
+  ExportMemoryDecl(
+    ASTContext * Context, Identifier Name, uint32_t MemoryIndex
+  ) :
+    ExportDecl(DeclKind::ExportMemory, Context, Name),
+    MemoryIndex(MemoryIndex) {
+  }
+
+public:
+
+  static ExportMemoryDecl *
+  create(ASTContext& Context, Identifier Name, uint32_t MemoryIndex) {
+    return new (Context) ExportMemoryDecl(&Context, Name, MemoryIndex);
+  }
+
+  uint32_t getMemoryIndex() const {
+    return MemoryIndex;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ExportMemory);
+};
+
+class ExportGlobalDecl : public ExportDecl {
+private:
+
+  uint32_t GlobalIndex;
+
+  ExportGlobalDecl(
+    ASTContext * Context, Identifier Name, uint32_t GlobalIndex
+  ) :
+    ExportDecl(DeclKind::ExportGlobal, Context, Name),
+    GlobalIndex(GlobalIndex) {
+  }
+
+public:
+
+  static ExportGlobalDecl *
+  create(ASTContext& Context, Identifier Name, uint32_t GlobalIndex) {
+    return new (Context) ExportGlobalDecl(&Context, Name, GlobalIndex);
+  }
+
+  uint32_t getGlobalIndex() const {
+    return GlobalIndex;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ExportGlobal);
 };
 
 class InstNode;

@@ -1,8 +1,11 @@
 #ifndef W2N_AST_EXPR_H
 #define W2N_AST_EXPR_H
 
+#include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/APInt.h"
 #include <cstdint>
 #include <w2n/AST/ASTAllocated.h>
+#include <w2n/AST/ASTContext.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/LLVM.h>
@@ -61,7 +64,9 @@ public:
   void setType(Type * T);
 
   /// Return the source range of the expression.
-  SourceRange getSourceRange() const;
+  SourceRange getSourceRange() const {
+    w2n_proto_implemented([] { return SourceRange(); });
+  }
 
   /// getStartLoc - Return the location of the start of the expression.
   SourceLoc getStartLoc() const;
@@ -78,7 +83,10 @@ public:
   // FIXME: Expr * walk(ASTWalker&& walker);
 
   W2N_DEBUG_DUMP;
-  void dump(raw_ostream& OS, unsigned Indent = 0) const;
+
+  void dump(raw_ostream& OS, unsigned Indent = 0) const {
+    w2n_proto_implemented([] {});
+  }
 
   // FIXME: void print(ASTPrinter& P, const PrintOptions& Opts) const;
 };
@@ -138,9 +146,70 @@ public:
 };
 
 class ConstExpr : public Expr {
+protected:
+
+  ConstExpr(ExprKind Kind, Type * Ty) : Expr(Kind, Ty) {
+  }
+
 public:
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, Const);
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Expr, ConstExpr);
+};
+
+class IntegerConstExpr : public ConstExpr {
+private:
+
+  llvm::APInt Value;
+
+  IntegerConstExpr(llvm::APInt Value, IntegerType * Ty) :
+    ConstExpr(ExprKind::IntegerConst, Ty),
+    Value(Value) {
+  }
+
+public:
+
+  IntegerType * getIntegerType() {
+    return dyn_cast<IntegerType>(getType());
+  }
+
+  const IntegerType * getIntegerType() const {
+    return dyn_cast<IntegerType>(getType());
+  }
+
+  static IntegerConstExpr *
+  create(ASTContext& Ctx, llvm::APInt Value, IntegerType * Ty) {
+    return new (&Ctx) IntegerConstExpr(Value, Ty);
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, IntegerConst);
+};
+
+class FloatConstExpr : public ConstExpr {
+private:
+
+  llvm::APFloat Value;
+
+  FloatConstExpr(llvm::APFloat Value, FloatType * Ty) :
+    ConstExpr(ExprKind::FloatConst, Ty),
+    Value(Value) {
+  }
+
+public:
+
+  FloatType * getFloatType() {
+    return dyn_cast<FloatType>(getType());
+  }
+
+  const FloatType * getFloatType() const {
+    return dyn_cast<FloatType>(getType());
+  }
+
+  static FloatConstExpr *
+  create(ASTContext& Ctx, llvm::APFloat Value, FloatType * Ty) {
+    return new (&Ctx) FloatConstExpr(Value, Ty);
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, FloatConst);
 };
 
 class CallBuiltinExpr : public Expr {

@@ -1,6 +1,7 @@
-#include <_types/_uint8_t.h>
-#include "llvm/ADT/ArrayRef.h"
-#include "llvm/ADT/Optional.h"
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/APInt.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/BinaryFormat/Wasm.h>
 #include <llvm/Object/ObjectFile.h>
@@ -11,6 +12,8 @@
 #include <llvm/Support/LEB128.h>
 #include <llvm/Support/MemoryBufferRef.h>
 #include <cstddef>
+#include <cstdint>
+#include <iostream>
 #include <memory>
 #include <vector>
 #include <w2n/AST/ASTContext.h>
@@ -287,7 +290,7 @@ public:
   CodeBodyDecl * parseCodeBody(ReadContext& Ctx) {
     std::vector<InstNode> Instructions;
     InstNode Instruction = nullptr;
-    while (Instruction.isNull() || !Instruction.isEnd()) {
+    while (Instruction.isNull() || !Instruction.isEndStmt()) {
       Instruction = parseInstruction(Ctx);
       Instructions.push_back(Instruction);
     }
@@ -298,6 +301,14 @@ public:
 
   InstNode parseInstruction(ReadContext& Ctx) {
     Instruction Opcode = Instruction(readOpcode(Ctx));
+    std::cout
+      << "[WasmParser::Implementation] [parseInstruction] opcode = 0x"
+      // Adding a unary + operator before the variable of any primitive
+      // data type will give printable numerical value instead of ASCII
+      // character(in case of char type).
+      //
+      // https://stackoverflow.com/a/31991844/1393062
+      << std::hex << +(uint8_t)Opcode << "\n";
     switch (Opcode) {
 #define INST(Id, Opcode0, ...)                                           \
   case Instruction::Id:                                                  \
@@ -323,7 +334,7 @@ public:
   }
 
   EndStmt * parseEnd(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return EndStmt::create(getContext());
   }
 
   BrStmt * parseBr(ReadContext& Ctx) {
@@ -382,8 +393,13 @@ public:
     w2n_unimplemented();
   }
 
-  ConstExpr * parseI32Const(ReadContext& Ctx) {
-    w2n_unimplemented();
+  IntegerConstExpr * parseI32Const(ReadContext& Ctx) {
+    uint32_t BitPattern = readUint32(Ctx);
+    return IntegerConstExpr::create(
+      getContext(),
+      llvm::APInt(32, BitPattern, true),
+      getContext().getI32Type()
+    );
   }
 
   CallBuiltinExpr * parseI32Eqz(ReadContext& Ctx) {

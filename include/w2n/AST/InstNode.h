@@ -32,6 +32,7 @@ class raw_ostream;
 namespace w2n {
 class Expr;
 class Stmt;
+class EndStmt;
 class DeclContext;
 class SourceLoc;
 class SourceRange;
@@ -54,23 +55,17 @@ struct InstNode : public llvm::PointerUnion<Expr *, Stmt *> {
 
   // FIXME: void walk(ASTWalker&& Walker);
 
-  /// get the underlying entity as a decl context if it is one,
-  /// otherwise, return nullptr;
-  DeclContext * getAsDeclContext() const;
-
   /// Provides some utilities to decide detailed node kind.
 #define W2N_IS_NODE(T) bool is##T(T##Kind Kind) const;
   W2N_IS_NODE(Stmt)
   W2N_IS_NODE(Expr)
 #undef W2N_IS_NODE
 
+  /// Whether it is the \c end instruction node.
+  bool isEndStmt() const;
+
   W2N_DEBUG_DUMP;
   void dump(llvm::raw_ostream& OS, unsigned Indent = 0) const;
-
-  /// Whether it is the \c end instruction node.
-  bool isEnd() const {
-    return w2n_proto_implemented([] { return false; });
-  }
 
   friend llvm::hash_code hash_value(InstNode N) {
     return llvm::hash_value(N.getOpaqueValue());

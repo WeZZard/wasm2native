@@ -7,6 +7,7 @@ add_w2n_host_library(w2nAST STATIC
   DiagnosticList.cpp
   Evaluator.cpp
   Identifier.cpp
+  InstNode.cpp
   Module.cpp
   SourceFile.cpp
   TypeCheckRequests.cpp

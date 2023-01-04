@@ -67,6 +67,8 @@
 #define LAST_EXPR(Id)
 #endif
 
+// clang-format off
+
 EXPR(Call, Expr)
 EXPR(CallIndirect, Expr)
 
@@ -81,11 +83,16 @@ EXPR(GlobalSet, Expr)
 EXPR(Load, Expr)
 EXPR(Store, Expr)
 
-EXPR(Const, Expr)
+ABSTRACT_EXPR(Const, Expr)
+  EXPR(IntegerConst, ConstExpr)
+  EXPR(FloatConst, ConstExpr)
+  EXPR_RANGE(Const, IntegerConst, FloatConst)
 
 EXPR(CallBuiltin, Expr)
 
 LAST_EXPR(CallBuiltin)
+
+// clang-format on
 
 #undef EXPR_RANGE
 #undef LITERAL_EXPR

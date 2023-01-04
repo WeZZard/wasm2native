@@ -1,6 +1,17 @@
 #ifndef W2N_BASIC_LLVMRTTI_H
 #define W2N_BASIC_LLVMRTTI_H
 
+/**
+ * @brief Declares the \c classof static function of LLVM-style RTTI for
+ * root class \c ROOT_CLASS .
+ *
+ * @note This macros requires you to define the kind enum (result type of
+ * \c getKind() function) to be named as \c FooKind if the class
+ * represented by \c ROOT_CLASS is named as \c Foo . At the same time, it
+ * also requires you to defines the last kind for drived classes in your
+ * kind enum.
+ *
+ */
 #define LLVM_RTTI_CLASSOF_ROOT_CLASS(ROOT_CLASS)                         \
   static bool classof(const ROOT_CLASS * I) {                            \
     return I->getKind() <= ROOT_CLASS##Kind::Last_##ROOT_CLASS;          \

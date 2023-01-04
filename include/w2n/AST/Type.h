@@ -81,10 +81,21 @@ public:
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Type, NumberType);
 };
 
-class I32Type : public NumberType {
+class IntegerType : public NumberType {
+protected:
+
+  IntegerType(TypeKind Kind) : NumberType(Kind) {
+  }
+
+public:
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Type, IntegerType);
+};
+
+class I32Type : public IntegerType {
 private:
 
-  I32Type() : NumberType(TypeKind::I32) {
+  I32Type() : IntegerType(TypeKind::I32) {
   }
 
 public:
@@ -96,10 +107,10 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, I32);
 };
 
-class I64Type : public NumberType {
+class I64Type : public IntegerType {
 private:
 
-  I64Type() : NumberType(TypeKind::I64) {
+  I64Type() : IntegerType(TypeKind::I64) {
   }
 
 public:
@@ -111,10 +122,21 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, I64);
 };
 
-class F32Type : public NumberType {
+class FloatType : public NumberType {
+protected:
+
+  FloatType(TypeKind Kind) : NumberType(Kind) {
+  }
+
+public:
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Type, FloatType);
+};
+
+class F32Type : public FloatType {
 private:
 
-  F32Type() : NumberType(TypeKind::F32) {
+  F32Type() : FloatType(TypeKind::F32) {
   }
 
 public:
@@ -126,10 +148,10 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, F32);
 };
 
-class F64Type : public NumberType {
+class F64Type : public FloatType {
 private:
 
-  F64Type() : NumberType(TypeKind::F64) {
+  F64Type() : FloatType(TypeKind::F64) {
   }
 
 public:

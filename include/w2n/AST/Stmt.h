@@ -2,11 +2,13 @@
 #define W2N_AST_STMT_H
 
 #include <w2n/AST/ASTAllocated.h>
+#include <w2n/AST/ASTContext.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/Basic/InlineBitfield.h>
 #include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/LLVMRTTI.h>
 #include <w2n/Basic/SourceLoc.h>
+#include <w2n/Basic/Unimplemented.h>
 
 namespace w2n {
 
@@ -54,16 +56,21 @@ public:
   /// Return the location of the end of the statement.
   SourceLoc getEndLoc() const;
 
-  SourceRange getSourceRange() const;
+  SourceRange getSourceRange() const {
+    w2n_proto_implemented([] { return SourceRange(); });
+  }
 
   /// walk - This recursively walks the AST rooted at this statement.
   // FIXME: Stmt *walk(ASTWalker &walker);
   // FIXME: Stmt *walk(ASTWalker &&walker);
 
   W2N_DEBUG_DUMP;
+
   void dump(
     raw_ostream& OS, const ASTContext * Ctx = nullptr, unsigned Indent = 0
-  ) const;
+  ) const {
+    w2n_proto_implemented([] {});
+  }
 };
 
 class UnreachableStmt : public Stmt {
@@ -79,7 +86,16 @@ public:
 };
 
 class EndStmt : public Stmt {
+private:
+
+  EndStmt() : Stmt(StmtKind::End) {
+  }
+
 public:
+
+  static EndStmt * create(ASTContext& Ctx) {
+    return new (&Ctx) EndStmt();
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, End);
 };

@@ -437,7 +437,7 @@ public:
   }
 
   IntegerConstExpr * parseI32Const(ReadContext& Ctx) {
-    uint32_t BitPattern = readUint32(Ctx);
+    uint32_t BitPattern = readVaruint32(Ctx);
     return IntegerConstExpr::create(
       getContext(),
       llvm::APInt(32, BitPattern, true),

@@ -14,6 +14,9 @@
  */
 #define LLVM_RTTI_CLASSOF_ROOT_CLASS(ROOT_CLASS)                         \
   static bool classof(const ROOT_CLASS * I) {                            \
+    if (I == nullptr) {                                                  \
+      return false;                                                      \
+    }                                                                    \
     return I->getKind() <= ROOT_CLASS##Kind::Last_##ROOT_CLASS;          \
   }
 
@@ -33,6 +36,9 @@
  */
 #define LLVM_RTTI_CLASSOF_NONLEAF_CLASS(ROOT_CLASS, DERIVED_CLASS)       \
   static bool classof(const ROOT_CLASS * I) {                            \
+    if (I == nullptr) {                                                  \
+      return false;                                                      \
+    }                                                                    \
     return ROOT_CLASS##Kind::First_##DERIVED_CLASS <= I->getKind()       \
         && I->getKind() <= ROOT_CLASS##Kind::Last_##DERIVED_CLASS;       \
   }
@@ -50,6 +56,9 @@
  */
 #define LLVM_RTTI_CLASSOF_LEAF_CLASS(ROOT_CLASS, CLASS_KIND)             \
   static bool classof(const ROOT_CLASS * I) {                            \
+    if (I == nullptr) {                                                  \
+      return false;                                                      \
+    }                                                                    \
     return I->getKind() == ROOT_CLASS##Kind::CLASS_KIND;                 \
   }
 

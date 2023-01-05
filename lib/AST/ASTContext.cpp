@@ -68,6 +68,8 @@ using GlobalTypeKey = TypeKey<ValueType *, bool>;
 
 using MemoryTypeKey = TypeKey<LimitsType *>;
 
+using TypeIndexTypeKey = TypeKey<uint32_t>;
+
 /// \c TypeKey storage hash support.
 template <typename T>
 hash_code hash_value(const std::vector<T *>& Vec) {
@@ -153,6 +155,8 @@ struct ASTContext::Implementation {
   llvm::DenseMap<GlobalTypeKey, GlobalType *> GlobalTypes;
 
   llvm::DenseMap<MemoryTypeKey, MemoryType *> MemoryTypes;
+
+  llvm::DenseMap<TypeIndexTypeKey, TypeIndexType *> TypeIndexTypes;
 
   Implementation() : IdentifierTable(Allocator) {
   }
@@ -257,6 +261,7 @@ Identifier ASTContext::getIdentifier(StringRef Str) const {
 
 ValueType * ASTContext::getValueTypeForKind(ValueTypeKind Kind) const {
   switch (Kind) {
+  case ValueTypeKind::None: return nullptr;
 #define TYPE(Id, Parent)
 #define VALUE_TYPE(Id, Parent)                                           \
   case ValueTypeKind::Id:                                                \
@@ -354,5 +359,17 @@ MemoryType * ASTContext::getMemoryType(LimitsType * Limits) const {
   MemoryType * Ty =
     MemoryType::create(const_cast<ASTContext&>(*this), Limits);
   getImpl().MemoryTypes.insert({Key, Ty});
+  return Ty;
+}
+
+TypeIndexType * ASTContext::getTypeIndexType(uint32_t TypeIndex) const {
+  auto Key = TypeIndexTypeKey(TypeIndex);
+  auto Iter = getImpl().TypeIndexTypes.find(Key);
+  if (Iter != getImpl().TypeIndexTypes.end()) {
+    return Iter->getSecond();
+  }
+  TypeIndexType * Ty =
+    TypeIndexType::create(const_cast<ASTContext&>(*this), TypeIndex);
+  getImpl().TypeIndexTypes.insert({Key, Ty});
   return Ty;
 }

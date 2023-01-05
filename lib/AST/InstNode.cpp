@@ -54,10 +54,6 @@ void InstNode::dump(raw_ostream& OS, unsigned Indent) const {
   }
 }
 
-void InstNode::dump() const {
-  dump(llvm::errs());
-}
-
 #define FUNC(T)                                                          \
   bool InstNode::is##T(T##Kind Kind) const {                             \
     if (!is<T *>())                                                      \
@@ -68,6 +64,6 @@ FUNC(Stmt)
 FUNC(Expr)
 #undef FUNC
 
-bool InstNode::isEndStmt() const {
-  return isStmt(StmtKind::End);
+void InstNode::dump() const {
+  dump(llvm::errs());
 }

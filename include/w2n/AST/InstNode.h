@@ -61,9 +61,6 @@ struct InstNode : public llvm::PointerUnion<Expr *, Stmt *> {
   W2N_IS_NODE(Expr)
 #undef W2N_IS_NODE
 
-  /// Whether it is the \c end instruction node.
-  bool isEndStmt() const;
-
   W2N_DEBUG_DUMP;
   void dump(llvm::raw_ostream& OS, unsigned Indent = 0) const;
 

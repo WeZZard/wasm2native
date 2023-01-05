@@ -78,7 +78,8 @@ ABSTRACT_TYPE(Value, Type)
     REFERENCE_TYPE(FuncRef, Reference)
     REFERENCE_TYPE(ExternRef, Reference)
     TYPE_RANGE(Reference, FuncRef, ExternRef)
-  TYPE_RANGE(Value, I32, ExternRef)
+  VALUE_TYPE(Void, Value)
+  TYPE_RANGE(Value, I32, Void)
 
 TYPE(Result, Type)
 TYPE(Func, Type)
@@ -86,8 +87,10 @@ TYPE(Limits, Type)
 TYPE(Memory, Type)
 TYPE(Table, Type)
 TYPE(Global, Type)
+TYPE(TypeIndex, Type)
+TYPE(Block, Type)
 
-LAST_TYPE(Global)
+LAST_TYPE(Block)
 
 // clang-format on
 

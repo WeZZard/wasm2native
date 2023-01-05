@@ -1,3 +1,6 @@
+#include <_types/_uint32_t.h>
+#include <_types/_uint8_t.h>
+#include "llvm/ADT/None.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/ArrayRef.h>
@@ -13,8 +16,10 @@
 #include <llvm/Support/MemoryBufferRef.h>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Builtins.h>
@@ -166,7 +171,7 @@ static ValueTypeKind getValueTypeKind(unsigned RawType) {
   case llvm::wasm::WASM_TYPE_V128: return ValueTypeKind::V128;
   case llvm::wasm::WASM_TYPE_FUNCREF: return ValueTypeKind::FuncRef;
   case llvm::wasm::WASM_TYPE_EXTERNREF: return ValueTypeKind::ExternRef;
-  default: llvm_unreachable("Invalid raw value type.");
+  default: return ValueTypeKind::None;
   }
 }
 
@@ -191,6 +196,7 @@ public:
   uint32_t DataSection = 0;
   uint32_t GlobalSection = 0;
   uint32_t TableSection = 0;
+  uint32_t BlockLevel = 0;
 
   explicit Implementation(WasmParser * Parser) : Parser(Parser) {
   }
@@ -241,12 +247,37 @@ public:
     return readVaruint32(Ctx);
   }
 
+  template <typename T>
+  T parse(ReadContext& Ctx) {
+    return T();
+  }
+
+  /// FIXME: Create wrapper types for \c uint32_t based indices
+  template <>
+  uint32_t parse<uint32_t>(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  template <typename T>
+  std::vector<T> parseVector(ReadContext& Ctx) {
+    uint32_t Count = readVaruint32(Ctx);
+    std::vector<T> Vector;
+    Vector.reserve(Count);
+    for (uint32_t I = 0; I < Count; I++) {
+      T Value = parse<T>(Ctx);
+      Vector.push_back(Value);
+    }
+    return Vector;
+  }
+
 #pragma mark Parsing Types
 
   ValueType * parseValueType(ReadContext& Ctx) {
     uint32_t RawKind = readUint8(Ctx);
     ValueTypeKind Kind = getValueTypeKind(RawKind);
-    return getContext().getValueTypeForKind(Kind);
+    ValueType * Ty = getContext().getValueTypeForKind(Kind);
+    assert(Ty);
+    return Ty;
   }
 
   LimitsType * parseLimits(ReadContext& Ctx) {
@@ -298,6 +329,27 @@ public:
     ResultType * Params = parseResultType(Ctx);
     ResultType * Returns = parseResultType(Ctx);
     return getContext().getFuncType(Params, Returns);
+  }
+
+  TypeIndexType * parseTypeIndexType(ReadContext& Ctx) {
+    uint32_t TypeIndex = readVarint32(Ctx);
+    return getContext().getTypeIndexType(TypeIndex);
+  }
+
+  BlockType * parseBlockType(ReadContext& Ctx) {
+    ReadContext ReservedCtx = Ctx;
+    uint8_t FirstByte = readUint8(Ctx);
+    if (FirstByte == 0x40) {
+      return BlockType::create(getContext(), getContext().getVoidType());
+    }
+    ValueTypeKind Kind = getValueTypeKind(FirstByte);
+    ValueType * ValTy = getContext().getValueTypeForKind(Kind);
+    if (ValTy != nullptr) {
+      return BlockType::create(getContext(), ValTy);
+    }
+    Ctx = ReservedCtx;
+    TypeIndexType * TypeIndexTy = parseTypeIndexType(Ctx);
+    return BlockType::create(getContext(), TypeIndexTy);
   }
 
 #pragma mark Parsing Direct Section Contents
@@ -365,31 +417,54 @@ public:
   }
 
   ExpressionDecl * parseExpressionDecl(ReadContext& Ctx) {
-    std::vector<InstNode> Instructions;
-    InstNode Instruction = nullptr;
-    std::cout
-      << "[WasmParser::Implementation] [parseExpressionDecl] BEGAN\n";
-    while (Instruction.isNull() || !Instruction.isEndStmt()) {
-      Instruction = parseInstruction(Ctx);
-      Instructions.push_back(Instruction);
-    }
-    std::cout
-      << "[WasmParser::Implementation] [parseExpressionDecl] ENDED\n";
+    std::vector<InstNode> Instructions = parseInstructions(Ctx);
     return ExpressionDecl::create(getContext(), Instructions);
   }
 
 #pragma mark Parsing Instructions
 
+  std::vector<InstNode> parseInstructions(ReadContext& Ctx) {
+    std::vector<InstNode> Instructions;
+    InstNode LastInstruction;
+    std::tie(Instructions, LastInstruction) =
+      parseInstructionsUntil(Ctx, [](InstNode Instruction) -> bool {
+        return (EndStmt::classof(Instruction.dyn_cast<Stmt *>()));
+      });
+    Instructions.push_back(LastInstruction);
+    return Instructions;
+  }
+
+  std::pair<std::vector<InstNode>, InstNode> parseInstructionsUntil(
+    ReadContext& Ctx, std::function<bool(InstNode)> Predicate
+  ) {
+    BlockLevel++;
+    std::vector<InstNode> Instructions;
+    InstNode Instruction = nullptr;
+    std::cout << "[WasmParser::Implementation] [parseInstructionsUntil] ["
+              << BlockLevel << "] BEGAN\n";
+    while (Instruction.isNull() || !Predicate(Instruction)) {
+      Instruction = parseInstruction(Ctx);
+      if (!Predicate(Instruction)) {
+        Instructions.push_back(Instruction);
+      }
+    }
+    std::cout << "[WasmParser::Implementation] [parseInstructionsUntil] ["
+              << BlockLevel << "] ENDED\n";
+    BlockLevel--;
+    return std::make_pair(Instructions, Instruction);
+  }
+
   InstNode parseInstruction(ReadContext& Ctx) {
     Instruction Opcode = Instruction(readOpcode(Ctx));
-    std::cout
-      << "[WasmParser::Implementation] [parseInstruction] OPCODE = 0x"
-      // Adding a unary + operator before the variable of any primitive
-      // data type will give printable numerical value instead of ASCII
-      // character(in case of char type).
-      //
-      // https://stackoverflow.com/a/31991844/1393062
-      << std::hex << +(uint8_t)Opcode << "\n";
+    std::cout << "[WasmParser::Implementation] [parseInstruction] ["
+              << BlockLevel
+              << "] OPCODE = 0x"
+              // Adding a unary + operator before the variable of any
+              // primitive data type will give printable numerical value
+              // instead of ASCII character(in case of char type).
+              //
+              // https://stackoverflow.com/a/31991844/1393062
+              << std::hex << +(uint8_t)Opcode << "\n";
     switch (Opcode) {
 #define INST(Id, Opcode0, ...)                                           \
   case Instruction::Id:                                                  \
@@ -403,15 +478,76 @@ public:
   }
 
   BlockStmt * parseBlock(ReadContext& Ctx) {
-    w2n_unimplemented();
+    BlockType * Ty = parseBlockType(Ctx);
+    std::vector<InstNode> Instructions;
+    InstNode EndInstruction;
+    std::tie(Instructions, EndInstruction) =
+      parseInstructionsUntil(Ctx, [](InstNode Instruction) -> bool {
+        return EndStmt::classof(Instruction.dyn_cast<Stmt *>());
+      });
+    return BlockStmt::create(
+      getContext(),
+      Ty,
+      Instructions,
+      dyn_cast<EndStmt>(EndInstruction.dyn_cast<Stmt *>())
+    );
   }
 
   LoopStmt * parseLoop(ReadContext& Ctx) {
-    w2n_unimplemented();
+    BlockType * Ty = parseBlockType(Ctx);
+    std::vector<InstNode> Instructions;
+    InstNode EndInstruction;
+    std::tie(Instructions, EndInstruction) =
+      parseInstructionsUntil(Ctx, [](InstNode Instruction) -> bool {
+        return EndStmt::classof(Instruction.dyn_cast<Stmt *>());
+      });
+    return LoopStmt::create(
+      getContext(),
+      Ty,
+      Instructions,
+      dyn_cast<EndStmt>(EndInstruction.dyn_cast<Stmt *>())
+    );
   }
 
   IfStmt * parseIf(ReadContext& Ctx) {
-    w2n_unimplemented();
+    BlockType * Ty = parseBlockType(Ctx);
+    std::vector<InstNode> TrueInstructions;
+    InstNode IntermediateInstruction;
+    std::tie(TrueInstructions, IntermediateInstruction) =
+      parseInstructionsUntil(Ctx, [](InstNode Instruction) -> bool {
+        return EndStmt::classof(Instruction.dyn_cast<Stmt *>())
+            || ElseStmt::classof(Instruction.dyn_cast<Stmt *>());
+      });
+
+    if (IntermediateInstruction.isStmt(StmtKind::End)) {
+      return IfStmt::create(
+        getContext(),
+        Ty,
+        TrueInstructions,
+        nullptr,
+        llvm::None,
+        dyn_cast<EndStmt>(IntermediateInstruction.dyn_cast<Stmt *>())
+      );
+    }
+
+    if (IntermediateInstruction.isStmt(StmtKind::Else)) {
+      std::vector<InstNode> FalseInstructions;
+      InstNode EndInstruction;
+      std::tie(FalseInstructions, EndInstruction) =
+        parseInstructionsUntil(Ctx, [](InstNode Instruction) -> bool {
+          return EndStmt::classof(Instruction.dyn_cast<Stmt *>());
+        });
+      return IfStmt::create(
+        getContext(),
+        Ty,
+        TrueInstructions,
+        dyn_cast<ElseStmt>(IntermediateInstruction.dyn_cast<Stmt *>()),
+        FalseInstructions,
+        dyn_cast<EndStmt>(EndInstruction.dyn_cast<Stmt *>())
+      );
+    }
+
+    llvm_unreachable("unexpected StmtKind");
   }
 
   EndStmt * parseEnd(ReadContext& Ctx) {
@@ -419,15 +555,21 @@ public:
   }
 
   BrStmt * parseBr(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t LabelIndex = parseLableIndex(Ctx);
+    return BrStmt::create(getContext(), LabelIndex);
   }
 
   BrIfStmt * parseBrIf(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t LabelIndex = parseLableIndex(Ctx);
+    return BrIfStmt::create(getContext(), LabelIndex);
   }
 
   BrTableStmt * parseBrTable(ReadContext& Ctx) {
-    w2n_unimplemented();
+    std::vector<uint32_t> LabelIndices = parseVector<uint32_t>(Ctx);
+    uint32_t DefaultLabelIndex = parseLableIndex(Ctx);
+    return BrTableStmt::create(
+      getContext(), LabelIndices, DefaultLabelIndex
+    );
   }
 
   ReturnStmt * parseReturn(ReadContext& Ctx) {
@@ -469,21 +611,39 @@ public:
     return GlobalSetExpr::create(getContext(), GlobalIndex);
   }
 
+  MemoryArgument parseMemArg(ReadContext& Ctx) {
+    uint32_t Align = readVaruint32(Ctx);
+    uint32_t Offset = readVaruint32(Ctx);
+    return MemoryArgument{Align, Offset};
+  }
+
   LoadExpr * parseI32Load(ReadContext& Ctx) {
+    MemoryArgument MemArg = parseMemArg(Ctx);
     return LoadExpr::create(
-      getContext(), getContext().getI32Type(), getContext().getI32Type()
+      getContext(),
+      MemArg,
+      getContext().getI32Type(),
+      getContext().getI32Type()
     );
   }
 
   LoadExpr * parseI32Load8u(ReadContext& Ctx) {
+    MemoryArgument MemArg = parseMemArg(Ctx);
     return LoadExpr::create(
-      getContext(), getContext().getU8Type(), getContext().getI32Type()
+      getContext(),
+      MemArg,
+      getContext().getU8Type(),
+      getContext().getI32Type()
     );
   }
 
   StoreExpr * parseI32Store(ReadContext& Ctx) {
+    MemoryArgument MemArg = parseMemArg(Ctx);
     return StoreExpr::create(
-      getContext(), getContext().getI32Type(), getContext().getI32Type()
+      getContext(),
+      MemArg,
+      getContext().getI32Type(),
+      getContext().getI32Type()
     );
   }
 

@@ -263,25 +263,48 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, GlobalSet);
 };
 
+struct MemoryArgument {
+  uint32_t Align;
+  uint32_t Offset;
+};
+
 class LoadExpr : public Expr {
 private:
+
+  MemoryArgument MemArg;
 
   ValueType * SourceType;
 
   ValueType * DestinationType;
 
-  LoadExpr(ValueType * SourceType, ValueType * DestinationType) :
-    Expr(ExprKind::Load, DestinationType) {
+  LoadExpr(
+    MemoryArgument MemArg,
+    ValueType * SourceType,
+    ValueType * DestinationType
+  ) :
+    Expr(ExprKind::Load, DestinationType),
+    MemArg(MemArg),
+    SourceType(SourceType),
+    DestinationType(DestinationType) {
   }
 
 public:
 
   static LoadExpr * create(
     ASTContext& Context,
+    MemoryArgument MemArg,
     ValueType * SourceType,
     ValueType * DestinationType
   ) {
-    return new (Context) LoadExpr(SourceType, DestinationType);
+    return new (Context) LoadExpr(MemArg, SourceType, DestinationType);
+  }
+
+  MemoryArgument& getMemArg() {
+    return MemArg;
+  }
+
+  const MemoryArgument& getMemArg() const {
+    return MemArg;
   }
 
   ValueType * getSourceType() {
@@ -306,22 +329,40 @@ public:
 class StoreExpr : public Expr {
 private:
 
+  MemoryArgument MemArg;
+
   ValueType * SourceType;
 
   ValueType * DestinationType;
 
-  StoreExpr(ValueType * SourceType, ValueType * DestinationType) :
-    Expr(ExprKind::Store, DestinationType) {
+  StoreExpr(
+    MemoryArgument MemArg,
+    ValueType * SourceType,
+    ValueType * DestinationType
+  ) :
+    Expr(ExprKind::Store, DestinationType),
+    MemArg(MemArg),
+    SourceType(SourceType),
+    DestinationType(DestinationType) {
   }
 
 public:
 
   static StoreExpr * create(
     ASTContext& Context,
+    MemoryArgument MemArg,
     ValueType * SourceType,
     ValueType * DestinationType
   ) {
-    return new (Context) StoreExpr(SourceType, DestinationType);
+    return new (Context) StoreExpr(MemArg, SourceType, DestinationType);
+  }
+
+  MemoryArgument& getMemArg() {
+    return MemArg;
+  }
+
+  const MemoryArgument& getMemArg() const {
+    return MemArg;
   }
 
   ValueType * getSourceType() {

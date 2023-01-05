@@ -1,6 +1,8 @@
 #ifndef W2N_AST_STMT_H
 #define W2N_AST_STMT_H
 
+#include <_types/_uint32_t.h>
+#include "llvm/ADT/Optional.h"
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/PointerLikeTraits.h>
@@ -89,7 +91,57 @@ public:
 };
 
 class BlockStmt : public Stmt {
+private:
+
+  BlockType * Ty;
+
+  std::vector<InstNode> Instructions;
+
+  EndStmt * End;
+
+  BlockStmt(
+    BlockType * Ty, std::vector<InstNode> Instructions, EndStmt * End
+  ) :
+    Stmt(StmtKind::Block),
+    Ty(Ty),
+    Instructions(Instructions),
+    End(End) {
+  }
+
 public:
+
+  static BlockStmt * create(
+    ASTContext& Ctx,
+    BlockType * Ty,
+    std::vector<InstNode> Instructions,
+    EndStmt * End
+  ) {
+    return new (&Ctx) BlockStmt(Ty, Instructions, End);
+  }
+
+  BlockType * getType() {
+    return Ty;
+  }
+
+  const BlockType * getType() const {
+    return Ty;
+  }
+
+  std::vector<InstNode>& getInstructions() {
+    return Instructions;
+  }
+
+  const std::vector<InstNode>& getInstructions() const {
+    return Instructions;
+  }
+
+  EndStmt * getEndStmt() {
+    return End;
+  }
+
+  const EndStmt * getEndStmt() const {
+    return End;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Block);
 };
@@ -110,37 +162,247 @@ public:
 };
 
 class LabeledStmt : public Stmt {
+protected:
+
+  LabeledStmt(StmtKind Kind) : Stmt(Kind) {
+  }
+
 public:
 
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Stmt, LabeledStmt);
 };
 
 class LoopStmt : public LabeledStmt {
+private:
+
+  BlockType * Ty;
+
+  std::vector<InstNode> Instructions;
+
+  EndStmt * End;
+
+  LoopStmt(
+    BlockType * Ty, std::vector<InstNode> Instructions, EndStmt * End
+  ) :
+    LabeledStmt(StmtKind::Loop),
+    Ty(Ty),
+    Instructions(Instructions),
+    End(End) {
+  }
+
 public:
+
+  static LoopStmt * create(
+    ASTContext& Ctx,
+    BlockType * Ty,
+    std::vector<InstNode> Instructions,
+    EndStmt * End
+  ) {
+    return new (&Ctx) LoopStmt(Ty, Instructions, End);
+  }
+
+  BlockType * getType() {
+    return Ty;
+  }
+
+  const BlockType * getType() const {
+    return Ty;
+  }
+
+  std::vector<InstNode>& getInstructions() {
+    return Instructions;
+  }
+
+  const std::vector<InstNode>& getInstructions() const {
+    return Instructions;
+  }
+
+  EndStmt * getEndStmt() {
+    return End;
+  }
+
+  const EndStmt * getEndStmt() const {
+    return End;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Loop);
 };
 
+class ElseStmt;
+
 class IfStmt : public LabeledStmt {
+private:
+
+  BlockType * Ty;
+
+  std::vector<InstNode> TrueInstructions;
+
+  ElseStmt * Else;
+
+  llvm::Optional<std::vector<InstNode>> FalseInstructions;
+
+  EndStmt * End;
+
+  IfStmt(
+    BlockType * Ty,
+    std::vector<InstNode> TrueInstructions,
+    ElseStmt * Else,
+    llvm::Optional<std::vector<InstNode>> FalseInstructions,
+    EndStmt * End
+  ) :
+    LabeledStmt(StmtKind::If),
+    Ty(Ty),
+    TrueInstructions(TrueInstructions),
+    Else(Else),
+    FalseInstructions(FalseInstructions),
+    End(End) {
+  }
+
 public:
+
+  static IfStmt * create(
+    ASTContext& Ctx,
+    BlockType * Ty,
+    std::vector<InstNode> TrueInstructions,
+    ElseStmt * Else,
+    llvm::Optional<std::vector<InstNode>> FalseInstructions,
+    EndStmt * End
+  ) {
+    return new (&Ctx)
+      IfStmt(Ty, TrueInstructions, Else, FalseInstructions, End);
+  }
+
+  BlockType * getType() {
+    return Ty;
+  }
+
+  const BlockType * getType() const {
+    return Ty;
+  }
+
+  std::vector<InstNode>& getTrueInstructions() {
+    return TrueInstructions;
+  }
+
+  const std::vector<InstNode>& getTrueInstructions() const {
+    return TrueInstructions;
+  }
+
+  ElseStmt * getElse() {
+    return Else;
+  }
+
+  const ElseStmt * getElse() const {
+    return Else;
+  }
+
+  llvm::Optional<std::vector<InstNode>>& getFalseInstructions() {
+    return FalseInstructions;
+  }
+
+  const llvm::Optional<std::vector<InstNode>>&
+  getFalseInstructions() const {
+    return FalseInstructions;
+  }
+
+  EndStmt * getEnd() {
+    return End;
+  }
+
+  const EndStmt * getEnd() const {
+    return End;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, If);
 };
 
-class BrStmt : public LabeledStmt {
+class ElseStmt : public LabeledStmt {
 public:
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Else);
+};
+
+class BrStmt : public LabeledStmt {
+private:
+
+  uint32_t LabelIndex;
+
+  BrStmt(uint32_t LabelIndex) :
+    LabeledStmt(StmtKind::Br),
+    LabelIndex(LabelIndex) {
+  }
+
+public:
+
+  static BrStmt * create(ASTContext& Context, uint32_t LabelIndex) {
+    return new (Context) BrStmt(LabelIndex);
+  }
+
+  uint32_t getLabelIndex() const {
+    return LabelIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Br);
 };
 
 class BrIfStmt : public LabeledStmt {
+private:
+
+  uint32_t LabelIndex;
+
+  BrIfStmt(uint32_t LabelIndex) :
+    LabeledStmt(StmtKind::BrIf),
+    LabelIndex(LabelIndex) {
+  }
+
 public:
+
+  static BrIfStmt * create(ASTContext& Context, uint32_t LabelIndex) {
+    return new (Context) BrIfStmt(LabelIndex);
+  }
+
+  uint32_t getLabelIndex() const {
+    return LabelIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, BrIf);
 };
 
 class BrTableStmt : public LabeledStmt {
+private:
+
+  std::vector<uint32_t> LabelIndices;
+
+  uint32_t DefaultLabelIndex;
+
+  BrTableStmt(
+    std::vector<uint32_t> LabelIndices, uint32_t DefaultLabelIndex
+  ) :
+    LabeledStmt(StmtKind::BrTable),
+    DefaultLabelIndex(DefaultLabelIndex) {
+  }
+
 public:
+
+  static BrTableStmt * create(
+    ASTContext& Context,
+    std::vector<uint32_t> LabelIndices,
+    uint32_t DefaultLabelIndex
+  ) {
+    return new (Context) BrTableStmt(LabelIndices, DefaultLabelIndex);
+  }
+
+  std::vector<uint32_t>& getLabelIndices() {
+    return LabelIndices;
+  }
+
+  const std::vector<uint32_t>& getLabelIndices() const {
+    return LabelIndices;
+  }
+
+  uint32_t getDefaultLabelIndex() const {
+    return DefaultLabelIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, BrTable);
 };

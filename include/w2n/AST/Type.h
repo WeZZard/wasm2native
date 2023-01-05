@@ -2,6 +2,7 @@
 #define W2N_AST_TYPE_H
 
 #include "llvm/ADT/Optional.h"
+#include "llvm/ADT/PointerUnion.h"
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/BinaryFormat/Wasm.h>
 #include <llvm/Support/ErrorHandling.h>
@@ -41,6 +42,7 @@ public:
 };
 
 enum class ValueTypeKind {
+  None,
 #define TYPE(Id, Parent)
 #define VALUE_TYPE(Id, Parent) Id,
 #include <w2n/AST/TypeNodes.def>
@@ -61,7 +63,7 @@ public:
   case TypeKind::Id:                                                     \
     return ValueTypeKind::Id;
 #include <w2n/AST/TypeNodes.def>
-    default: llvm_unreachable("invalid value type kind");
+    default: return ValueTypeKind::None;
     }
   }
 
@@ -340,6 +342,21 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, ExternRef);
 };
 
+class VoidType : public ValueType {
+private:
+
+  VoidType() : ValueType(TypeKind::Void) {
+  }
+
+public:
+
+  static VoidType * create(ASTContext& Context) {
+    return new (Context) VoidType();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, Void);
+};
+
 class ResultType : public Type {
 private:
 
@@ -544,6 +561,51 @@ public:
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, Global);
+};
+
+class TypeIndexType : public Type {
+private:
+
+  uint32_t TypeIndex;
+
+  TypeIndexType(uint32_t TypeIndex) :
+    Type(TypeKind::TypeIndex),
+    TypeIndex(TypeIndex) {
+  }
+
+public:
+
+  static TypeIndexType * create(ASTContext& Context, uint32_t TypeIndex) {
+    return new (Context) TypeIndexType(TypeIndex);
+  }
+
+  uint32_t getTypeIndex() const {
+    return TypeIndex;
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, TypeIndex);
+};
+
+class BlockType : public Type {
+public:
+
+  using Types =
+    llvm::PointerUnion<VoidType *, ValueType *, TypeIndexType *>;
+
+private:
+
+  Types Ty;
+
+  BlockType(Types Ty) : Type(TypeKind::Block), Ty(Ty) {
+  }
+
+public:
+
+  static BlockType * create(ASTContext& Context, Types Ty) {
+    return new (Context) BlockType(Ty);
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, Block);
 };
 
 } // namespace w2n

@@ -287,6 +287,8 @@ public:
   getTableType(ReferenceType * ElementType, LimitsType * Limits) const;
 
   MemoryType * getMemoryType(LimitsType * Limits) const;
+
+  TypeIndexType * getTypeIndexType(uint32_t TypeIndex) const;
 };
 
 } // namespace w2n

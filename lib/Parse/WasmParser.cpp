@@ -1,3 +1,4 @@
+#include <_types/_uint32_t.h>
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/ArrayRef.h>
@@ -261,39 +262,79 @@ public:
     return getContext().getFuncType(Params, Returns);
   }
 
-#pragma mark Parsing Function
-
-  FuncDecl * parseFuncDecl(ReadContext& Ctx) {
-    uint32_t TypeIndex = readVaruint32(Ctx);
-    if (TypeIndex >= NumTypes) {
-      llvm_unreachable("invalid function type");
-    }
-    return FuncDecl::create(getContext(), TypeIndex);
-  }
-
-#pragma mark Parsing Table
+#pragma mark Parsing Direct Section Contents
 
   TableDecl * parseTableDecl(ReadContext& Ctx) {
     TableType * Ty = parseTableType(Ctx);
     return TableDecl::create(getContext(), Ty);
   }
 
-#pragma mark Parsing Memory
-
   MemoryDecl * parseMemoryDecl(ReadContext& Ctx) {
     MemoryType * Ty = parseMemoryType(Ctx);
     return MemoryDecl::create(getContext(), Ty);
   }
 
-#pragma mark Parsing Code Body
+  GlobalDecl * parseGlobalDecl(ReadContext& Ctx) {
+    GlobalType * Ty = parseGlobalType(Ctx);
+    CodeBodyDecl * Init = parseCodeBody(Ctx);
+    return GlobalDecl::create(getContext(), Ty, Init);
+  }
+
+  ExportDecl * parseExportDecl(ReadContext& Ctx) {
+    Identifier Name = getContext().getIdentifier(readString(Ctx));
+    uint8_t Kind = readUint8(Ctx);
+    uint32_t Index = readVaruint32(Ctx);
+    switch (Kind) {
+    case llvm::wasm::WASM_EXTERNAL_FUNCTION:
+      // FIXME: !isDefinedFunctionIndex(Index) -> invalid function export
+      return ExportFuncDecl::create(getContext(), Name, Index);
+    case llvm::wasm::WASM_EXTERNAL_GLOBAL:
+      // FIXME: !isValidGlobalIndex(Index) -> invalid global export
+      return ExportGlobalDecl::create(getContext(), Name, Index);
+    case llvm::wasm::WASM_EXTERNAL_TAG:
+      llvm_unreachable("tag is not supported");
+    case llvm::wasm::WASM_EXTERNAL_MEMORY:
+      return ExportMemoryDecl::create(getContext(), Name, Index);
+    case llvm::wasm::WASM_EXTERNAL_TABLE:
+      return ExportTableDecl::create(getContext(), Name, Index);
+    default: llvm_unreachable("unexpected export kind");
+    }
+  }
+
+  CodeDecl * parseCodeDecl(ReadContext& Ctx) {
+    uint32_t Size = readVaruint32(Ctx);
+    FuncDecl * Func = parseFuncDecl(Ctx);
+    return CodeDecl::create(getContext(), Size, Func);
+  }
+
+  FuncDecl * parseFuncDecl(ReadContext& Ctx) {
+    uint32_t NumLocalDecls = readVaruint32(Ctx);
+    std::vector<LocalDecl *> Locals;
+    Locals.reserve(NumLocalDecls);
+    while ((NumLocalDecls--) != 0) {
+      LocalDecl * Local = parseLocalDecl(Ctx);
+      Locals.push_back(Local);
+    }
+    CodeBodyDecl * CodeBody = parseCodeBody(Ctx);
+    // FIXME: validation
+    return FuncDecl::create(getContext(), Locals, CodeBody);
+  }
+
+  LocalDecl * parseLocalDecl(ReadContext& Ctx) {
+    uint32_t Count = readVaruint32(Ctx);
+    ValueType * Type = parseValueType(Ctx);
+    return LocalDecl::create(getContext(), Count, Type);
+  }
 
   CodeBodyDecl * parseCodeBody(ReadContext& Ctx) {
     std::vector<InstNode> Instructions;
     InstNode Instruction = nullptr;
+    std::cout << "[WasmParser::Implementation] [parseCodeBody] BEGAN\n";
     while (Instruction.isNull() || !Instruction.isEndStmt()) {
       Instruction = parseInstruction(Ctx);
       Instructions.push_back(Instruction);
     }
+    std::cout << "[WasmParser::Implementation] [parseCodeBody] ENDED\n";
     return CodeBodyDecl::create(getContext(), Instructions);
   }
 
@@ -302,7 +343,7 @@ public:
   InstNode parseInstruction(ReadContext& Ctx) {
     Instruction Opcode = Instruction(readOpcode(Ctx));
     std::cout
-      << "[WasmParser::Implementation] [parseInstruction] opcode = 0x"
+      << "[WasmParser::Implementation] [parseInstruction] OPCODE = 0x"
       // Adding a unary + operator before the variable of any primitive
       // data type will give printable numerical value instead of ASCII
       // character(in case of char type).
@@ -537,10 +578,10 @@ public:
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
     uint32_t Count = readVaruint32(Ctx);
-    std::vector<FuncDecl *> Functions;
+    std::vector<uint32_t> Functions;
     Functions.reserve(Count);
     while ((Count--) != 0) {
-      FuncDecl * F = parseFuncDecl(Ctx);
+      uint32_t F = readVaruint32(Ctx);
       Functions.push_back(F);
     }
     if (Ctx.Ptr != Ctx.End) {
@@ -582,12 +623,6 @@ public:
     return MemorySectionDecl::create(getContext(), Mems);
   }
 
-  GlobalDecl * parseGlobalDecl(ReadContext& Ctx) {
-    GlobalType * Ty = parseGlobalType(Ctx);
-    CodeBodyDecl * Init = parseCodeBody(Ctx);
-    return GlobalDecl::create(getContext(), Ty, Init);
-  }
-
   GlobalSectionDecl * parseGlobalSectionDecl(
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
@@ -603,28 +638,6 @@ public:
       llvm_unreachable("global section ended prematurely");
     }
     return GlobalSectionDecl::create(getContext(), Globals);
-  }
-
-  ExportDecl * parseExportDecl(ReadContext& Ctx) {
-    Identifier Name = getContext().getIdentifier(readString(Ctx));
-    uint8_t Kind = readUint8(Ctx);
-    uint32_t Index = readVaruint32(Ctx);
-    switch (Kind) {
-    case llvm::wasm::WASM_EXTERNAL_FUNCTION:
-      // FIXME: !isDefinedFunctionIndex(Index) -> invalid function export
-      return ExportFuncDecl::create(getContext(), Name, Index);
-    case llvm::wasm::WASM_EXTERNAL_GLOBAL:
-      // FIXME: !isValidGlobalIndex(Index) -> invalid global export
-      return ExportGlobalDecl::create(getContext(), Name, Index);
-    case llvm::wasm::WASM_EXTERNAL_TAG:
-      llvm_unreachable("tag is not supported");
-      break;
-    case llvm::wasm::WASM_EXTERNAL_MEMORY:
-      return ExportMemoryDecl::create(getContext(), Name, Index);
-    case llvm::wasm::WASM_EXTERNAL_TABLE:
-      return ExportTableDecl::create(getContext(), Name, Index);
-    default: llvm_unreachable("unexpected export kind");
-    }
   }
 
   ExportSectionDecl * parseExportSectionDecl(
@@ -658,7 +671,21 @@ public:
   CodeSectionDecl * parseCodeSectionDecl(
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
-    w2n_unimplemented();
+    CodeSection = SectionIdx;
+    uint32_t FunctionCount = readVaruint32(Ctx);
+    // FIXME: FunctionCount != Functions.size() -> "invalid fn count"
+
+    std::vector<CodeDecl *> Codes;
+    Codes.reserve(FunctionCount);
+
+    for (uint32_t I = 0; I < FunctionCount; I++) {
+      CodeDecl * Code = parseCodeDecl(Ctx);
+      Codes.push_back(Code);
+    }
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("code section ended prematurely");
+    }
+    return CodeSectionDecl::create(getContext(), Codes);
   }
 
   DataSectionDecl * parseDataSectionDecl(

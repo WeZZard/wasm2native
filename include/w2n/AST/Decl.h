@@ -239,31 +239,29 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportSection);
 };
 
-class FuncDecl;
-
 class FuncSectionDecl final : public SectionDecl {
 private:
 
-  std::vector<FuncDecl *> Functions;
+  std::vector<uint32_t> FuncTypes;
 
-  FuncSectionDecl(ASTContext * Ctx, std::vector<FuncDecl *> Functions) :
+  FuncSectionDecl(ASTContext * Ctx, std::vector<uint32_t> FuncTypes) :
     SectionDecl(DeclKind::FuncSection, Ctx),
-    Functions(Functions) {
+    FuncTypes(FuncTypes) {
   }
 
 public:
 
   static FuncSectionDecl *
-  create(ASTContext& Ctx, std::vector<FuncDecl *> Functions) {
-    return new (Ctx) FuncSectionDecl(&Ctx, Functions);
+  create(ASTContext& Ctx, std::vector<uint32_t> FuncTypes) {
+    return new (Ctx) FuncSectionDecl(&Ctx, FuncTypes);
   }
 
-  std::vector<FuncDecl *>& getFunctions() {
-    return Functions;
+  std::vector<uint32_t>& getFuncTypes() {
+    return FuncTypes;
   }
 
-  const std::vector<FuncDecl *>& getFunctions() const {
-    return Functions;
+  const std::vector<uint32_t>& getFuncTypes() const {
+    return FuncTypes;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
@@ -425,8 +423,32 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataCountSection);
 };
 
+class CodeDecl;
+
 class CodeSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<CodeDecl *> Codes;
+
+  CodeSectionDecl(ASTContext * Ctx, std::vector<CodeDecl *> Codes) :
+    SectionDecl(DeclKind::CodeSection, Ctx),
+    Codes(Codes) {
+  }
+
 public:
+
+  static CodeSectionDecl *
+  create(ASTContext& Ctx, std::vector<CodeDecl *> Codes) {
+    return new (Ctx) CodeSectionDecl(&Ctx, Codes);
+  }
+
+  std::vector<CodeDecl *>& getCodes() {
+    return Codes;
+  }
+
+  const std::vector<CodeDecl *>& getCodes() const {
+    return Codes;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
@@ -672,31 +694,6 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ImportGlobal);
 };
 
-class FuncDecl final : public TypeDecl {
-private:
-
-  uint32_t TypeIndex;
-
-  FuncDecl(ASTContext * Context, uint32_t TypeIndex) :
-    TypeDecl(DeclKind::Func, Context),
-    TypeIndex(TypeIndex) {
-  }
-
-public:
-
-  static FuncDecl * create(ASTContext& Context, uint32_t TypeIndex) {
-    return new (Context) FuncDecl(&Context, TypeIndex);
-  }
-
-  uint32_t getTypeIndex() const {
-    return TypeIndex;
-  }
-
-  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
-
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Func);
-};
-
 class TableDecl final : public TypeDecl {
 private:
 
@@ -929,6 +926,128 @@ public:
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ExportGlobal);
+};
+
+class FuncDecl;
+
+class CodeDecl : public TypeDecl {
+  uint32_t Size;
+
+  FuncDecl * Func;
+
+  CodeDecl(ASTContext * Context, uint32_t Size, FuncDecl * Func) :
+    TypeDecl(DeclKind::Func, Context),
+    Size(Size),
+    Func(Func) {
+  }
+
+public:
+
+  static CodeDecl *
+  create(ASTContext& Context, uint32_t Size, FuncDecl * Func) {
+    return new (Context) CodeDecl(&Context, Size, Func);
+  }
+
+  uint32_t getSize() const {
+    return Size;
+  }
+
+  FuncDecl * getFunc() {
+    return Func;
+  }
+
+  const FuncDecl * getFunc() const {
+    return Func;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Code);
+};
+
+class LocalDecl;
+
+class FuncDecl final : public TypeDecl {
+private:
+
+  std::vector<LocalDecl *> Locals;
+
+  CodeBodyDecl * CodeBody;
+
+  FuncDecl(
+    ASTContext * Context,
+    std::vector<LocalDecl *> Locals,
+    CodeBodyDecl * CodeBody
+  ) :
+    TypeDecl(DeclKind::Func, Context),
+    Locals(Locals),
+    CodeBody(CodeBody) {
+  }
+
+public:
+
+  static FuncDecl * create(
+    ASTContext& Context,
+    std::vector<LocalDecl *> Locals,
+    CodeBodyDecl * CodeBody
+  ) {
+    return new (Context) FuncDecl(&Context, Locals, CodeBody);
+  }
+
+  std::vector<LocalDecl *>& getLocals() {
+    return Locals;
+  }
+
+  const std::vector<LocalDecl *>& getLocals() const {
+    return Locals;
+  }
+
+  CodeBodyDecl * getCodeBody() {
+    return CodeBody;
+  }
+
+  const CodeBodyDecl * getCodeBody() const {
+    return CodeBody;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Func);
+};
+
+class LocalDecl : public TypeDecl {
+  uint32_t Count;
+
+  ValueType * Type;
+
+  LocalDecl(ASTContext * Context, uint32_t Count, ValueType * Type) :
+    TypeDecl(DeclKind::Local, Context),
+    Count(Count),
+    Type(Type) {
+  }
+
+public:
+
+  static LocalDecl *
+  create(ASTContext& Context, uint32_t Count, ValueType * Type) {
+    return new (Context) LocalDecl(&Context, Count, Type);
+  }
+
+  uint32_t getCount() const {
+    return Count;
+  }
+
+  ValueType * getType() {
+    return Type;
+  }
+
+  const ValueType * getType() const {
+    return Type;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Local);
 };
 
 class InstNode;

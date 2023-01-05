@@ -13,17 +13,21 @@
 #define ABSTRACT_TYPE(Id, Parent)
 #endif
 
+#ifndef BUILTIN_TYPE
+#define BUILTIN_TYPE(Id, Parent) TYPE(Id, Parent)
+#endif
+
 #ifndef VALUE_TYPE
-#define VALUE_TYPE(Id, Parent) TYPE(Id, Parent)
+#define VALUE_TYPE(Id, Parent) BUILTIN_TYPE(Id, Parent)
 #endif
 
 #ifndef NUMBER_TYPE
 #define NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
 #endif
 
-/// Number type that legible to be stored in binary .wasm file.
-#ifndef BINARY_NUMBER_TYPE
-#define BINARY_NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
+/// Number type that serializable to be stored in a binary .wasm file.
+#ifndef SERIALIZABLE_NUMBER_TYPE
+#define SERIALIZABLE_NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
 #endif
 
 #ifndef VECTOR_TYPE
@@ -52,8 +56,8 @@ ABSTRACT_TYPE(Value, Type)
       ABSTRACT_TYPE(SignedInteger, Integer)
         NUMBER_TYPE(I8, SignedInteger)
         NUMBER_TYPE(I16, SignedInteger)
-        BINARY_NUMBER_TYPE(I32, SignedInteger)
-        BINARY_NUMBER_TYPE(I64, SignedInteger)
+        SERIALIZABLE_NUMBER_TYPE(I32, SignedInteger)
+        SERIALIZABLE_NUMBER_TYPE(I64, SignedInteger)
         TYPE_RANGE(SignedInteger, I8, I64)
       ABSTRACT_TYPE(UnsignedInteger, Integer)
         NUMBER_TYPE(U8, UnsignedInteger)
@@ -83,7 +87,7 @@ TYPE(Memory, Type)
 TYPE(Table, Type)
 TYPE(Global, Type)
 
-LAST_TYPE(Memory)
+LAST_TYPE(Global)
 
 // clang-format on
 

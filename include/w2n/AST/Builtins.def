@@ -1,0 +1,130 @@
+//===--- Builtins.def - Builtins Macro Metaprogramming ----*- C++ -*-===//
+//
+// This source file is part of the Swift.org open source project
+//
+// Copyright (c) 2014 - 2017 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
+//
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project
+// authors
+//
+//===----------------------------------------------------------------===//
+//
+// This file defines the database of builtin functions.
+//
+// BUILTIN(Id, Name, Attrs)
+//   - Id is an identifier suitable for use in C++
+//   - Name is a string literal for the name to which the builtin should
+//   be
+//     bound in Swift
+//   - Attrs specifies information about attributes of the function:
+//     n -> readnone
+//
+//===----------------------------------------------------------------===//
+
+#pragma mark Binary Operations
+
+/// Binary operations have type (T,T) -> T.
+///
+/// We define two different sorts of operations varying when T is static,
+/// specifically:
+///
+/// 1. Overloaded statically typed operations. E.x:
+///
+///       builtin "add_Vec4xInt32"(Vec4xInt32, Vec4xInt32) : Vec4xInt32.
+///
+/// 2. Polymorphic typed operations that are valid only in raw SIL. By the
+/// time
+///    diagnostic constant propagation runs, these must have as its
+///    operand a fully specialized type. If the builtin has a type that is
+///    not one of its overloaded types, diagnostic constant propagation
+///    will emit a diagnostic saying the builtin's type has not been fully
+///    resolved. Otherwise, diagnostic constant propagation will transform
+///    the builtin to the relevant static overloaded builtin form. E.x.:
+///
+///       builtin "add"(Self, Self) : Self // *error*
+///
+///         OR
+///
+///       builtin "generic_add"(Vec4xInt32, Vec4xInt32) : Vec4xInt32
+///         ->
+///       builtin "add_Vec4xInt32"(Vec4xInt32, Vec4xInt32) : Vec4xInt32
+///
+/// NOTE: If a polymorphic typed operation is not static by the time
+/// guaranteed constant propagation runs, we emit a diagnostic to inform
+/// the user (who is assumed to be an expert user) to tell them the value
+/// was unspecialized. The typical way this specialization occurs today is
+/// via transparent inlining since the transparent inliner devirtualizes
+/// and specializes as it goes. Of course this means mandatory inlining
+/// must /always/ occur before diagnostic constant propagation.
+///
+/// NOTE: Often times the builtin infrastructure wants to treat all
+/// binary operation builtins generic or not the same way. To ensure
+/// we support all use cases in the compiler, we do not declare the
+/// operations as part of this builtin since often times this macro is
+/// used to generic code. Instead, we stamp this out using the
+/// overloaded_static, polymorphic, and all suffixed operations.
+#ifndef BUILTIN_BINARY_OPERATION
+#define BUILTIN_BINARY_OPERATION(Id, Name, Attrs) BUILTIN(Id, Name, Attrs)
+#endif
+
+#ifdef BUILTIN_BINARY_OPERATION_GENERIC_HELPER_STR
+#error                                                                   \
+  "Do not define BUILTIN_BINARY_OPERATION_GENERIC_HELPER_STR before including this .def file"
+#endif
+
+#define BUILTIN_BINARY_OPERATION_GENERIC_HELPER_STR(NAME) #NAME
+
+#ifndef BUILTIN_BINARY_OPERATION_OVERLOADED_STATIC
+#define BUILTIN_BINARY_OPERATION_OVERLOADED_STATIC(                      \
+  Id, Name, Attrs, Overload                                              \
+)                                                                        \
+  BUILTIN_BINARY_OPERATION(Id, Name, Attrs)
+#endif
+
+#ifndef BUILTIN_BINARY_OPERATION_POLYMORPHIC
+#define BUILTIN_BINARY_OPERATION_POLYMORPHIC(Id, Name)                   \
+  BUILTIN_BINARY_OPERATION(Id, Name, "")
+#endif
+
+// TODO: This needs a better name. We stringify generic_ in
+// *_{OVERLOADED_STATIC,POLYMORPHIC}
+#ifndef BUILTIN_BINARY_OPERATION_ALL
+#define BUILTIN_BINARY_OPERATION_ALL(Id, Name, Attrs, Overload)          \
+  BUILTIN_BINARY_OPERATION_OVERLOADED_STATIC(                            \
+    Id,                                                                  \
+    BUILTIN_BINARY_OPERATION_GENERIC_HELPER_STR(Name),                   \
+    Attrs,                                                               \
+    Overload                                                             \
+  )                                                                      \
+  BUILTIN_BINARY_OPERATION_POLYMORPHIC(                                  \
+    Generic##Id,                                                         \
+    BUILTIN_BINARY_OPERATION_GENERIC_HELPER_STR(generic_##Name)          \
+  )
+#endif
+
+// NOTE: Here we need our name field to be bare. We stringify them as
+// appropriately in
+// BUILTIN_BINARY_OPERATION_{OVERLOADED_STATIC,POLYMORPHIC}.
+BUILTIN_BINARY_OPERATION_ALL(Add, add, "n", Integer)
+BUILTIN_BINARY_OPERATION_ALL(And, and, "n", Integer)
+BUILTIN_BINARY_OPERATION_ALL(Sub, sub, "n", Integer)
+#undef BUILTIN_BINARY_OPERATION_ALL
+#undef BUILTIN_BINARY_OPERATION_POLYMORPHIC
+#undef BUILTIN_BINARY_OPERATION_OVERLOADED_STATIC
+#undef BUILTIN_BINARY_OPERATION_GENERIC_HELPER_STR
+#undef BUILTIN_BINARY_OPERATION
+
+#pragma mark Binary Predicate
+
+// Binary predicates have type (T,T) -> i1 or (T, T) -> Vector<i1> for
+// scalars and vectors, respectively.
+#ifndef BUILTIN_BINARY_PREDICATE
+#define BUILTIN_BINARY_PREDICATE(Id, Name, Attrs, Overload)              \
+  BUILTIN(Id, Name, Attrs)
+#endif
+BUILTIN_BINARY_PREDICATE(ICMP_EQ, "cmp_eq", "n", Integer)
+BUILTIN_BINARY_PREDICATE(ICMP_EQZ, "cmp_eqz", "n", Integer)
+BUILTIN_BINARY_PREDICATE(ICMP_NE, "cmp_ne", "n", Integer)
+#undef BUILTIN_BINARY_PREDICATE

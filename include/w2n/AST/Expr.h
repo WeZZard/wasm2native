@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTContext.h>
+#include <w2n/AST/Identifier.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/LLVM.h>
@@ -410,7 +411,23 @@ public:
 };
 
 class CallBuiltinExpr : public Expr {
+  Identifier BuiltinName;
+
+  CallBuiltinExpr(Identifier BuiltinName, ValueType * Ty) :
+    Expr(ExprKind::CallBuiltin, Ty),
+    BuiltinName(BuiltinName) {
+  }
+
 public:
+
+  Identifier getBuiltinName() const {
+    return BuiltinName;
+  }
+
+  static CallBuiltinExpr *
+  create(ASTContext& Context, Identifier BuiltinName, ValueType * Ty) {
+    new (Context) CallBuiltinExpr(BuiltinName, Ty);
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, CallBuiltin);
 };

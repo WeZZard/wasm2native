@@ -1,4 +1,3 @@
-#include <_types/_uint32_t.h>
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/ArrayRef.h>
@@ -18,6 +17,7 @@
 #include <memory>
 #include <vector>
 #include <w2n/AST/ASTContext.h>
+#include <w2n/AST/Builtins.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Expr.h>
 #include <w2n/AST/InstNode.h>
@@ -497,27 +497,60 @@ public:
   }
 
   CallBuiltinExpr * parseI32Eqz(ReadContext& Ctx) {
-    w2n_unimplemented();
+    StringRef BuiltinName = getBuiltinName(BuiltinValueKind::ICMP_EQZ);
+    return CallBuiltinExpr::create(
+      getContext(),
+      getContext().getIdentifier(BuiltinName),
+      /// FIXME: May need \c BooleanType ?
+      getContext().getI32Type()
+    );
   }
 
   CallBuiltinExpr * parseI32Eq(ReadContext& Ctx) {
-    w2n_unimplemented();
+    StringRef BuiltinName = getBuiltinName(BuiltinValueKind::ICMP_EQ);
+    return CallBuiltinExpr::create(
+      getContext(),
+      getContext().getIdentifier(BuiltinName),
+      /// FIXME: May need \c BooleanType ?
+      getContext().getI32Type()
+    );
   }
 
   CallBuiltinExpr * parseI32Ne(ReadContext& Ctx) {
-    w2n_unimplemented();
+    StringRef BuiltinName = getBuiltinName(BuiltinValueKind::ICMP_NE);
+    return CallBuiltinExpr::create(
+      getContext(),
+      getContext().getIdentifier(BuiltinName),
+      /// FIXME: May need \c BooleanType ?
+      getContext().getI32Type()
+    );
   }
 
   CallBuiltinExpr * parseI32Add(ReadContext& Ctx) {
-    w2n_unimplemented();
+    StringRef BuiltinName = getBuiltinName(BuiltinValueKind::Add);
+    return CallBuiltinExpr::create(
+      getContext(),
+      getContext().getIdentifier(BuiltinName),
+      getContext().getI32Type()
+    );
   }
 
   CallBuiltinExpr * parseI32Sub(ReadContext& Ctx) {
-    w2n_unimplemented();
+    StringRef BuiltinName = getBuiltinName(BuiltinValueKind::Sub);
+    return CallBuiltinExpr::create(
+      getContext(),
+      getContext().getIdentifier(BuiltinName),
+      getContext().getI32Type()
+    );
   }
 
   CallBuiltinExpr * parseI32And(ReadContext& Ctx) {
-    w2n_unimplemented();
+    StringRef BuiltinName = getBuiltinName(BuiltinValueKind::And);
+    return CallBuiltinExpr::create(
+      getContext(),
+      getContext().getIdentifier(BuiltinName),
+      getContext().getI32Type()
+    );
   }
 
 #pragma mark Parsing Sections

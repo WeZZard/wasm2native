@@ -1,6 +1,7 @@
 #ifndef W2N_AST_EXPR_H
 #define W2N_AST_EXPR_H
 
+#include <_types/_uint32_t.h>
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
 #include <cstdint>
@@ -92,55 +93,251 @@ public:
 };
 
 class CallExpr : public Expr {
+private:
+
+  uint32_t FuncIndex;
+
+  // FIXME: Can have type since wasm file is one-pass parsable.
+  CallExpr(uint32_t FuncIndex) :
+    Expr(ExprKind::Call, nullptr),
+    FuncIndex(FuncIndex) {
+  }
+
 public:
+
+  static CallExpr * create(ASTContext& Context, uint32_t FuncIndex) {
+    return new (Context) CallExpr(FuncIndex);
+  }
+
+  uint32_t getFuncIndex() const {
+    return FuncIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, Call);
 };
 
 class CallIndirectExpr : public Expr {
+private:
+
+  uint32_t TypeIndex;
+
+  uint32_t TableIndex;
+
+  // FIXME: Can have type since wasm file is one-pass parsable.
+  CallIndirectExpr(uint32_t TypeIndex, uint32_t TableIndex) :
+    Expr(ExprKind::CallIndirect, nullptr),
+    TypeIndex(TypeIndex),
+    TableIndex(TableIndex) {
+  }
+
 public:
+
+  static CallIndirectExpr *
+  create(ASTContext& Context, uint32_t TypeIndex, uint32_t TableIndex) {
+    return new (Context) CallIndirectExpr(TypeIndex, TableIndex);
+  }
+
+  uint32_t getTypeIndex() const {
+    return TypeIndex;
+  }
+
+  uint32_t getTableIndex() const {
+    return TableIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, CallIndirect);
 };
 
 class DropExpr : public Expr {
+private:
+
+  /// FIXME: May need \c void type here.
+  DropExpr() : Expr(ExprKind::Drop, nullptr) {
+  }
+
 public:
+
+  static DropExpr * create(ASTContext& Context) {
+    return new (Context) DropExpr();
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, Drop);
 };
 
 class LocalGetExpr : public Expr {
+private:
+
+  uint32_t LocalIndex;
+
+  // FIXME: Can have type since wasm file is one-pass parsable.
+  LocalGetExpr(uint32_t LocalIndex) :
+    Expr(ExprKind::LocalGet, nullptr),
+    LocalIndex(LocalIndex) {
+  }
+
 public:
+
+  static LocalGetExpr * create(ASTContext& Context, uint32_t LocalIndex) {
+    return new (Context) LocalGetExpr(LocalIndex);
+  }
+
+  uint32_t getLocalIndex() const {
+    return LocalIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, LocalGet);
 };
 
 class LocalSetExpr : public Expr {
+private:
+
+  uint32_t LocalIndex;
+
+  // FIXME: Can have type since wasm file is one-pass parsable.
+  LocalSetExpr(uint32_t LocalIndex) :
+    Expr(ExprKind::LocalSet, nullptr),
+    LocalIndex(LocalIndex) {
+  }
+
 public:
+
+  static LocalSetExpr * create(ASTContext& Context, uint32_t LocalIndex) {
+    return new (Context) LocalSetExpr(LocalIndex);
+  }
+
+  uint32_t getLocalIndex() const {
+    return LocalIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, LocalSet);
 };
 
 class GlobalGetExpr : public Expr {
+private:
+
+  uint32_t GlobalIndex;
+
+  // FIXME: Can have type since wasm file is one-pass parsable.
+  GlobalGetExpr(uint32_t GlobalIndex) :
+    Expr(ExprKind::GlobalGet, nullptr),
+    GlobalIndex(GlobalIndex) {
+  }
+
 public:
+
+  static GlobalGetExpr *
+  create(ASTContext& Context, uint32_t GlobalIndex) {
+    return new (Context) GlobalGetExpr(GlobalIndex);
+  }
+
+  uint32_t getGlobalIndex() const {
+    return GlobalIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, GlobalGet);
 };
 
 class GlobalSetExpr : public Expr {
+private:
+
+  uint32_t GlobalIndex;
+
+  // FIXME: Can have type since wasm file is one-pass parsable.
+  GlobalSetExpr(uint32_t GlobalIndex) :
+    Expr(ExprKind::GlobalSet, nullptr),
+    GlobalIndex(GlobalIndex) {
+  }
+
 public:
+
+  static GlobalSetExpr *
+  create(ASTContext& Context, uint32_t GlobalIndex) {
+    return new (Context) GlobalSetExpr(GlobalIndex);
+  }
+
+  uint32_t getGlobalIndex() const {
+    return GlobalIndex;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, GlobalSet);
 };
 
 class LoadExpr : public Expr {
+private:
+
+  ValueType * SourceType;
+
+  ValueType * DestinationType;
+
+  LoadExpr(ValueType * SourceType, ValueType * DestinationType) :
+    Expr(ExprKind::Load, DestinationType) {
+  }
+
 public:
+
+  static LoadExpr * create(
+    ASTContext& Context,
+    ValueType * SourceType,
+    ValueType * DestinationType
+  ) {
+    return new (Context) LoadExpr(SourceType, DestinationType);
+  }
+
+  ValueType * getSourceType() {
+    return SourceType;
+  }
+
+  const ValueType * getSourceType() const {
+    return SourceType;
+  }
+
+  ValueType * getDestinationType() {
+    return DestinationType;
+  }
+
+  const ValueType * getDestinationType() const {
+    return DestinationType;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, Load);
 };
 
 class StoreExpr : public Expr {
+private:
+
+  ValueType * SourceType;
+
+  ValueType * DestinationType;
+
+  StoreExpr(ValueType * SourceType, ValueType * DestinationType) :
+    Expr(ExprKind::Store, DestinationType) {
+  }
+
 public:
+
+  static StoreExpr * create(
+    ASTContext& Context,
+    ValueType * SourceType,
+    ValueType * DestinationType
+  ) {
+    return new (Context) StoreExpr(SourceType, DestinationType);
+  }
+
+  ValueType * getSourceType() {
+    return SourceType;
+  }
+
+  const ValueType * getSourceType() const {
+    return SourceType;
+  }
+
+  ValueType * getDestinationType() {
+    return DestinationType;
+  }
+
+  const ValueType * getDestinationType() const {
+    return DestinationType;
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, Store);
 };

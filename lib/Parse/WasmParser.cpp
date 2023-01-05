@@ -203,6 +203,44 @@ public:
     return Parser->File.getASTContext();
   }
 
+#pragma mark Parsing Indices
+
+  uint32_t parseTypeIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseFuncIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseTableIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseMemIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseGlobalIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseElemIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseDataIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseLocalIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  uint32_t parseLableIndex(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
 #pragma mark Parsing Types
 
   ValueType * parseValueType(ReadContext& Ctx) {
@@ -361,7 +399,7 @@ public:
   }
 
   UnreachableStmt * parseUnreachable(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return UnreachableStmt::create(getContext());
   }
 
   BlockStmt * parseBlock(ReadContext& Ctx) {
@@ -393,47 +431,60 @@ public:
   }
 
   ReturnStmt * parseReturn(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return ReturnStmt::create(getContext());
   }
 
   CallExpr * parseCall(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t FuncIndex = parseFuncIndex(Ctx);
+    return CallExpr::create(getContext(), FuncIndex);
   }
 
   CallIndirectExpr * parseCallIndirect(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t TypeIndex = parseTypeIndex(Ctx);
+    uint32_t TableIndex = parseTableIndex(Ctx);
+    return CallIndirectExpr::create(getContext(), TypeIndex, TableIndex);
   }
 
   DropExpr * parseDrop(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return DropExpr::create(getContext());
   }
 
   LocalGetExpr * parseLocalGet(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t LocalIndex = parseLocalIndex(Ctx);
+    return LocalGetExpr::create(getContext(), LocalIndex);
   }
 
   LocalSetExpr * parseLocalSet(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t LocalIndex = parseLocalIndex(Ctx);
+    return LocalSetExpr::create(getContext(), LocalIndex);
   }
 
   GlobalGetExpr * parseGlobalGet(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t GlobalIndex = parseGlobalIndex(Ctx);
+    return GlobalGetExpr::create(getContext(), GlobalIndex);
   }
 
   GlobalSetExpr * parseGlobalSet(ReadContext& Ctx) {
-    w2n_unimplemented();
+    uint32_t GlobalIndex = parseGlobalIndex(Ctx);
+    return GlobalSetExpr::create(getContext(), GlobalIndex);
   }
 
   LoadExpr * parseI32Load(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return LoadExpr::create(
+      getContext(), getContext().getI32Type(), getContext().getI32Type()
+    );
   }
 
   LoadExpr * parseI32Load8u(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return LoadExpr::create(
+      getContext(), getContext().getU8Type(), getContext().getI32Type()
+    );
   }
 
   StoreExpr * parseI32Store(ReadContext& Ctx) {
-    w2n_unimplemented();
+    return StoreExpr::create(
+      getContext(), getContext().getI32Type(), getContext().getI32Type()
+    );
   }
 
   IntegerConstExpr * parseI32Const(ReadContext& Ctx) {

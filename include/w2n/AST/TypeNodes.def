@@ -21,6 +21,11 @@
 #define NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
 #endif
 
+/// Number type that legible to be stored in binary .wasm file.
+#ifndef BINARY_NUMBER_TYPE
+#define BINARY_NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
+#endif
+
 #ifndef VECTOR_TYPE
 #define VECTOR_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
 #endif
@@ -44,9 +49,19 @@
 ABSTRACT_TYPE(Value, Type)
   ABSTRACT_TYPE(Number, Value)
     ABSTRACT_TYPE(Integer, Number)
-      NUMBER_TYPE(I32, Integer)
-      NUMBER_TYPE(I64, Integer)
-      TYPE_RANGE(Integer, I32, I64)
+      ABSTRACT_TYPE(SignedInteger, Integer)
+        NUMBER_TYPE(I8, SignedInteger)
+        NUMBER_TYPE(I16, SignedInteger)
+        BINARY_NUMBER_TYPE(I32, SignedInteger)
+        BINARY_NUMBER_TYPE(I64, SignedInteger)
+        TYPE_RANGE(SignedInteger, I8, I64)
+      ABSTRACT_TYPE(UnsignedInteger, Integer)
+        NUMBER_TYPE(U8, UnsignedInteger)
+        NUMBER_TYPE(U16, UnsignedInteger)
+        NUMBER_TYPE(U32, UnsignedInteger)
+        NUMBER_TYPE(U64, UnsignedInteger)
+        TYPE_RANGE(UnsignedInteger, U8, U64)
+      TYPE_RANGE(Integer, I8, U64)
     ABSTRACT_TYPE(Float, Number)
       NUMBER_TYPE(F32, Float)
       NUMBER_TYPE(F64, Float)

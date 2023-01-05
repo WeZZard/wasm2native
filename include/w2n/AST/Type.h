@@ -56,13 +56,11 @@ public:
 
   ValueTypeKind getValueTypeKind() const {
     switch (getKind()) {
-    case TypeKind::I32: return ValueTypeKind::I32;
-    case TypeKind::I64: return ValueTypeKind::I64;
-    case TypeKind::F32: return ValueTypeKind::F32;
-    case TypeKind::F64: return ValueTypeKind::F64;
-    case TypeKind::V128: return ValueTypeKind::V128;
-    case TypeKind::FuncRef: return ValueTypeKind::FuncRef;
-    case TypeKind::ExternRef: return ValueTypeKind::ExternRef;
+#define TYPE(Id, Parent)
+#define VALUE_TYPE(Id, Parent)                                           \
+  case TypeKind::Id:                                                     \
+    return ValueTypeKind::Id;
+#include <w2n/AST/TypeNodes.def>
     default: llvm_unreachable("invalid value type kind");
     }
   }
@@ -92,10 +90,51 @@ public:
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Type, IntegerType);
 };
 
-class I32Type : public IntegerType {
+class SignedIntegerType : public IntegerType {
+protected:
+
+  SignedIntegerType(TypeKind Kind) : IntegerType(Kind) {
+  }
+
+public:
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Type, SignedIntegerType);
+};
+
+class I8Type : public SignedIntegerType {
 private:
 
-  I32Type() : IntegerType(TypeKind::I32) {
+  I8Type() : SignedIntegerType(TypeKind::I8) {
+  }
+
+public:
+
+  static I8Type * create(ASTContext& Context) {
+    return new (Context) I8Type();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, I8);
+};
+
+class I16Type : public SignedIntegerType {
+private:
+
+  I16Type() : SignedIntegerType(TypeKind::I16) {
+  }
+
+public:
+
+  static I16Type * create(ASTContext& Context) {
+    return new (Context) I16Type();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, I16);
+};
+
+class I32Type : public SignedIntegerType {
+private:
+
+  I32Type() : SignedIntegerType(TypeKind::I32) {
   }
 
 public:
@@ -107,10 +146,10 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, I32);
 };
 
-class I64Type : public IntegerType {
+class I64Type : public SignedIntegerType {
 private:
 
-  I64Type() : IntegerType(TypeKind::I64) {
+  I64Type() : SignedIntegerType(TypeKind::I64) {
   }
 
 public:
@@ -120,6 +159,77 @@ public:
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, I64);
+};
+
+class UnsignedIntegerType : public IntegerType {
+protected:
+
+  UnsignedIntegerType(TypeKind Kind) : IntegerType(Kind) {
+  }
+
+public:
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Type, UnsignedIntegerType);
+};
+
+class U8Type : public UnsignedIntegerType {
+private:
+
+  U8Type() : UnsignedIntegerType(TypeKind::U8) {
+  }
+
+public:
+
+  static U8Type * create(ASTContext& Context) {
+    return new (Context) U8Type();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, U8);
+};
+
+class U16Type : public UnsignedIntegerType {
+private:
+
+  U16Type() : UnsignedIntegerType(TypeKind::U16) {
+  }
+
+public:
+
+  static U16Type * create(ASTContext& Context) {
+    return new (Context) U16Type();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, U16);
+};
+
+class U32Type : public UnsignedIntegerType {
+private:
+
+  U32Type() : UnsignedIntegerType(TypeKind::U32) {
+  }
+
+public:
+
+  static U32Type * create(ASTContext& Context) {
+    return new (Context) U32Type();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, U32);
+};
+
+class U64Type : public UnsignedIntegerType {
+private:
+
+  U64Type() : UnsignedIntegerType(TypeKind::U64) {
+  }
+
+public:
+
+  static U64Type * create(ASTContext& Context) {
+    return new (Context) U64Type();
+  }
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Type, U64);
 };
 
 class FloatType : public NumberType {

@@ -257,13 +257,11 @@ Identifier ASTContext::getIdentifier(StringRef Str) const {
 
 ValueType * ASTContext::getValueTypeForKind(ValueTypeKind Kind) const {
   switch (Kind) {
-  case ValueTypeKind::I32: return getI32Type();
-  case ValueTypeKind::I64: return getI64Type();
-  case ValueTypeKind::F32: return getF32Type();
-  case ValueTypeKind::F64: return getF64Type();
-  case ValueTypeKind::V128: return getV128Type();
-  case ValueTypeKind::FuncRef: return getFuncRefType();
-  case ValueTypeKind::ExternRef: return getExternRefType();
+#define TYPE(Id, Parent)
+#define VALUE_TYPE(Id, Parent)                                           \
+  case ValueTypeKind::Id:                                                \
+    return get##Id##Type();
+#include <w2n/AST/TypeNodes.def>
   }
 }
 

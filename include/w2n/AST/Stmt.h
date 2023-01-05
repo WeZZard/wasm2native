@@ -74,7 +74,16 @@ public:
 };
 
 class UnreachableStmt : public Stmt {
+private:
+
+  UnreachableStmt() : Stmt(StmtKind::Unreachable) {
+  }
+
 public:
+
+  static UnreachableStmt * create(ASTContext& Ctx) {
+    return new (&Ctx) UnreachableStmt();
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Unreachable);
 };
@@ -137,7 +146,16 @@ public:
 };
 
 class ReturnStmt : public Stmt {
+private:
+
+  ReturnStmt() : Stmt(StmtKind::Return) {
+  }
+
 public:
+
+  static ReturnStmt * create(ASTContext& Ctx) {
+    return new (&Ctx) ReturnStmt();
+  }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Return);
 };

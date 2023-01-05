@@ -744,17 +744,17 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Memory);
 };
 
-class CodeBodyDecl;
+class ExpressionDecl;
 
 class GlobalDecl final : public TypeDecl {
 private:
 
   GlobalType * Type;
 
-  CodeBodyDecl * Init;
+  ExpressionDecl * Init;
 
   GlobalDecl(
-    ASTContext * Context, GlobalType * Type, CodeBodyDecl * Init
+    ASTContext * Context, GlobalType * Type, ExpressionDecl * Init
   ) :
     TypeDecl(DeclKind::Global, Context),
     Type(Type),
@@ -764,7 +764,7 @@ private:
 public:
 
   static GlobalDecl *
-  create(ASTContext& Context, GlobalType * Type, CodeBodyDecl * Init) {
+  create(ASTContext& Context, GlobalType * Type, ExpressionDecl * Init) {
     return new (Context) GlobalDecl(&Context, Type, Init);
   }
 
@@ -776,11 +776,11 @@ public:
     return Type;
   }
 
-  CodeBodyDecl * getInit() {
+  ExpressionDecl * getInit() {
     return Init;
   }
 
-  const CodeBodyDecl * getInit() const {
+  const ExpressionDecl * getInit() const {
     return Init;
   }
 
@@ -972,16 +972,16 @@ private:
 
   std::vector<LocalDecl *> Locals;
 
-  CodeBodyDecl * CodeBody;
+  ExpressionDecl * Expression;
 
   FuncDecl(
     ASTContext * Context,
     std::vector<LocalDecl *> Locals,
-    CodeBodyDecl * CodeBody
+    ExpressionDecl * Expression
   ) :
     TypeDecl(DeclKind::Func, Context),
     Locals(Locals),
-    CodeBody(CodeBody) {
+    Expression(Expression) {
   }
 
 public:
@@ -989,9 +989,9 @@ public:
   static FuncDecl * create(
     ASTContext& Context,
     std::vector<LocalDecl *> Locals,
-    CodeBodyDecl * CodeBody
+    ExpressionDecl * Expression
   ) {
-    return new (Context) FuncDecl(&Context, Locals, CodeBody);
+    return new (Context) FuncDecl(&Context, Locals, Expression);
   }
 
   std::vector<LocalDecl *>& getLocals() {
@@ -1002,12 +1002,12 @@ public:
     return Locals;
   }
 
-  CodeBodyDecl * getCodeBody() {
-    return CodeBody;
+  ExpressionDecl * getExpression() {
+    return Expression;
   }
 
-  const CodeBodyDecl * getCodeBody() const {
-    return CodeBody;
+  const ExpressionDecl * getExpression() const {
+    return Expression;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
@@ -1052,21 +1052,23 @@ public:
 
 class InstNode;
 
-class CodeBodyDecl : public TypeDecl {
+class ExpressionDecl : public TypeDecl {
 private:
 
   std::vector<InstNode> Instructions;
 
-  CodeBodyDecl(ASTContext * Context, std::vector<InstNode> Instructions) :
-    TypeDecl(DeclKind::CodeBody, Context),
+  ExpressionDecl(
+    ASTContext * Context, std::vector<InstNode> Instructions
+  ) :
+    TypeDecl(DeclKind::Expression, Context),
     Instructions(Instructions) {
   }
 
 public:
 
-  static CodeBodyDecl *
+  static ExpressionDecl *
   create(ASTContext& Context, std::vector<InstNode> Instructions) {
-    return new (Context) CodeBodyDecl(&Context, Instructions);
+    return new (Context) ExpressionDecl(&Context, Instructions);
   }
 
   std::vector<InstNode>& getInstructions() {
@@ -1079,7 +1081,7 @@ public:
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, CodeBody);
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Expression);
 };
 
 } // namespace w2n

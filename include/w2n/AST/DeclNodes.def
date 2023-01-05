@@ -108,10 +108,10 @@ ABSTRACT_DECL(Value, Decl)
     VALUE_DECL(Code, TypeDecl)
     VALUE_DECL(Func, TypeDecl)
     VALUE_DECL(Local, TypeDecl)
-    VALUE_DECL(CodeBody, TypeDecl)
-  DECL_RANGE(Value, Module, CodeBody)
+    VALUE_DECL(Expression, TypeDecl)
+  DECL_RANGE(Value, Module, Expression)
 
-LAST_DECL(CodeBody)
+LAST_DECL(Expression)
 
 // clang-format on
 

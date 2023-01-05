@@ -276,7 +276,7 @@ public:
 
   GlobalDecl * parseGlobalDecl(ReadContext& Ctx) {
     GlobalType * Ty = parseGlobalType(Ctx);
-    CodeBodyDecl * Init = parseCodeBody(Ctx);
+    ExpressionDecl * Init = parseExpressionDecl(Ctx);
     return GlobalDecl::create(getContext(), Ty, Init);
   }
 
@@ -315,9 +315,9 @@ public:
       LocalDecl * Local = parseLocalDecl(Ctx);
       Locals.push_back(Local);
     }
-    CodeBodyDecl * CodeBody = parseCodeBody(Ctx);
+    ExpressionDecl * Expression = parseExpressionDecl(Ctx);
     // FIXME: validation
-    return FuncDecl::create(getContext(), Locals, CodeBody);
+    return FuncDecl::create(getContext(), Locals, Expression);
   }
 
   LocalDecl * parseLocalDecl(ReadContext& Ctx) {
@@ -326,16 +326,18 @@ public:
     return LocalDecl::create(getContext(), Count, Type);
   }
 
-  CodeBodyDecl * parseCodeBody(ReadContext& Ctx) {
+  ExpressionDecl * parseExpressionDecl(ReadContext& Ctx) {
     std::vector<InstNode> Instructions;
     InstNode Instruction = nullptr;
-    std::cout << "[WasmParser::Implementation] [parseCodeBody] BEGAN\n";
+    std::cout
+      << "[WasmParser::Implementation] [parseExpressionDecl] BEGAN\n";
     while (Instruction.isNull() || !Instruction.isEndStmt()) {
       Instruction = parseInstruction(Ctx);
       Instructions.push_back(Instruction);
     }
-    std::cout << "[WasmParser::Implementation] [parseCodeBody] ENDED\n";
-    return CodeBodyDecl::create(getContext(), Instructions);
+    std::cout
+      << "[WasmParser::Implementation] [parseExpressionDecl] ENDED\n";
+    return ExpressionDecl::create(getContext(), Instructions);
   }
 
 #pragma mark Parsing Instructions

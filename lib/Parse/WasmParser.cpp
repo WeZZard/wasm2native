@@ -1,4 +1,5 @@
 #include <_types/_uint32_t.h>
+#include <_types/_uint8_t.h>
 #include "llvm/ADT/None.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/APInt.h>
@@ -40,7 +41,6 @@
 #include <w2n/Basic/SourceLoc.h>
 #include <w2n/Basic/SourceManager.h>
 #include <w2n/Basic/Unimplemented.h>
-#include <w2n/Format/Format.h>
 #include <w2n/Parse/Parser.h>
 
 using namespace w2n;
@@ -49,6 +49,81 @@ using namespace llvm::object;
 /// Current implementation of \c WasmParser is ripped from LLVM's
 /// implementation of WebAssembly object file support. There are a lot of
 /// room to improve the performance and the organization.
+
+namespace w2n {
+
+using TypeIndexTy = uint32_t;
+using FuncIndexTy = uint32_t;
+using TableIndexTy = uint32_t;
+using MemIndexTy = uint32_t;
+using GlobalIndexTy = uint32_t;
+using ElemIndexTy = uint32_t;
+using DataIndexTy = uint32_t;
+using LocalIndexTy = uint32_t;
+using LabelIndexTy = uint32_t;
+
+enum class TypeKindImmediate {
+  I32 = llvm::wasm::WASM_TYPE_I32,
+  I64 = llvm::wasm::WASM_TYPE_I64,
+  F32 = llvm::wasm::WASM_TYPE_F32,
+  F64 = llvm::wasm::WASM_TYPE_F64,
+  V128 = llvm::wasm::WASM_TYPE_V128,
+  FuncRef = llvm::wasm::WASM_TYPE_FUNCREF,
+  ExternRef = llvm::wasm::WASM_TYPE_EXTERNREF,
+  Func = llvm::wasm::WASM_TYPE_FUNC,
+  Void = llvm::wasm::WASM_TYPE_NORESULT,
+};
+
+enum class ExternalKindImmediate : uint8_t {
+  Func = llvm::wasm::WASM_EXTERNAL_FUNCTION,
+  Table = llvm::wasm::WASM_EXTERNAL_TABLE,
+  Memory = llvm::wasm::WASM_EXTERNAL_MEMORY,
+  Global = llvm::wasm::WASM_EXTERNAL_GLOBAL,
+  Tag = llvm::wasm::WASM_EXTERNAL_TAG,
+};
+
+enum class SectionKindImmediate {
+  CustomSection = llvm::wasm::WASM_SEC_CUSTOM,
+  TypeSection = llvm::wasm::WASM_SEC_TYPE,
+  ImportSection = llvm::wasm::WASM_SEC_IMPORT,
+  FuncSection = llvm::wasm::WASM_SEC_FUNCTION,
+  TableSection = llvm::wasm::WASM_SEC_TABLE,
+  MemorySection = llvm::wasm::WASM_SEC_MEMORY,
+  GlobalSection = llvm::wasm::WASM_SEC_GLOBAL,
+  ExportSection = llvm::wasm::WASM_SEC_EXPORT,
+  StartSection = llvm::wasm::WASM_SEC_START,
+  ElementSection = llvm::wasm::WASM_SEC_ELEM,
+  CodeSection = llvm::wasm::WASM_SEC_CODE,
+  DataSection = llvm::wasm::WASM_SEC_DATA,
+  DataCountSection = llvm::wasm::WASM_SEC_DATACOUNT,
+};
+
+enum class SubSectionKindImmediate : uint8_t {
+  ModuleNames = 0,
+  FuncNames = 1,
+  LocalNames = 2,
+};
+
+enum class DataKindImmediate : uint32_t {
+  ActiveZerothMemory = 0,
+  Passive = 1,
+  ActiveArbitraryMemory = 2,
+};
+
+static ValueTypeKind getValueTypeKind(TypeKindImmediate Ty) {
+  switch (Ty) {
+  case TypeKindImmediate::I32: return ValueTypeKind::I32;
+  case TypeKindImmediate::I64: return ValueTypeKind::I64;
+  case TypeKindImmediate::F32: return ValueTypeKind::F32;
+  case TypeKindImmediate::F64: return ValueTypeKind::F64;
+  case TypeKindImmediate::V128: return ValueTypeKind::V128;
+  case TypeKindImmediate::FuncRef: return ValueTypeKind::FuncRef;
+  case TypeKindImmediate::ExternRef: return ValueTypeKind::ExternRef;
+  default: return ValueTypeKind::None;
+  }
+}
+
+} // namespace w2n
 
 #define W2N_VARIN_T7_MAX  ((1 << 7) - 1)
 #define W2N_VARIN_T7_MIN  (-(1 << 7))
@@ -166,31 +241,8 @@ static uint8_t readOpcode(ReadContext& Ctx) {
   return readUint8(Ctx);
 }
 
-static ValueTypeKind getValueTypeKind(unsigned RawType) {
-  switch (RawType) {
-  case llvm::wasm::WASM_TYPE_I32: return ValueTypeKind::I32;
-  case llvm::wasm::WASM_TYPE_I64: return ValueTypeKind::I64;
-  case llvm::wasm::WASM_TYPE_F32: return ValueTypeKind::F32;
-  case llvm::wasm::WASM_TYPE_F64: return ValueTypeKind::F64;
-  case llvm::wasm::WASM_TYPE_V128: return ValueTypeKind::V128;
-  case llvm::wasm::WASM_TYPE_FUNCREF: return ValueTypeKind::FuncRef;
-  case llvm::wasm::WASM_TYPE_EXTERNREF: return ValueTypeKind::ExternRef;
-  default: return ValueTypeKind::None;
-  }
-}
-
 class WasmParser::Implementation {
 public:
-
-  using TypeIndexTy = uint32_t;
-  using FuncIndexTy = uint32_t;
-  using TableIndexTy = uint32_t;
-  using MemIndexTy = uint32_t;
-  using GlobalIndexTy = uint32_t;
-  using ElemIndexTy = uint32_t;
-  using DataIndexTy = uint32_t;
-  using LocalIndexTy = uint32_t;
-  using LabelIndexTy = uint32_t;
 
   WasmParser * Parser;
 
@@ -260,9 +312,15 @@ public:
 #pragma mark Parsing Types
 
   template <>
-  ValueType * parse<ValueType *>(ReadContext& Ctx) {
+  TypeKindImmediate parse<TypeKindImmediate>(ReadContext& Ctx) {
     uint32_t RawKind = readUint8(Ctx);
-    ValueTypeKind Kind = getValueTypeKind(RawKind);
+    return (TypeKindImmediate)RawKind;
+  }
+
+  template <>
+  ValueType * parse<ValueType *>(ReadContext& Ctx) {
+    TypeKindImmediate TyImm = parse<TypeKindImmediate>(Ctx);
+    ValueTypeKind Kind = getValueTypeKind(TyImm);
     ValueType * Ty = getContext().getValueTypeForKind(Kind);
     assert(Ty);
     return Ty;
@@ -334,11 +392,11 @@ public:
   template <>
   BlockType * parse<BlockType *>(ReadContext& Ctx) {
     ReadContext ReservedCtx = Ctx;
-    uint8_t FirstByte = readUint8(Ctx);
-    if (FirstByte == 0x40) {
+    TypeKindImmediate TyImm = parse<TypeKindImmediate>(Ctx);
+    if (TyImm == TypeKindImmediate::Void) {
       return BlockType::create(getContext(), getContext().getVoidType());
     }
-    ValueTypeKind Kind = getValueTypeKind(FirstByte);
+    ValueTypeKind Kind = getValueTypeKind(TyImm);
     ValueType * ValTy = getContext().getValueTypeForKind(Kind);
     if (ValTy != nullptr) {
       return BlockType::create(getContext(), ValTy);
@@ -372,9 +430,9 @@ public:
   ImportDecl * parse<ImportDecl *>(ReadContext& Ctx) {
     Identifier Module = getContext().getIdentifier(readString(Ctx));
     Identifier Name = getContext().getIdentifier(readString(Ctx));
-    uint8_t Kind = readUint8(Ctx);
-    switch (Kind) {
-    case llvm::wasm::WASM_EXTERNAL_FUNCTION: {
+    uint8_t RawKind = readUint8(Ctx);
+    switch ((ExternalKindImmediate)RawKind) {
+    case ExternalKindImmediate::Func: {
       NumImportedFunctions++;
       uint32_t SigIndex = readVaruint32(Ctx);
       if (SigIndex >= NumTypes) {
@@ -382,24 +440,26 @@ public:
       }
       return ImportFuncDecl::create(getContext(), Module, Name, SigIndex);
     }
-    case llvm::wasm::WASM_EXTERNAL_TABLE: {
+    case ExternalKindImmediate::Table: {
       NumImportedTables++;
       TableType * TableTy = parse<TableType *>(Ctx);
       return ImportTableDecl::create(getContext(), Module, Name, TableTy);
     }
-    case llvm::wasm::WASM_EXTERNAL_MEMORY: {
+    case ExternalKindImmediate::Memory: {
       MemoryType * Memory = parse<MemoryType *>(Ctx);
       return ImportMemoryDecl::create(getContext(), Module, Name, Memory);
     }
-    case llvm::wasm::WASM_EXTERNAL_GLOBAL: {
+    case ExternalKindImmediate::Global: {
       NumImportedGlobals++;
       GlobalType * GlobalTy = parse<GlobalType *>(Ctx);
       return ImportGlobalDecl::create(
         getContext(), Module, Name, GlobalTy
       );
     }
-    default: llvm_unreachable("unexpected import kind");
+    case ExternalKindImmediate::Tag:
+      llvm_unreachable("unexpected import kind");
     }
+    llvm_unreachable("unexpected import kind");
   }
 
   template <>
@@ -426,21 +486,21 @@ public:
     Identifier Name = getContext().getIdentifier(readString(Ctx));
     uint8_t Kind = readUint8(Ctx);
     uint32_t Index = readVaruint32(Ctx);
-    switch (Kind) {
-    case llvm::wasm::WASM_EXTERNAL_FUNCTION:
+    switch ((ExternalKindImmediate)Kind) {
+    case ExternalKindImmediate::Func:
       // FIXME: !isDefinedFunctionIndex(Index) -> invalid function export
       return ExportFuncDecl::create(getContext(), Name, Index);
-    case llvm::wasm::WASM_EXTERNAL_GLOBAL:
+    case ExternalKindImmediate::Global:
       // FIXME: !isValidGlobalIndex(Index) -> invalid global export
       return ExportGlobalDecl::create(getContext(), Name, Index);
-    case llvm::wasm::WASM_EXTERNAL_TAG:
-      llvm_unreachable("tag is not supported");
-    case llvm::wasm::WASM_EXTERNAL_MEMORY:
+    case ExternalKindImmediate::Memory:
       return ExportMemoryDecl::create(getContext(), Name, Index);
-    case llvm::wasm::WASM_EXTERNAL_TABLE:
+    case ExternalKindImmediate::Table:
       return ExportTableDecl::create(getContext(), Name, Index);
-    default: llvm_unreachable("unexpected export kind");
+    case ExternalKindImmediate::Tag:
+      llvm_unreachable("tag is not supported");
     }
+    llvm_unreachable("unexpected export kind");
   }
 
   template <>
@@ -479,25 +539,20 @@ public:
 
   template <>
   DataDecl * parse<DataDecl *>(ReadContext& Ctx) {
-    enum class DataKind : uint32_t {
-      ActiveZerothMemory = 0,
-      Passive = 1,
-      ActiveArbitraryMemory = 2,
-    };
     uint32_t RawKind = readVaruint32(Ctx);
     assert(RawKind >= 0 && RawKind <= 2);
-    DataKind Kind = (DataKind)RawKind;
+    DataKindImmediate Kind = (DataKindImmediate)RawKind;
     switch (Kind) {
-    case DataKind::ActiveZerothMemory: {
+    case DataKindImmediate::ActiveZerothMemory: {
       ExpressionDecl * Expression = parse<ExpressionDecl *>(Ctx);
       std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
       return DataActiveDecl::create(getContext(), 0, Expression, Data);
     }
-    case DataKind::Passive: {
+    case DataKindImmediate::Passive: {
       std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
       return DataPassiveDecl::create(getContext(), Data);
     }
-    case DataKind::ActiveArbitraryMemory: {
+    case DataKindImmediate::ActiveArbitraryMemory: {
       MemIndexTy MemoryIndex = parse<MemIndexTy>(Ctx);
       ExpressionDecl * Expression = parse<ExpressionDecl *>(Ctx);
       std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
@@ -508,29 +563,25 @@ public:
     }
   }
 
-  enum class SubSectionKind : uint8_t {
-    ModuleNames = 0,
-    FuncNames = 1,
-    LocalNames = 2,
-  };
-
   template <>
-  SubSectionKind parse<SubSectionKind>(ReadContext& Ctx) {
+  SubSectionKindImmediate parse<SubSectionKindImmediate>(ReadContext& Ctx
+  ) {
     uint8_t RawSubSectionId = parse<uint8_t>(Ctx);
     assert(RawSubSectionId >= 0 && RawSubSectionId <= 2);
-    SubSectionKind SubSectionId = (SubSectionKind)RawSubSectionId;
+    SubSectionKindImmediate SubSectionId =
+      (SubSectionKindImmediate)RawSubSectionId;
     return SubSectionId;
   }
 
   template <>
   NameSubsectionDecl * parse<NameSubsectionDecl *>(ReadContext& Ctx) {
-    SubSectionKind Kind = parse<SubSectionKind>(Ctx);
+    SubSectionKindImmediate Kind = parse<SubSectionKindImmediate>(Ctx);
     switch (Kind) {
-    case SubSectionKind::ModuleNames:
+    case SubSectionKindImmediate::ModuleNames:
       return parse<ModuleNameSubsectionDecl *>(Ctx);
-    case SubSectionKind::FuncNames:
+    case SubSectionKindImmediate::FuncNames:
       return parse<FuncNameSubsectionDecl *>(Ctx);
-    case SubSectionKind::LocalNames:
+    case SubSectionKindImmediate::LocalNames:
       return parse<LocalNameSubsectionDecl *>(Ctx);
     }
   }
@@ -973,7 +1024,7 @@ public:
     FuncTypeDecls.reserve(Count);
     while (Count-- != 0) {
       uint8_t Form = readUint8(Ctx);
-      if (Form != llvm::wasm::WASM_TYPE_FUNC) {
+      if ((TypeKindImmediate)Form != TypeKindImmediate::Func) {
         llvm_unreachable("invalid signature type");
       }
       FuncType * Ty = parse<FuncType *>(Ctx);
@@ -1107,21 +1158,18 @@ public:
     Ctx.End = Ctx.Start + Section.Content.size();
     Ctx.Ptr = Ctx.Start;
 
-    switch (Section.Type) {
+    switch ((SectionKindImmediate)Section.Type) {
 #define DECL(Id, Parent)
 #define CUSTOM_SECTION_DECL(Id, Parent)
 #define SECTION_DECL(Id, _)                                              \
-  case W2N_FORMAT_GET_SEC_TYPE(Id):                                      \
+  case SectionKindImmediate::Id:                                         \
     std::cout << "Parse " << #Id << "\n";                                \
     Parsed##Id##Decl = parse##Id##Decl(Section, Ctx, SectionIdx);        \
     return Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
-    case llvm::wasm::WASM_SEC_CUSTOM:
+    case SectionKindImmediate::CustomSection:
       std::cout << "Parse CustomSection\n";
       return parseCustomSectionDecl(Section, Ctx, SectionIdx);
-    case llvm::wasm::WASM_SEC_TAG:
-      llvm_unreachable("Tag section is not supported yet.");
-      break;
     }
     llvm_unreachable("unknown section type");
   }

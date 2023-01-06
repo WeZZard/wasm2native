@@ -41,6 +41,13 @@
 #define SECTION_DECL(Id, Parent) CONTEXT_DECL(Id, Parent)
 #endif
 
+/// CUSTOM_SECTION_DECL(Id, Parent)
+///   Used for subclasses of CustomSectionDecl.  The default behavior is
+///   to do the same as for CONTEXT_DECL.
+#ifndef CUSTOM_SECTION_DECL
+#define CUSTOM_SECTION_DECL(Id, Parent) SECTION_DECL(Id, Parent)
+#endif
+
 /// ABSTRACT_FUNCTION_DECL(Id, Parent)
 ///   Used for subclasses of AbstractFunction. The default behavior is
 ///   to do the same as for CONTEXT_DECL.
@@ -74,7 +81,9 @@ ABSTRACT_DECL(Value, Decl)
   ABSTRACT_DECL(Type, ValueDecl)
     CONTEXT_VALUE_DECL(Module, TypeDecl)
     ABSTRACT_DECL(Section, TypeDecl)
-      SECTION_DECL(CustomSection, SectionDecl)
+      ABSTRACT_DECL(CustomSection, SectionDecl)
+        CUSTOM_SECTION_DECL(NameSection, CustomSectionDecl)
+        DECL_RANGE(CustomSection, NameSection, NameSection)
       SECTION_DECL(TypeSection, SectionDecl)
       SECTION_DECL(ImportSection, SectionDecl)
       SECTION_DECL(FuncSection, SectionDecl)
@@ -87,7 +96,7 @@ ABSTRACT_DECL(Value, Decl)
       SECTION_DECL(CodeSection, SectionDecl)
       SECTION_DECL(DataSection, SectionDecl)
       SECTION_DECL(DataCountSection, SectionDecl)
-      DECL_RANGE(Section, CustomSection, DataCountSection)
+      DECL_RANGE(Section, NameSection, DataCountSection)
     VALUE_DECL(FuncType, TypeDecl)
     ABSTRACT_DECL(Import, TypeDecl)
       VALUE_DECL(ImportFunc, ImportDecl)
@@ -95,7 +104,6 @@ ABSTRACT_DECL(Value, Decl)
       VALUE_DECL(ImportMemory, ImportDecl)
       VALUE_DECL(ImportGlobal, ImportDecl)
       DECL_RANGE(Import, ImportFunc, ImportGlobal)
-    DECL_RANGE(Type, Module, ImportGlobal)
     VALUE_DECL(Table, TypeDecl)
     VALUE_DECL(Memory, TypeDecl)
     VALUE_DECL(Global, TypeDecl)
@@ -108,8 +116,13 @@ ABSTRACT_DECL(Value, Decl)
     VALUE_DECL(Code, TypeDecl)
     VALUE_DECL(Func, TypeDecl)
     VALUE_DECL(Local, TypeDecl)
+    ABSTRACT_DECL(Data, TypeDecl)
+      VALUE_DECL(DataActive, DataDecl)
+      VALUE_DECL(DataPassive, DataDecl)
+      DECL_RANGE(Data, DataActive, DataPassive)
     VALUE_DECL(Expression, TypeDecl)
-  DECL_RANGE(Value, Module, Expression)
+  DECL_RANGE(Type, Module, Expression)
+DECL_RANGE(Value, Module, Expression)
 
 LAST_DECL(Expression)
 

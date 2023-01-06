@@ -2,6 +2,7 @@
 #define W2N_AST_DECL_H
 
 #include <_types/_uint32_t.h>
+#include <_types/_uint8_t.h>
 #include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/StringRef.h>
 #include <cstdint>
@@ -455,20 +456,52 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, CodeSection);
 };
 
+class DataDecl;
+
 class DataSectionDecl final : public SectionDecl {
+private:
+
+  std::vector<DataDecl *> Data;
+
+  DataSectionDecl(ASTContext * Ctx, std::vector<DataDecl *> Data) :
+    SectionDecl(DeclKind::CodeSection, Ctx),
+    Data(Data) {
+  }
+
 public:
+
+  static DataSectionDecl *
+  create(ASTContext& Ctx, std::vector<DataDecl *> Data) {
+    return new (Ctx) DataSectionDecl(&Ctx, Data);
+  }
+
+  std::vector<DataDecl *>& getData() {
+    return Data;
+  }
+
+  const std::vector<DataDecl *>& getData() const {
+    return Data;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataSection);
 };
 
-class CustomSectionDecl final : public SectionDecl {
+class CustomSectionDecl : public SectionDecl {
 public:
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, CustomSection);
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, CustomSectionDecl);
+};
+
+class NameSectionDecl final : public CustomSectionDecl {
+public:
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, NameSection);
 };
 
 class FuncTypeDecl final : public TypeDecl {
@@ -1048,6 +1081,101 @@ public:
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Local);
+};
+
+class DataDecl : public TypeDecl {
+protected:
+
+  std::vector<uint8_t> Data;
+
+  DataDecl(
+    DeclKind Kind, ASTContext * Context, std::vector<uint8_t> Data
+  ) :
+    TypeDecl(Kind, Context),
+    Data(Data) {
+  }
+
+public:
+
+  std::vector<uint8_t>& getData() {
+    return Data;
+  }
+
+  const std::vector<uint8_t>& getData() const {
+    return Data;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, DataDecl);
+};
+
+class ExpressionDecl;
+
+class DataActiveDecl : public DataDecl {
+private:
+
+  uint32_t MemoryIndex;
+
+  ExpressionDecl * Expression;
+
+  DataActiveDecl(
+    ASTContext * Context,
+    uint32_t MemoryIndex,
+    ExpressionDecl * Expression,
+    std::vector<uint8_t> Data
+  ) :
+    DataDecl(DeclKind::DataPassive, Context, Data),
+    MemoryIndex(MemoryIndex),
+    Expression(Expression) {
+  }
+
+public:
+
+  static DataActiveDecl * create(
+    ASTContext& Context,
+    uint32_t MemoryIndex,
+    ExpressionDecl * Expression,
+    std::vector<uint8_t> Data
+  ) {
+    return new (Context)
+      DataActiveDecl(&Context, MemoryIndex, Expression, Data);
+  }
+
+  uint32_t getMemoryIndex() const {
+    return MemoryIndex;
+  }
+
+  ExpressionDecl * getExpression() {
+    return Expression;
+  }
+
+  const ExpressionDecl * getExpression() const {
+    return Expression;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataActive);
+};
+
+class DataPassiveDecl : public DataDecl {
+private:
+
+  DataPassiveDecl(ASTContext * Context, std::vector<uint8_t> Data) :
+    DataDecl(DeclKind::DataPassive, Context, Data) {
+  }
+
+public:
+
+  static DataPassiveDecl *
+  create(ASTContext& Context, std::vector<uint8_t> Data) {
+    return new (Context) DataPassiveDecl(&Context, Data);
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataPassive);
 };
 
 class InstNode;

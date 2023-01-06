@@ -14,6 +14,7 @@
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/LEB128.h>
 #include <llvm/Support/MemoryBufferRef.h>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -258,6 +259,17 @@ public:
     return readVaruint32(Ctx);
   }
 
+  /// FIXME: Create wrapper types for \c uint8_t based indices
+  template <>
+  uint8_t parse<uint8_t>(ReadContext& Ctx) {
+    return readUint8(Ctx);
+  }
+
+  template <>
+  DataDecl * parse<DataDecl *>(ReadContext& Ctx) {
+    return parseDataDecl(Ctx);
+  }
+
   template <typename T>
   std::vector<T> parseVector(ReadContext& Ctx) {
     uint32_t Count = readVaruint32(Ctx);
@@ -419,6 +431,36 @@ public:
   ExpressionDecl * parseExpressionDecl(ReadContext& Ctx) {
     std::vector<InstNode> Instructions = parseInstructions(Ctx);
     return ExpressionDecl::create(getContext(), Instructions);
+  }
+
+  DataDecl * parseDataDecl(ReadContext& Ctx) {
+    enum class DataKind : uint32_t {
+      ActiveZerothMemory = 0,
+      Passive = 1,
+      ActiveArbitraryMemory = 2,
+    };
+    uint32_t RawKind = readVaruint32(Ctx);
+    assert(RawKind >= 0 && RawKind <= 2);
+    DataKind Kind = (DataKind)RawKind;
+    switch (Kind) {
+    case DataKind::ActiveZerothMemory: {
+      ExpressionDecl * Expression = parseExpressionDecl(Ctx);
+      std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
+      return DataActiveDecl::create(getContext(), 0, Expression, Data);
+    }
+    case DataKind::Passive: {
+      std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
+      return DataPassiveDecl::create(getContext(), Data);
+    }
+    case DataKind::ActiveArbitraryMemory: {
+      uint32_t MemoryIndex = parseMemIndex(Ctx);
+      ExpressionDecl * Expression = parseExpressionDecl(Ctx);
+      std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
+      return DataActiveDecl::create(
+        getContext(), MemoryIndex, Expression, Data
+      );
+    }
+    }
   }
 
 #pragma mark Parsing Instructions
@@ -937,7 +979,10 @@ public:
   DataSectionDecl * parseDataSectionDecl(
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
-    w2n_unimplemented();
+    DataSection = SectionIdx;
+    /// FIXME: \c Validate vector count with DataCountSection's data;
+    std::vector<DataDecl *> Data = parseVector<DataDecl *>(Ctx);
+    return DataSectionDecl::create(getContext(), Data);
   }
 
   DataCountSectionDecl * parseDataCountSectionDecl(
@@ -964,11 +1009,14 @@ public:
 
     switch (Section.Type) {
 #define DECL(Id, Parent)
+#define CUSTOM_SECTION_DECL(Id, Parent)
 #define SECTION_DECL(Id, _)                                              \
   case W2N_FORMAT_GET_SEC_TYPE(Id):                                      \
     Parsed##Id##Decl = parse##Id##Decl(Section, Ctx, SectionIdx);        \
     return Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
+    case llvm::wasm::WASM_SEC_CUSTOM:
+      return parseCustomSectionDecl(Section, Ctx, SectionIdx);
     case llvm::wasm::WASM_SEC_TAG:
       llvm_unreachable("Tag section is not supported yet.");
       break;

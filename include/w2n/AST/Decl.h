@@ -1,8 +1,6 @@
 #ifndef W2N_AST_DECL_H
 #define W2N_AST_DECL_H
 
-#include <_types/_uint32_t.h>
-#include <_types/_uint8_t.h>
 #include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/StringRef.h>
 #include <cstdint>
@@ -10,6 +8,7 @@
 #include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/InstNode.h>
+#include <w2n/AST/NameAssociation.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/InlineBitfield.h>
@@ -424,6 +423,86 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataCountSection);
 };
 
+class CustomSectionDecl : public SectionDecl {
+protected:
+
+  CustomSectionDecl(DeclKind Kind, ASTContext * Context) :
+    SectionDecl(Kind, Context) {
+  }
+
+public:
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, CustomSectionDecl);
+};
+
+class ModuleNameSubsectionDecl;
+class FuncNameSubsectionDecl;
+class LocalNameSubsectionDecl;
+
+class NameSectionDecl final : public CustomSectionDecl {
+private:
+
+  ModuleNameSubsectionDecl * ModuleNames;
+
+  FuncNameSubsectionDecl * FuncNames;
+
+  LocalNameSubsectionDecl * LocalNames;
+
+  NameSectionDecl(
+    ASTContext * Context,
+    ModuleNameSubsectionDecl * ModuleNames,
+    FuncNameSubsectionDecl * FuncNames,
+    LocalNameSubsectionDecl * LocalNames
+  ) :
+    CustomSectionDecl(DeclKind::NameSection, Context),
+    ModuleNames(ModuleNames),
+    FuncNames(FuncNames),
+    LocalNames(LocalNames) {
+  }
+
+public:
+
+  static NameSectionDecl * create(
+    ASTContext& Context,
+    ModuleNameSubsectionDecl * ModuleNames,
+    FuncNameSubsectionDecl * FuncNames,
+    LocalNameSubsectionDecl * LocalNames
+  ) {
+    return new (Context)
+      NameSectionDecl(&Context, ModuleNames, FuncNames, LocalNames);
+  }
+
+  ModuleNameSubsectionDecl * getModuleNames() {
+    return ModuleNames;
+  }
+
+  const ModuleNameSubsectionDecl * getModuleNames() const {
+    return ModuleNames;
+  }
+
+  FuncNameSubsectionDecl * getFuncNames() {
+    return FuncNames;
+  }
+
+  const FuncNameSubsectionDecl * getFuncNames() const {
+    return FuncNames;
+  }
+
+  LocalNameSubsectionDecl * getLocalNames() {
+    return LocalNames;
+  }
+
+  const LocalNameSubsectionDecl * getLocalNames() const {
+    return LocalNames;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, NameSection);
+};
+
 class CodeDecl;
 
 class CodeSectionDecl final : public SectionDecl {
@@ -488,20 +567,117 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataSection);
 };
 
-class CustomSectionDecl : public SectionDecl {
+class NameSubsectionDecl : public TypeDecl {
+protected:
+
+  NameSubsectionDecl(DeclKind Kind, ASTContext * Context) :
+    TypeDecl(Kind, Context){};
+
 public:
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, CustomSectionDecl);
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, NameSubsectionDecl);
 };
 
-class NameSectionDecl final : public CustomSectionDecl {
+class ModuleNameSubsectionDecl final : public NameSubsectionDecl {
+private:
+
+  std::vector<Identifier> Names;
+
+  ModuleNameSubsectionDecl(
+    ASTContext * Context, std::vector<Identifier> Names
+  ) :
+    NameSubsectionDecl(DeclKind::ModuleNameSubsection, Context),
+    Names(Names) {
+  }
+
 public:
+
+  static ModuleNameSubsectionDecl *
+  create(ASTContext& Context, std::vector<Identifier> Names) {
+    return new (Context) ModuleNameSubsectionDecl(&Context, Names);
+  }
+
+  std::vector<Identifier>& getNameMaps() {
+    return Names;
+  }
+
+  const std::vector<Identifier>& getNameMaps() const {
+    return Names;
+  }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, NameSection);
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, ModuleNameSubsection);
+};
+
+class FuncNameSubsectionDecl final : public NameSubsectionDecl {
+private:
+
+  std::vector<NameAssociation> NameMap;
+
+  FuncNameSubsectionDecl(
+    ASTContext * Context, std::vector<NameAssociation> NameMap
+  ) :
+    NameSubsectionDecl(DeclKind::ModuleNameSubsection, Context),
+    NameMap(NameMap) {
+  }
+
+public:
+
+  static FuncNameSubsectionDecl *
+  create(ASTContext& Context, std::vector<NameAssociation> NameMap) {
+    return new (Context) FuncNameSubsectionDecl(&Context, NameMap);
+  }
+
+  std::vector<NameAssociation>& getNameMap() {
+    return NameMap;
+  }
+
+  const std::vector<NameAssociation>& getNameMap() const {
+    return NameMap;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, FuncNameSubsection);
+};
+
+class LocalNameSubsectionDecl final : public NameSubsectionDecl {
+private:
+
+  std::vector<IndirectNameAssociation> IndirectNameMap;
+
+  LocalNameSubsectionDecl(
+    ASTContext * Context,
+    std::vector<IndirectNameAssociation> IndirectNameMaps
+  ) :
+    NameSubsectionDecl(DeclKind::ModuleNameSubsection, Context),
+    IndirectNameMap(IndirectNameMaps) {
+  }
+
+public:
+
+  static LocalNameSubsectionDecl * create(
+    ASTContext& Context,
+    std::vector<IndirectNameAssociation> IndirectNameMap
+  ) {
+    return new (Context)
+      LocalNameSubsectionDecl(&Context, IndirectNameMap);
+  }
+
+  std::vector<IndirectNameAssociation>& getIndirectNameMap() {
+    return IndirectNameMap;
+  }
+
+  const std::vector<IndirectNameAssociation>& getIndirectNameMap() const {
+    return IndirectNameMap;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, LocalNameSubsection);
 };
 
 class FuncTypeDecl final : public TypeDecl {

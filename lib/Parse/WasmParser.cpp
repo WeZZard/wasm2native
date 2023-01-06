@@ -1,3 +1,4 @@
+#include <_types/_uint32_t.h>
 #include "llvm/ADT/None.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/APInt.h>
@@ -25,12 +26,15 @@
 #include <w2n/AST/Builtins.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Expr.h>
+#include <w2n/AST/Identifier.h>
 #include <w2n/AST/InstNode.h>
 #include <w2n/AST/Instructions.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/NameAssociation.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/AST/Stmt.h>
 #include <w2n/AST/Type.h>
+#include <w2n/Basic/Compiler.h>
 #include <w2n/Basic/ImplicitTrailingObject.h>
 #include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/SourceLoc.h>
@@ -221,17 +225,7 @@ public:
   template <typename T>
   T parse(ReadContext& Ctx);
 
-#pragma mark Parsing Indices
-
-  template <>
-  uint32_t parse<uint32_t>(ReadContext& Ctx) {
-    return readVaruint32(Ctx);
-  }
-
-  template <>
-  uint8_t parse<uint8_t>(ReadContext& Ctx) {
-    return readUint8(Ctx);
-  }
+#pragma mark Parsing Basic Types
 
   // Merging parseVector into parse series funciton needs function partial
   // specialization which is not supported in C++.
@@ -246,6 +240,21 @@ public:
       Vector.push_back(Value);
     }
     return Vector;
+  }
+
+  template <>
+  uint32_t parse<uint32_t>(ReadContext& Ctx) {
+    return readVaruint32(Ctx);
+  }
+
+  template <>
+  uint8_t parse<uint8_t>(ReadContext& Ctx) {
+    return readUint8(Ctx);
+  }
+
+  template <>
+  Identifier parse<Identifier>(ReadContext& Ctx) {
+    return getContext().getIdentifier(readString(Ctx));
   }
 
 #pragma mark Parsing Types
@@ -337,6 +346,24 @@ public:
     Ctx = ReservedCtx;
     TypeIndexType * TypeIndexTy = parse<TypeIndexType *>(Ctx);
     return BlockType::create(getContext(), TypeIndexTy);
+  }
+
+#pragma mark Parsing Variant Name Associations
+
+  template <>
+  NameAssociation parse<NameAssociation>(ReadContext& Ctx) {
+    uint32_t Index = parse<uint32_t>(Ctx);
+    Identifier Name = parse<Identifier>(Ctx);
+    return {Index, Name};
+  }
+
+  template <>
+  IndirectNameAssociation parse<IndirectNameAssociation>(ReadContext& Ctx
+  ) {
+    uint32_t Index = parse<uint32_t>(Ctx);
+    std::vector<NameAssociation> NameMap =
+      parseVector<NameAssociation>(Ctx);
+    return {Index, NameMap};
   }
 
 #pragma mark Parsing Direct Section Contents
@@ -479,6 +506,62 @@ public:
       );
     }
     }
+  }
+
+  enum class SubSectionKind : uint8_t {
+    ModuleNames = 0,
+    FuncNames = 1,
+    LocalNames = 2,
+  };
+
+  template <>
+  SubSectionKind parse<SubSectionKind>(ReadContext& Ctx) {
+    uint8_t RawSubSectionId = parse<uint8_t>(Ctx);
+    assert(RawSubSectionId >= 0 && RawSubSectionId <= 2);
+    SubSectionKind SubSectionId = (SubSectionKind)RawSubSectionId;
+    return SubSectionId;
+  }
+
+  template <>
+  NameSubsectionDecl * parse<NameSubsectionDecl *>(ReadContext& Ctx) {
+    SubSectionKind Kind = parse<SubSectionKind>(Ctx);
+    switch (Kind) {
+    case SubSectionKind::ModuleNames:
+      return parse<ModuleNameSubsectionDecl *>(Ctx);
+    case SubSectionKind::FuncNames:
+      return parse<FuncNameSubsectionDecl *>(Ctx);
+    case SubSectionKind::LocalNames:
+      return parse<LocalNameSubsectionDecl *>(Ctx);
+    }
+  }
+
+  template <>
+  ModuleNameSubsectionDecl *
+  parse<ModuleNameSubsectionDecl *>(ReadContext& Ctx) {
+    W2N_UNUSED
+    uint32_t Size = parse<uint32_t>(Ctx);
+    std::vector<Identifier> Names = parseVector<Identifier>(Ctx);
+    return ModuleNameSubsectionDecl::create(getContext(), Names);
+  }
+
+  template <>
+  FuncNameSubsectionDecl *
+  parse<FuncNameSubsectionDecl *>(ReadContext& Ctx) {
+    W2N_UNUSED
+    uint32_t Size = parse<uint32_t>(Ctx);
+    std::vector<NameAssociation> NameMap =
+      parseVector<NameAssociation>(Ctx);
+    return FuncNameSubsectionDecl::create(getContext(), NameMap);
+  }
+
+  template <>
+  LocalNameSubsectionDecl *
+  parse<LocalNameSubsectionDecl *>(ReadContext& Ctx) {
+    W2N_UNUSED
+    uint32_t Size = parse<uint32_t>(Ctx);
+    std::vector<IndirectNameAssociation> IndirectNameMap =
+      parseVector<IndirectNameAssociation>(Ctx);
+    return LocalNameSubsectionDecl::create(getContext(), IndirectNameMap);
   }
 
 #pragma mark Parsing Instructions
@@ -811,7 +894,74 @@ public:
   NameSectionDecl * parseNameSectionDecl(
     const WasmSection& Section, ReadContext& Ctx, size_t SectionIdx
   ) {
-    w2n_unimplemented();
+    if (Ctx.Ptr == Ctx.End) {
+      return NameSectionDecl::create(
+        getContext(), nullptr, nullptr, nullptr
+      );
+    }
+
+    struct SubsectionStorageRAII {
+      ModuleNameSubsectionDecl * ModuleNames;
+      FuncNameSubsectionDecl * FuncNames;
+      LocalNameSubsectionDecl * LocalNames;
+
+      void add(NameSubsectionDecl * NameSubsection) {
+        ModuleNameSubsectionDecl * ModuleNames =
+          dyn_cast<ModuleNameSubsectionDecl>(NameSubsection);
+        if (ModuleNames != nullptr) {
+          this->ModuleNames = ModuleNames;
+          return;
+        }
+
+        FuncNameSubsectionDecl * FuncNames =
+          dyn_cast<FuncNameSubsectionDecl>(NameSubsection);
+        if (FuncNames != nullptr) {
+          this->FuncNames = FuncNames;
+          return;
+        }
+
+        LocalNameSubsectionDecl * LocalNames =
+          dyn_cast<LocalNameSubsectionDecl>(NameSubsection);
+        if (LocalNames != nullptr) {
+          this->LocalNames = LocalNames;
+          return;
+        }
+      }
+    };
+
+    SubsectionStorageRAII Store = SubsectionStorageRAII();
+
+    NameSubsectionDecl * NameSubsection0 =
+      parse<NameSubsectionDecl *>(Ctx);
+    Store.add(NameSubsection0);
+
+    if (Ctx.Ptr == Ctx.End) {
+      return NameSectionDecl::create(
+        getContext(), Store.ModuleNames, Store.FuncNames, Store.LocalNames
+      );
+    }
+
+    NameSubsectionDecl * NameSubsection1 =
+      parse<NameSubsectionDecl *>(Ctx);
+    Store.add(NameSubsection1);
+
+    if (Ctx.Ptr == Ctx.End) {
+      return NameSectionDecl::create(
+        getContext(), Store.ModuleNames, Store.FuncNames, Store.LocalNames
+      );
+    }
+
+    NameSubsectionDecl * NameSubsection2 =
+      parse<NameSubsectionDecl *>(Ctx);
+    Store.add(NameSubsection2);
+
+    if (Ctx.Ptr != Ctx.End) {
+      llvm_unreachable("custom section name ended prematurely");
+    }
+
+    return NameSectionDecl::create(
+      getContext(), Store.ModuleNames, Store.FuncNames, Store.LocalNames
+    );
   }
 
   TypeSectionDecl * parseTypeSectionDecl(

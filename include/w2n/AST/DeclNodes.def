@@ -48,6 +48,13 @@
 #define CUSTOM_SECTION_DECL(Id, Parent) SECTION_DECL(Id, Parent)
 #endif
 
+/// NAME_SUB_SECTION_DECL(Id, Parent)
+///   Used for subclasses of NameSubSectionDecl.  The default behavior is
+///   to do the same as for CONTEXT_DECL.
+#ifndef NAME_SUB_SECTION_DECL
+#define NAME_SUB_SECTION_DECL(Id, Parent) CONTEXT_DECL(Id, Parent)
+#endif
+
 /// ABSTRACT_FUNCTION_DECL(Id, Parent)
 ///   Used for subclasses of AbstractFunction. The default behavior is
 ///   to do the same as for CONTEXT_DECL.
@@ -97,6 +104,11 @@ ABSTRACT_DECL(Value, Decl)
       SECTION_DECL(DataSection, SectionDecl)
       SECTION_DECL(DataCountSection, SectionDecl)
       DECL_RANGE(Section, NameSection, DataCountSection)
+    ABSTRACT_DECL(NameSubsection, TypeDecl)
+      NAME_SUB_SECTION_DECL(ModuleNameSubsection, NameSubsectionDecl)
+      NAME_SUB_SECTION_DECL(FuncNameSubsection, NameSubsectionDecl)
+      NAME_SUB_SECTION_DECL(LocalNameSubsection, NameSubsectionDecl)
+      DECL_RANGE(NameSubsection, ModuleNameSubsection, LocalNameSubsection)
     VALUE_DECL(FuncType, TypeDecl)
     ABSTRACT_DECL(Import, TypeDecl)
       VALUE_DECL(ImportFunc, ImportDecl)

@@ -417,7 +417,7 @@ public:
 
   static IntegerConstExpr *
   create(ASTContext& Ctx, llvm::APInt Value, IntegerType * Ty) {
-    return new (&Ctx) IntegerConstExpr(Value, Ty);
+    return new (Ctx) IntegerConstExpr(Value, Ty);
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, IntegerConst);
@@ -445,7 +445,7 @@ public:
 
   static FloatConstExpr *
   create(ASTContext& Ctx, llvm::APFloat Value, FloatType * Ty) {
-    return new (&Ctx) FloatConstExpr(Value, Ty);
+    return new (Ctx) FloatConstExpr(Value, Ty);
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, FloatConst);

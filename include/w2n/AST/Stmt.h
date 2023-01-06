@@ -84,7 +84,7 @@ private:
 public:
 
   static UnreachableStmt * create(ASTContext& Ctx) {
-    return new (&Ctx) UnreachableStmt();
+    return new (Ctx) UnreachableStmt();
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Unreachable);
@@ -116,7 +116,7 @@ public:
     std::vector<InstNode> Instructions,
     EndStmt * End
   ) {
-    return new (&Ctx) BlockStmt(Ty, Instructions, End);
+    return new (Ctx) BlockStmt(Ty, Instructions, End);
   }
 
   BlockType * getType() {
@@ -155,7 +155,7 @@ private:
 public:
 
   static EndStmt * create(ASTContext& Ctx) {
-    return new (&Ctx) EndStmt();
+    return new (Ctx) EndStmt();
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, End);
@@ -198,7 +198,7 @@ public:
     std::vector<InstNode> Instructions,
     EndStmt * End
   ) {
-    return new (&Ctx) LoopStmt(Ty, Instructions, End);
+    return new (Ctx) LoopStmt(Ty, Instructions, End);
   }
 
   BlockType * getType() {
@@ -268,7 +268,7 @@ public:
     llvm::Optional<std::vector<InstNode>> FalseInstructions,
     EndStmt * End
   ) {
-    return new (&Ctx)
+    return new (Ctx)
       IfStmt(Ty, TrueInstructions, Else, FalseInstructions, End);
   }
 
@@ -416,7 +416,7 @@ private:
 public:
 
   static ReturnStmt * create(ASTContext& Ctx) {
-    return new (&Ctx) ReturnStmt();
+    return new (Ctx) ReturnStmt();
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Stmt, Return);

@@ -1112,10 +1112,12 @@ public:
 #define CUSTOM_SECTION_DECL(Id, Parent)
 #define SECTION_DECL(Id, _)                                              \
   case W2N_FORMAT_GET_SEC_TYPE(Id):                                      \
+    std::cout << "Parse " << #Id << "\n";                                \
     Parsed##Id##Decl = parse##Id##Decl(Section, Ctx, SectionIdx);        \
     return Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
     case llvm::wasm::WASM_SEC_CUSTOM:
+      std::cout << "Parse CustomSection\n";
       return parseCustomSectionDecl(Section, Ctx, SectionIdx);
     case llvm::wasm::WASM_SEC_TAG:
       llvm_unreachable("Tag section is not supported yet.");

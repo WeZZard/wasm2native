@@ -140,6 +140,8 @@ LAST_DECL(Expression)
 
 // clang-format on
 
+#undef CUSTOM_SECTION_DECL
+#undef NAME_SUB_SECTION_DECL
 #undef SECTION_DECL
 #undef CONTEXT_DECL
 #undef ITERABLE_DECL

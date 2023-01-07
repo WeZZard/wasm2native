@@ -16,8 +16,8 @@
 //
 //===----------------------------------------------------------------===//
 
-#ifndef W2N_AST_AST_NODE_H
-#define W2N_AST_AST_NODE_H
+#ifndef W2N_AST_INSTNODE_H
+#define W2N_AST_INSTNODE_H
 
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/PointerUnion.h>
@@ -93,4 +93,4 @@ struct DenseMapInfo<InstNode> {
 };
 } // namespace llvm
 
-#endif // W2N_AST_AST_NODE_H
+#endif // W2N_AST_INSTNODE_H

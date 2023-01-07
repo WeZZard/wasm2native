@@ -26,12 +26,12 @@ enum class AllocationArena {
 
 namespace detail {
 void * allocateInASTContext(
-  size_t bytes,
-  const ASTContext& ctx,
-  AllocationArena arena,
-  unsigned alignment
+  size_t Bytes,
+  const ASTContext& Ctx,
+  AllocationArena Arena,
+  unsigned Alignment
 );
-}
+} // namespace detail
 
 /**
  * @brief Types inheriting from this class are intended to be allocated in
@@ -56,12 +56,12 @@ public:
   // placement new.
 
   void * operator new(
-    size_t bytes,
-    const ASTContext& ctx,
-    AllocationArena arena = AllocationArena::Permanent,
-    unsigned alignment = alignof(AlignTy)
+    size_t Bytes,
+    const ASTContext& Ctx,
+    AllocationArena Arena = AllocationArena::Permanent,
+    unsigned Alignment = alignof(AlignTy)
   ) {
-    return detail::allocateInASTContext(bytes, ctx, arena, alignment);
+    return detail::allocateInASTContext(Bytes, Ctx, Arena, Alignment);
   }
 
   void * operator new(size_t Bytes, void * Mem) throw() {

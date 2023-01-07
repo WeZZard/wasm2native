@@ -117,7 +117,8 @@ CheckOptions:
 proto_implemented\
 |report_prototype_implementation\
 |report_assertion\
-|simple_display"
+|simple_display\
+|hash_value"
   - key: readability-identifier-naming.GlobalPointerCase
     value: CamelCase
   - key: readability-identifier-naming.GlobalVariableCase

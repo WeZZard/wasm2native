@@ -143,6 +143,8 @@ static uint8_t readUint8(ReadContext& Ctx) {
   return *Ctx.Ptr++;
 }
 
+W2N_UNUSED
+
 static uint32_t readUint32(ReadContext& Ctx) {
   if (Ctx.Ptr + 4 > Ctx.End) {
     llvm_unreachable("EOF while reading uint32");
@@ -151,6 +153,8 @@ static uint32_t readUint32(ReadContext& Ctx) {
   Ctx.Ptr += 4;
   return Result;
 }
+
+W2N_UNUSED
 
 static int32_t readFloat32(ReadContext& Ctx) {
   if (Ctx.Ptr + 4 > Ctx.End) {
@@ -161,6 +165,8 @@ static int32_t readFloat32(ReadContext& Ctx) {
   Ctx.Ptr += sizeof(Result);
   return Result;
 }
+
+W2N_UNUSED
 
 static int64_t readFloat64(ReadContext& Ctx) {
   if (Ctx.Ptr + 8 > Ctx.End) {
@@ -229,6 +235,8 @@ static uint32_t readVaruint32(ReadContext& Ctx) {
   return Result;
 }
 
+W2N_UNUSED
+
 static int64_t readVarint64(ReadContext& Ctx) {
   return readLEB128(Ctx);
 }
@@ -266,7 +274,7 @@ public:
   }
 
   ASTContext& getContext() {
-    return Parser->File.getASTContext();
+    return const_cast<const SourceFile&>(Parser->File).getASTContext();
   }
 
   const ASTContext& getContext() const {

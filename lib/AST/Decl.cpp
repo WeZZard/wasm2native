@@ -38,7 +38,43 @@ DescriptiveDeclKind Decl::getDescriptiveKind() const {
 StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) const {
 #define W2N_ENTRY(Kind, String)                                          \
   case DescriptiveDeclKind::Kind: return String
-  switch (K) { W2N_ENTRY(Module, "module"); }
+  switch (K) {
+    W2N_ENTRY(Module, "module");
+    W2N_ENTRY(NameSection, "custom section - name");
+    W2N_ENTRY(TypeSection, "type section");
+    W2N_ENTRY(ImportSection, "import section");
+    W2N_ENTRY(FuncSection, "func section");
+    W2N_ENTRY(TableSection, "table section");
+    W2N_ENTRY(MemorySection, "memory section");
+    W2N_ENTRY(GlobalSection, "global section");
+    W2N_ENTRY(ExportSection, "export section");
+    W2N_ENTRY(StartSection, "start section");
+    W2N_ENTRY(ElementSection, "element section");
+    W2N_ENTRY(CodeSection, "code section");
+    W2N_ENTRY(DataSection, "data section");
+    W2N_ENTRY(DataCountSection, "data count section");
+    W2N_ENTRY(ModuleNameSubsection, "module name sub-section");
+    W2N_ENTRY(FuncNameSubsection, "function name sub-section");
+    W2N_ENTRY(LocalNameSubsection, "local name sub-section");
+    W2N_ENTRY(FuncType, "function type");
+    W2N_ENTRY(ImportFunc, "import function");
+    W2N_ENTRY(ImportTable, "import table");
+    W2N_ENTRY(ImportMemory, "import memory");
+    W2N_ENTRY(ImportGlobal, "import global");
+    W2N_ENTRY(Table, "table");
+    W2N_ENTRY(Memory, "memory");
+    W2N_ENTRY(Global, "global");
+    W2N_ENTRY(ExportFunc, "export function");
+    W2N_ENTRY(ExportTable, "export table");
+    W2N_ENTRY(ExportMemory, "export memory");
+    W2N_ENTRY(ExportGlobal, "export global");
+    W2N_ENTRY(Code, "code");
+    W2N_ENTRY(Func, "function");
+    W2N_ENTRY(Local, "local");
+    W2N_ENTRY(DataActive, "data segment - active");
+    W2N_ENTRY(DataPassive, "data segment - passive");
+    W2N_ENTRY(Expression, "expression");
+  }
 #undef ENTRY
   llvm_unreachable("bad DescriptiveDeclKind");
 }

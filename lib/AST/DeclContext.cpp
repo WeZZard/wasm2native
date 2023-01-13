@@ -14,8 +14,8 @@ DeclContextKind DeclContext::getContextKind() const {
     const auto * D = reinterpret_cast<const Decl *>(this + 1);
     switch (D->getKind()) {
     case DeclKind::Module: return DeclContextKind::Module;
+    default: llvm_unreachable("Unhandled Decl kind");
     }
-    llvm_unreachable("Unhandled Decl kind");
   }
   }
   llvm_unreachable("Unhandled DeclContext ASTHierarchy");

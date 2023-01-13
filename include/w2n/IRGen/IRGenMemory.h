@@ -1,0 +1,6 @@
+#ifndef W2N_IRGEN_IRGENMEMORY_H
+#define W2N_IRGEN_IRGENMEMORY_H
+
+namespace w2n {}
+
+#endif // W2N_IRGEN_IRGENMEMORY_H

@@ -1,12 +1,12 @@
 #ifndef W2N_AST_EXPR_H
 #define W2N_AST_EXPR_H
 
-#include <_types/_uint32_t.h>
-#include "llvm/ADT/APFloat.h"
-#include "llvm/ADT/APInt.h"
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/APInt.h>
 #include <cstdint>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTContext.h>
+#include <w2n/AST/ASTWalker.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/AST/Type.h>
@@ -80,9 +80,11 @@ public:
   SourceLoc getLoc() const;
 
   /// This recursively walks the AST rooted at this expression.
-  // FIXME: Expr * walk(ASTWalker& walker);
+  Expr * walk(ASTWalker& Walker);
 
-  // FIXME: Expr * walk(ASTWalker&& walker);
+  Expr * walk(ASTWalker&& Walker) {
+    return walk(Walker);
+  }
 
   W2N_DEBUG_DUMP;
 

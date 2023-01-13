@@ -1,5 +1,6 @@
 add_w2n_host_library(w2nAST STATIC
   ASTContext.cpp
+  ASTWalker.cpp
   Builtins.cpp
   Decl.cpp
   DeclContext.cpp

@@ -72,4 +72,3 @@ LAST_STMT(Return)
 #undef ABSTRACT_STMT
 #undef STMT
 #undef LAST_STMT
-InstNode

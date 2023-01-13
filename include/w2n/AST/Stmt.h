@@ -59,12 +59,15 @@ public:
   SourceLoc getEndLoc() const;
 
   SourceRange getSourceRange() const {
-    w2n_proto_implemented([] { return SourceRange(); });
+    return w2n_proto_implemented([] { return SourceRange(); });
   }
 
   /// walk - This recursively walks the AST rooted at this statement.
-  // FIXME: Stmt *walk(ASTWalker &walker);
-  // FIXME: Stmt *walk(ASTWalker &&walker);
+  Stmt * walk(ASTWalker& Walker);
+
+  Stmt * walk(ASTWalker&& Walker) {
+    return walk(Walker);
+  }
 
   W2N_DEBUG_DUMP;
 

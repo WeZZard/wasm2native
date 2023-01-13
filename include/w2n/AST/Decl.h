@@ -5,6 +5,7 @@
 #include <llvm/ADT/StringRef.h>
 #include <cstdint>
 #include <w2n/AST/ASTAllocated.h>
+#include <w2n/AST/ASTWalker.h>
 #include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/InstNode.h>
@@ -132,6 +133,13 @@ public:
 
   /// Returns the source range of the entire declaration.
   SourceRange getSourceRange() const;
+
+  /// This recursively walks the AST rooted at this expression.
+  bool walk(ASTWalker& Walker);
+
+  bool walk(ASTWalker&& Walker) {
+    return walk(Walker);
+  }
 };
 
 SourceLoc extractNearestSourceLoc(const Decl * Decl);

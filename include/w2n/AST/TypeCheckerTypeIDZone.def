@@ -8,3 +8,11 @@ W2N_REQUEST(
   Cached,
   NoLocationInfo
 )
+
+W2N_REQUEST(
+  TypeChecker,
+  GlobalVariableRequest,
+  std::shared_ptr<ModuleDecl::GlobalListType>(ModuleDecl *),
+  Cached,
+  NoLocationInfo
+)

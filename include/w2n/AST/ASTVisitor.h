@@ -16,8 +16,8 @@
 //
 //===----------------------------------------------------------------===//
 
-#ifndef SWIFT_AST_ASTVISITOR_H
-#define SWIFT_AST_ASTVISITOR_H
+#ifndef W2N_AST_ASTVISITOR_H
+#define W2N_AST_ASTVISITOR_H
 
 #include <llvm/Support/ErrorHandling.h>
 #include <w2n/AST/Decl.h>
@@ -111,4 +111,4 @@ using DeclVisitor = ASTVisitor<ImplClass, void, void, DeclRetTy, Args...>;
 
 } // namespace w2n
 
-#endif
+#endif // W2N_AST_ASTVISITOR_H

@@ -97,32 +97,32 @@ private:
    * @brief Retrieve the allocator for the given arena.
    */
   llvm::BumpPtrAllocator&
-  getAllocator(AllocationArena arena = AllocationArena::Permanent) const;
+  getAllocator(AllocationArena Arena = AllocationArena::Permanent) const;
 
 public:
 
   /// Allocate - Allocate memory from the ASTContext bump pointer.
   void * Allocate(
-    unsigned long bytes,
-    unsigned alignment,
-    AllocationArena arena = AllocationArena::Permanent
+    unsigned long Bytes,
+    unsigned Alignment,
+    AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    if (bytes == 0)
+    if (Bytes == 0) {
       return nullptr;
-
-    if (LangOpts.UsesMalloc)
-      return AlignedAlloc(bytes, alignment);
-
+    }
+    if (LangOpts.UsesMalloc) {
+      return AlignedAlloc(Bytes, Alignment);
+    }
     // FIXME: statistics
 
-    return getAllocator(arena).Allocate(bytes, alignment);
+    return getAllocator(Arena).Allocate(Bytes, Alignment);
   }
 
   template <typename T>
-  T * Allocate(AllocationArena arena = AllocationArena::Permanent) const {
-    T * res = (T *)Allocate(sizeof(T), alignof(T), arena);
-    new (res) T();
-    return res;
+  T * Allocate(AllocationArena Arena = AllocationArena::Permanent) const {
+    T * Res = (T *)Allocate(sizeof(T), alignof(T), Arena);
+    new (Res) T();
+    return Res;
   }
 
   template <typename T>
@@ -135,12 +135,12 @@ public:
 
   template <typename T>
   MutableArrayRef<T> Allocate(
-    unsigned numElts, AllocationArena arena = AllocationArena::Permanent
+    unsigned NumElts, AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    T * res = (T *)Allocate(sizeof(T) * numElts, alignof(T), arena);
-    for (unsigned i = 0; i != numElts; ++i)
-      new (res + i) T();
-    return {res, numElts};
+    T * Res = (T *)Allocate(sizeof(T) * NumElts, alignof(T), Arena);
+    for (unsigned i = 0; i != NumElts; ++i)
+      new (Res + i) T();
+    return {Res, NumElts};
   }
 
   /**
@@ -148,85 +148,86 @@ public:
    */
   template <typename T>
   typename std::remove_reference<T>::type * AllocateObjectCopy(
-    T&& t, AllocationArena arena = AllocationArena::Permanent
+    T&& O, AllocationArena Arena = AllocationArena::Permanent
   ) const {
     // This function cannot be named AllocateCopy because it would always
     // win overload resolution over the AllocateCopy(ArrayRef<T>).
     using TNoRef = typename std::remove_reference<T>::type;
-    TNoRef * res =
-      (TNoRef *)Allocate(sizeof(TNoRef), alignof(TNoRef), arena);
-    new (res) TNoRef(std::forward<T>(t));
-    return res;
+    TNoRef * Res =
+      (TNoRef *)Allocate(sizeof(TNoRef), alignof(TNoRef), Arena);
+    new (Res) TNoRef(std::forward<T>(O));
+    return Res;
   }
 
   template <typename T, typename It>
   T * AllocateCopy(
-    It start, It end, AllocationArena arena = AllocationArena::Permanent
+    It Start, It End, AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    T * res = (T *)Allocate(sizeof(T) * (end - start), alignof(T), arena);
-    for (unsigned i = 0; start != end; ++start, ++i)
-      new (res + i) T(*start);
-    return res;
+    T * Res = (T *)Allocate(sizeof(T) * (End - Start), alignof(T), Arena);
+    for (unsigned I = 0; Start != End; ++Start, ++I) {
+      new (Res + I) T(*Start);
+    }
+    return Res;
   }
 
   template <typename T, size_t N>
   MutableArrayRef<T> AllocateCopy(
-    T (&array)[N], AllocationArena arena = AllocationArena::Permanent
+    T (&Array)[N], AllocationArena Arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
-      AllocateCopy<T>(array, array + N, arena), N
+      AllocateCopy<T>(Array, Array + N, Arena), N
     );
   }
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
-    ArrayRef<T> array, AllocationArena arena = AllocationArena::Permanent
+    ArrayRef<T> Array, AllocationArena Arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
-      AllocateCopy<T>(array.begin(), array.end(), arena), array.size()
+      AllocateCopy<T>(Array.begin(), Array.end(), Arena), Array.size()
     );
   }
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
-    const std::vector<T>& vec,
-    AllocationArena arena = AllocationArena::Permanent
+    const std::vector<T>& Vec,
+    AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    return AllocateCopy(ArrayRef<T>(vec), arena);
+    return AllocateCopy(ArrayRef<T>(Vec), Arena);
   }
 
   template <typename T>
   ArrayRef<T> AllocateCopy(
     const SmallVectorImpl<T>& vec,
-    AllocationArena arena = AllocationArena::Permanent
+    AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    return AllocateCopy(ArrayRef<T>(vec), arena);
+    return AllocateCopy(ArrayRef<T>(vec), Arena);
   }
 
   template <typename T>
   MutableArrayRef<T> AllocateCopy(
-    SmallVectorImpl<T>& vec,
-    AllocationArena arena = AllocationArena::Permanent
+    SmallVectorImpl<T>& Vec,
+    AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    return AllocateCopy(MutableArrayRef<T>(vec), arena);
+    return AllocateCopy(MutableArrayRef<T>(Vec), Arena);
   }
 
   StringRef AllocateCopy(
-    StringRef Str, AllocationArena arena = AllocationArena::Permanent
+    StringRef Str, AllocationArena Arena = AllocationArena::Permanent
   ) const {
     ArrayRef<char> Result =
-      AllocateCopy(llvm::makeArrayRef(Str.data(), Str.size()), arena);
+      AllocateCopy(llvm::makeArrayRef(Str.data(), Str.size()), Arena);
     return StringRef(Result.data(), Result.size());
   }
 
   template <typename T, typename Vector, typename Set>
   MutableArrayRef<T> AllocateCopy(
-    llvm::SetVector<T, Vector, Set> setVector,
-    AllocationArena arena = AllocationArena::Permanent
+    llvm::SetVector<T, Vector, Set> SetVector,
+    AllocationArena Arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
-      AllocateCopy<T>(setVector.begin(), setVector.end(), arena),
-      setVector.size()
+      AllocateCopy<T>(SetVector.begin(), SetVector.end(), Arena),
+      SetVector.size()
     );
   }
 

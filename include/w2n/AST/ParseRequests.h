@@ -45,8 +45,6 @@ public:
   Optional<WasmFileParsingResult> getCachedResult() const;
   void cacheResult(WasmFileParsingResult Result) const;
 
-public:
-
   evaluator::DependencySource
   readDependencySource(const evaluator::DependencyRecorder&) const;
 };

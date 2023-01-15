@@ -1,6 +1,11 @@
 #ifndef W2N_IRGEN_IRGENMODULE_H
 #define W2N_IRGEN_IRGENMODULE_H
 
+#include <_types/_uint32_t.h>
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/Hashing.h"
+#include "llvm/Support/ErrorHandling.h"
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Instructions.h>
@@ -13,7 +18,43 @@
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/LinkLibrary.h>
 #include <w2n/AST/SourceFile.h>
+#include <w2n/AST/Type.h>
 #include <w2n/Basic/FileSystem.h>
+#include <w2n/IRGen/IRGenerator.h>
+#include <w2n/IRGen/Linking.h>
+
+namespace w2n::irgen {
+
+struct VectorTyKey {
+  llvm::Type * ElementTy;
+  uint32_t Count;
+};
+
+} // namespace w2n::irgen
+
+namespace llvm {
+
+using namespace w2n::irgen;
+
+template <>
+struct DenseMapInfo<VectorTyKey> {
+  static inline VectorTyKey getEmptyKey() {
+    return {nullptr, 0};
+  }
+
+  static inline VectorTyKey getTombstoneKey() {
+    return {nullptr, UINT32_MAX};
+  }
+
+  static unsigned getHashValue(const VectorTyKey& Key) {
+    return hash_combine(Key.ElementTy, Key.Count);
+  }
+
+  static bool isEqual(const VectorTyKey& LHS, const VectorTyKey& RHS) {
+    return LHS.ElementTy == RHS.ElementTy && LHS.Count == RHS.Count;
+  }
+};
+} // namespace llvm
 
 namespace w2n {
 
@@ -22,148 +63,11 @@ class GeneratedModule;
 
 namespace irgen {
 
-class IRGenModule;
+class Address;
+class IRGenerator;
 
-/// The principal singleton which manages all of IR generation.
+/// IRGenModule - Primary class for emitting IR for global declarations.
 ///
-/// The IRGenerator delegates the emission of different top-level entities
-/// to different instances of IRGenModule, each of which creates a
-/// different llvm::Module.
-///
-/// In single-threaded compilation, the IRGenerator creates only a single
-/// IRGenModule. In multi-threaded compilation, it contains multiple
-/// IRGenModules - one for each LLVM module (= one for each input/output
-/// file).
-class IRGenerator {
-public:
-
-  const IRGenOptions& Opts;
-
-  ModuleDecl& Module;
-
-private:
-
-  static constexpr const uint8_t AssumedMaxQueueCount = 8;
-
-  llvm::DenseMap<SourceFile *, IRGenModule *> GenModules;
-
-  // Stores the IGM from which a function is referenced the first time.
-  // It is used if a function has no source-file association.
-  llvm::DenseMap<FuncDecl *, IRGenModule *> DefaultIGMForFunction;
-
-  // The IGM of the first source file.
-  IRGenModule * PrimaryIGM = nullptr;
-
-  // The current IGM for which IR is generated.
-  IRGenModule * CurrentIGM = nullptr;
-
-  // TODO: data for IR emission.
-
-  /// The order in which all the SIL function definitions should
-  /// appear in the translation unit.
-  llvm::DenseMap<FuncDecl *, unsigned> FunctionOrder;
-
-  /// The queue of IRGenModules for multi-threaded compilation.
-  SmallVector<IRGenModule *, AssumedMaxQueueCount> Queue;
-
-  std::atomic<int> QueueIndex;
-
-public:
-
-  explicit IRGenerator(const IRGenOptions& Opts, ModuleDecl& Module);
-
-  /// Attempt to create an llvm::TargetMachine for the current target.
-  std::unique_ptr<llvm::TargetMachine> createTargetMachine();
-
-  /// Add an IRGenModule for a source file.
-  /// Should only be called from IRGenModule's constructor.
-  void addGenModule(SourceFile * SF, IRGenModule * IGM);
-
-  /// Get an IRGenModule for a source file.
-  IRGenModule * getGenModule(SourceFile * SF) {
-    IRGenModule * IGM = GenModules[SF];
-    assert(IGM);
-    return IGM;
-  }
-
-  SourceFile * getSourceFile(IRGenModule * Module) {
-    for (auto Pair : GenModules) {
-      if (Pair.second == Module) {
-        return Pair.first;
-      }
-    }
-    return nullptr;
-  }
-
-  /// Get an IRGenModule for a declaration context.
-  /// Returns the IRGenModule of the containing source file, or if this
-  /// cannot be determined, returns the primary IRGenModule.
-  IRGenModule * getGenModule(DeclContext * DC);
-
-  /// Get an IRGenModule for a function.
-  /// Returns the IRGenModule of the containing source file, or if this
-  /// cannot be determined, returns the IGM from which the function is
-  /// referenced the first time.
-  IRGenModule * getGenModule(FuncDecl * F);
-
-  /// Returns the primary IRGenModule. This is the first added
-  /// IRGenModule. It is used for everything which cannot be correlated to
-  /// a specific source file. And of course, in single-threaded
-  /// compilation there is only the primary IRGenModule.
-  IRGenModule * getPrimaryIGM() const {
-    assert(PrimaryIGM);
-    return PrimaryIGM;
-  }
-
-  bool hasMultipleIGMs() const {
-    return GenModules.size() >= 2;
-  }
-
-  llvm::DenseMap<SourceFile *, IRGenModule *>::iterator begin() {
-    return GenModules.begin();
-  }
-
-  llvm::DenseMap<SourceFile *, IRGenModule *>::iterator end() {
-    return GenModules.end();
-  }
-
-  // TODO: IR emission
-
-  /// Emit functions, variables and tables which are needed anyway, e.g.
-  /// because they are externally visible.
-  void emitGlobalTopLevel(const std::vector<std::string>& LinkerDirectives
-  );
-
-  // Emit info that describes the entry point to the module, if it has
-  // one.
-  void emitEntryPointInfo();
-
-  /// Emit coverage mapping info.
-  void emitCoverageMapping();
-
-  /// Emit everything which is reachable from already emitted IR.
-  void emitLazyDefinitions();
-
-  unsigned getFunctionOrder(FuncDecl * F) {
-    auto It = FunctionOrder.find(F);
-    assert(
-      It != FunctionOrder.end()
-      && "no order number for SIL function definition?"
-    );
-    return It->second;
-  }
-
-  /// In multi-threaded compilation fetch the next IRGenModule from the
-  /// queue.
-  IRGenModule * fetchFromQueue() {
-    int Idx = QueueIndex++;
-    if (Idx < (int)Queue.size()) {
-      return Queue[Idx];
-    }
-    return nullptr;
-  }
-};
-
 class IRGenModule {
 public:
 
@@ -179,7 +83,15 @@ public:
 
   std::unique_ptr<llvm::TargetMachine> TargetMachine;
 
-  ModuleDecl * getModuleDecl() const;
+  /**
+   * @note: Since wasm2native currently uses code that ported from Swift,
+   * the IR generation model is also ported from Swift. The module used
+   * returned by this method for \c PrimaryIGM is not a \c SourceFile
+   * related module but the main module.
+   */
+  ModuleDecl * getWasmModule() const {
+    return &IRGen.Module;
+  }
 
   const IRGenOptions& getOptions() const {
     return IRGen.Opts;
@@ -219,9 +131,13 @@ public:
   }
 
   void emitSourceFile(SourceFile& SF);
-  // FIXME: void emitSynthesizedFileUnit(SynthesizedFileUnit& SFU);
   void addLinkLibrary(const LinkLibrary& LinkLib);
+
+  void emitGlobalVariable(GlobalVariable * V);
+
   void emitCoverageMapping();
+
+  void finishEmitAfterTopLevel();
 
   /// Attempt to finalize the module.
   ///
@@ -229,9 +145,86 @@ public:
   /// invalid.
   bool finalize();
 
-  //--- Runtime ----------------------------------------------------------
+#pragma mark Accessing Module Contents
 
   llvm::Module * getModule() const;
+
+  Address getAddrOfGlobalVariable(
+    GlobalVariable * Global, ForDefinition_t ForDefinition
+  );
+
+#pragma mark Accessing Types
+
+private:
+
+  llvm::IntegerType * Int32Ty; /// i32
+  llvm::IntegerType * Int64Ty; /// i64
+  llvm::Type * FloatTy;        /// f32
+  llvm::Type * DoubleTy;       /// f64
+
+  mutable llvm::DenseMap<VectorTyKey, llvm::StructType *> VectorTys;
+
+public:
+
+  llvm::Type * getType(ValueType * Ty) const {
+    if (isa<I32Type>(Ty)) {
+      return Int32Ty;
+    }
+    if (isa<I64Type>(Ty)) {
+      return Int64Ty;
+    }
+    if (isa<F32Type>(Ty)) {
+      return FloatTy;
+    }
+    if (isa<F64Type>(Ty)) {
+      return DoubleTy;
+    }
+    llvm_unreachable("unexpected value type.");
+  }
+
+  llvm::StructType *
+  getVectorType(uint32_t Size, llvm::Type * ElementTy) const {
+    VectorTyKey Key = VectorTyKey{ElementTy, Size};
+    const auto I = VectorTys.find(Key);
+    if (I != VectorTys.end()) {
+      return I->second;
+    }
+    std::vector<llvm::Type *> Types;
+    Types.reserve(Size);
+    for (uint32_t I = 0; I < Size; I++) {
+      Types.insert(Types.end(), ElementTy);
+    }
+    auto * Ty = llvm::StructType::create(Types);
+    VectorTys.insert(std::make_pair(Key, Ty));
+    return Ty;
+  }
+};
+
+/// Stores a pointer to an IRGenModule.
+/// As long as the CurrentIGMPtr is alive, the CurrentIGM in the
+/// dispatcher is set to the containing IRGenModule.
+class CurrentIGMPtr {
+  IRGenModule * IGM;
+
+public:
+
+  CurrentIGMPtr(IRGenModule * IGM) : IGM(IGM) {
+    assert(IGM);
+    assert(!IGM->IRGen.CurrentIGM && "Another CurrentIGMPtr is alive");
+    IGM->IRGen.CurrentIGM = IGM;
+  }
+
+  ~CurrentIGMPtr() {
+    IGM->IRGen.CurrentIGM = nullptr;
+  }
+
+  IRGenModule * get() const {
+    return IGM;
+  }
+
+  IRGenModule * operator->() const {
+    return IGM;
+  }
 };
 
 } // namespace irgen

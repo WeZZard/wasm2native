@@ -1,42 +1,39 @@
-#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/Casting.h"
+#include <llvm/Support/ErrorHandling.h>
+#include <cassert>
+#include <memory>
+#include <utility>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/GlobalVariable.h>
+#include <w2n/AST/Linkage.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/TypeCheckerRequests.h>
 #include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 
+#pragma mark - ModuleDecl
+
+#pragma mark Creating Module Decl
+
 ModuleDecl::ModuleDecl(Identifier Name, ASTContext& Context) :
   DeclContext(DeclContextKind::Module, nullptr),
-  Decl(DeclKind::Module, const_cast<ASTContext *>(&Context)) {
+  TypeDecl(DeclKind::Module, const_cast<ASTContext *>(&Context)) {
   Context.addDestructorCleanup(*this);
 }
+
+#pragma mark Accessing Basic Properties
 
 Identifier ModuleDecl::getName() const {
   return Name;
 }
 
+#pragma mark Managing Files
+
 void ModuleDecl::addFile(FileUnit& NewFile) {
   Files.push_back(&NewFile);
   // FIXME: clearLookupCache();
-}
-
-ArrayRef<SourceFile *> PrimarySourceFilesRequest::evaluate(
-  Evaluator& Eval, ModuleDecl * Module
-) const {
-  assert(
-    Module->isMainModule() && "Only the main module can have primaries"
-  );
-
-  SmallVector<SourceFile *, 8> primaries;
-  for (auto * file : Module->getFiles()) {
-    if (auto * SF = dyn_cast<SourceFile>(file)) {
-      if (SF->isPrimary())
-        primaries.push_back(SF);
-    }
-  }
-  return Module->getASTContext().AllocateCopy(primaries);
 }
 
 ArrayRef<SourceFile *> ModuleDecl::getPrimarySourceFiles() const {
@@ -45,20 +42,47 @@ ArrayRef<SourceFile *> ModuleDecl::getPrimarySourceFiles() const {
   return evaluateOrDefault(Eval, PrimarySourceFilesRequest{Mutable}, {});
 }
 
+const ModuleDecl::GlobalListType& ModuleDecl::getGlobalListImpl() const {
+  auto& Eval = getASTContext().Eval;
+  auto * Mutable = const_cast<ModuleDecl *>(this);
+  return *evaluateOrDefault(Eval, GlobalVariableRequest{Mutable}, {});
+}
+
+#pragma mark Accessing Linkage Infos
+
 // FIXME: Forwards to synthesized file if needed.
-#define FORWARD(name, args)                                              \
+#define W2N_FOR_EACH_FILE(name, args)                                    \
   for (const FileUnit * file : getFiles()) {                             \
     file->name args;                                                     \
   }
 
-void ModuleDecl::collectLinkLibraries(LinkLibraryCallback callback
+void ModuleDecl::collectLinkLibraries(LinkLibraryCallback Callback
 ) const {
   // FIXME: The proper way to do this depends on the decls used.
-  FORWARD(collectLinkLibraries, (callback));
+  W2N_FOR_EACH_FILE(collectLinkLibraries, (Callback));
 }
 
 void SourceFile::collectLinkLibraries(
-  ModuleDecl::LinkLibraryCallback callback
+  ModuleDecl::LinkLibraryCallback Callback
 ) const {
   w2n_unimplemented();
+}
+
+#pragma mark - PrimarySourceFilesRequest
+
+ArrayRef<SourceFile *> PrimarySourceFilesRequest::evaluate(
+  Evaluator& Eval, ModuleDecl * Mod
+) const {
+  assert(
+    Mod->isMainModule() && "Only the main module can have primaries"
+  );
+
+  SmallVector<SourceFile *, 8> Primaries;
+  for (auto * File : Mod->getFiles()) {
+    auto * SF = dyn_cast<SourceFile>(File);
+    if ((SF != nullptr) && SF->isPrimary()) {
+      Primaries.push_back(SF);
+    }
+  }
+  return Mod->getASTContext().AllocateCopy(Primaries);
 }

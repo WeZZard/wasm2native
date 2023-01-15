@@ -1,71 +1,27 @@
+#include "llvm/ADT/Twine.h"
+#include "llvm/Support/Alignment.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/Support/Casting.h>
 #include <llvm/Support/ErrorHandling.h>
+#include <cassert>
 #include <cstdio>
+#include <format>
 #include <memory>
+#include <w2n/AST/ASTVisitor.h>
+#include <w2n/AST/Decl.h>
 #include <w2n/AST/IRGenRequests.h>
+#include <w2n/AST/Module.h>
 #include <w2n/Basic/Unimplemented.h>
+#include <w2n/IRGen/Address.h>
 #include <w2n/IRGen/IRGenModule.h>
+#include <w2n/IRGen/Linking.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
-
-#pragma mark - IRGenerator
-
-IRGenerator::IRGenerator(const IRGenOptions& Opts, ModuleDecl& Module) :
-  Opts(Opts),
-  Module(Module),
-  QueueIndex(0) {
-}
-
-void IRGenerator::addGenModule(SourceFile * SF, IRGenModule * IGM) {
-  assert(GenModules.count(SF) == 0);
-  GenModules[SF] = IGM;
-  if (PrimaryIGM == nullptr) {
-    PrimaryIGM = IGM;
-  }
-  Queue.push_back(IGM);
-}
-
-IRGenModule * IRGenerator::getGenModule(DeclContext * DC) {
-  if (GenModules.size() == 1 || (DC == nullptr)) {
-    return getPrimaryIGM();
-  }
-  SourceFile * SF = DC->getParentSourceFile();
-  if (SF == nullptr) {
-    return getPrimaryIGM();
-  }
-  IRGenModule * IGM = GenModules[SF];
-  assert(IGM);
-  return IGM;
-}
-
-IRGenModule * IRGenerator::getGenModule(FuncDecl * F) {
-  w2n_unimplemented();
-}
-
-void IRGenerator::emitGlobalTopLevel(
-  const std::vector<std::string>& LinkerDirectives
-) {
-  w2n_proto_implemented();
-}
-
-void IRGenerator::emitEntryPointInfo() {
-  w2n_unimplemented();
-}
-
-void IRGenerator::emitCoverageMapping() {
-  w2n_unimplemented();
-}
-
-void IRGenerator::emitLazyDefinitions() {
-  w2n_proto_implemented();
-}
-
-#pragma mark - IRGenModule
 
 IRGenModule::IRGenModule(
   IRGenerator& IRGen,
@@ -83,6 +39,12 @@ IRGenModule::IRGenModule(
   OutputFilename(OutputFilename),
   MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
   ModuleHash(nullptr) {
+  IRGen.addGenModule(SF, this);
+
+  Int32Ty = llvm::Type::getInt32Ty(getLLVMContext());
+  Int64Ty = llvm::Type::getInt64Ty(getLLVMContext());
+  FloatTy = llvm::Type::getFloatTy(getLLVMContext());
+  DoubleTy = llvm::Type::getDoubleTy(getLLVMContext());
 }
 
 IRGenModule::~IRGenModule() {
@@ -94,11 +56,15 @@ GeneratedModule IRGenModule::intoGeneratedModule() && {
     std::move(LLVMContext), std::move(Module), std::move(TargetMachine)};
 }
 
-llvm::Module * IRGenModule::getModule() const {
-  return Module.get();
+void IRGenModule::emitGlobalVariable(GlobalVariable * V) {
+  getAddrOfGlobalVariable(V, ForDefinition);
 }
 
 void IRGenModule::emitCoverageMapping() {
+  w2n_proto_implemented();
+}
+
+void IRGenModule::finishEmitAfterTopLevel() {
   w2n_proto_implemented();
 }
 
@@ -114,5 +80,61 @@ void IRGenModule::addLinkLibrary(const LinkLibrary& LinkLib) {
 
 /// Emit all the top-level code in the source file.
 void IRGenModule::emitSourceFile(SourceFile& SF) {
+  for (Decl * D : SF.getTopLevelDecls()) {
+    ModuleDecl * M = dyn_cast<ModuleDecl>(D);
+    if (M == nullptr) {
+      continue;
+    }
+    auto Globals = M->getGlobals();
+    for (GlobalVariable& V : Globals) {
+      GlobalDecl * VarDecl = V.getDecl();
+      CurrentIGMPtr IGM = IRGen.getGenModule(
+        VarDecl != nullptr ? VarDecl->getDeclContext() : nullptr
+      );
+      IGM->emitGlobalVariable(&V);
+    }
+  }
   w2n_proto_implemented();
+}
+
+llvm::Module * IRGenModule::getModule() const {
+  return Module.get();
+}
+
+Address IRGenModule::getAddrOfGlobalVariable(
+  GlobalVariable * Global, ForDefinition_t ForDefinition
+) {
+  std::string UniqueName = (Twine("$") + Twine(0)).str();
+
+  auto * GVar =
+    Module->getGlobalVariable(UniqueName, /*allowInternal*/ true);
+
+  llvm::Type * StorageType = getType(Global->getType());
+
+  if (GVar == nullptr) {
+    GVar = new llvm::GlobalVariable(
+      *Module,
+      StorageType,
+      /*constant*/ false,
+      // FIXME: linkInfo.getLinkage(),
+      llvm::GlobalValue::LinkageTypes::InternalLinkage,
+      /*initializer*/ nullptr,
+      UniqueName
+    );
+
+    // FIXME: Temporary workaround
+    GVar->setAlignment(llvm::MaybeAlign(4));
+    /// Add a zero initializer.
+    if (ForDefinition != 0) {
+      GVar->setInitializer(llvm::Constant::getNullValue(StorageType));
+    } else {
+      GVar->setComdat(nullptr);
+    }
+  }
+
+  llvm::Constant * Addr = GVar;
+  Addr =
+    llvm::ConstantExpr::getBitCast(Addr, StorageType->getPointerTo());
+
+  return Address(Addr, StorageType, Alignment(GVar->getAlignment()));
 }

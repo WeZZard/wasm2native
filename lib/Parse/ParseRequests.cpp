@@ -57,7 +57,7 @@ ParseWasmFileRequest::evaluate(Evaluator& Eval, WasmFile * SF) const {
 }
 
 evaluator::DependencySource ParseWasmFileRequest::readDependencySource(
-  const evaluator::DependencyRecorder& e
+  const evaluator::DependencyRecorder& E
 ) const {
   return std::get<0>(getStorage());
 }

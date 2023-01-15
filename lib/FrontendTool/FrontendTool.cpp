@@ -253,6 +253,8 @@ bool generateCode(
   llvm::Module * IRModule,
   llvm::GlobalVariable * HashGlobal
 ) {
+  IRModule->dump();
+
   const auto& Opts = Instance.getInvocation().getIRGenOptions();
   std::unique_ptr<llvm::TargetMachine> TargetMachine =
     createTargetMachine(Opts, Instance.getASTContext());
@@ -262,8 +264,9 @@ bool generateCode(
 
   // If we emitted any errors while performing the end-of-pipeline
   // actions, bail.
-  if (Instance.getDiags().hadAnyError())
+  if (Instance.getDiags().hadAnyError()) {
     return true;
+  }
 
   // Now that we have a single IR Module, hand it over to performLLVM.
   return performLLVM(

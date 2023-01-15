@@ -64,9 +64,30 @@
 
 /// VALUE_DECL(Id, Parent)
 ///   Used for subclasses of ValueDecl.  The default behavior is to do
-///   the same as for Decl.
+///   the same as for DECL.
 #ifndef VALUE_DECL
 #define VALUE_DECL(Id, Parent) DECL(Id, Parent)
+#endif
+
+/// IMPORT_DECL(Id, Parent)
+///   Used for subclasses of ImportDecl.  The default behavior is to do
+///   the same as for VALUE_DECL.
+#ifndef IMPORT_DECL
+#define IMPORT_DECL(Id, Parent) VALUE_DECL(Id, Parent)
+#endif
+
+/// EXPORT_DECL(Id, Parent)
+///   Used for subclasses of ExportDecl.  The default behavior is to do
+///   the same as for VALUE_DECL.
+#ifndef EXPORT_DECL
+#define EXPORT_DECL(Id, Parent) VALUE_DECL(Id, Parent)
+#endif
+
+/// DATA_SEG_DECL(Id, Parent)
+///   Used for subclasses of DataSegmentDecl.  The default behavior is to
+///   do the same as for VALUE_DECL.
+#ifndef DATA_SEG_DECL
+#define DATA_SEG_DECL(Id, Parent) VALUE_DECL(Id, Parent)
 #endif
 
 /// A convenience for determining the range of declarations.  These will
@@ -111,27 +132,27 @@ ABSTRACT_DECL(Value, Decl)
       DECL_RANGE(NameSubsection, ModuleNameSubsection, LocalNameSubsection)
     VALUE_DECL(FuncType, TypeDecl)
     ABSTRACT_DECL(Import, TypeDecl)
-      VALUE_DECL(ImportFunc, ImportDecl)
-      VALUE_DECL(ImportTable, ImportDecl)
-      VALUE_DECL(ImportMemory, ImportDecl)
-      VALUE_DECL(ImportGlobal, ImportDecl)
+      IMPORT_DECL(ImportFunc, ImportDecl)
+      IMPORT_DECL(ImportTable, ImportDecl)
+      IMPORT_DECL(ImportMemory, ImportDecl)
+      IMPORT_DECL(ImportGlobal, ImportDecl)
       DECL_RANGE(Import, ImportFunc, ImportGlobal)
     VALUE_DECL(Table, TypeDecl)
     VALUE_DECL(Memory, TypeDecl)
     VALUE_DECL(Global, TypeDecl)
     ABSTRACT_DECL(Export, TypeDecl)
-      VALUE_DECL(ExportFunc, ExportDecl)
-      VALUE_DECL(ExportTable, ExportDecl)
-      VALUE_DECL(ExportMemory, ExportDecl)
-      VALUE_DECL(ExportGlobal, ExportDecl)
+      EXPORT_DECL(ExportFunc, ExportDecl)
+      EXPORT_DECL(ExportTable, ExportDecl)
+      EXPORT_DECL(ExportMemory, ExportDecl)
+      EXPORT_DECL(ExportGlobal, ExportDecl)
       DECL_RANGE(Export, ExportFunc, ExportGlobal)
     VALUE_DECL(Code, TypeDecl)
     VALUE_DECL(Func, TypeDecl)
     VALUE_DECL(Local, TypeDecl)
-    ABSTRACT_DECL(Data, TypeDecl)
-      VALUE_DECL(DataActive, DataDecl)
-      VALUE_DECL(DataPassive, DataDecl)
-      DECL_RANGE(Data, DataActive, DataPassive)
+    ABSTRACT_DECL(DataSegment, TypeDecl)
+      DATA_SEG_DECL(DataSegmentActive, DataSegmentDecl)
+      DATA_SEG_DECL(DataSegmentPassive, DataSegmentDecl)
+      DECL_RANGE(DataSegment, DataSegmentActive, DataSegmentPassive)
     VALUE_DECL(Expression, TypeDecl)
   DECL_RANGE(Type, Module, Expression)
 DECL_RANGE(Value, Module, Expression)
@@ -148,6 +169,9 @@ LAST_DECL(Expression)
 #undef CONTEXT_VALUE_DECL
 #undef ABSTRACT_FUNCTION_DECL
 #undef VALUE_DECL
+#undef IMPORT_DECL
+#undef EXPORT_DECL
+#undef DATA_SEG_DECL
 #undef DECL_RANGE
 #undef ABSTRACT_DECL
 #undef DECL

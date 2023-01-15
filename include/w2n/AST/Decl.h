@@ -1,6 +1,8 @@
 #ifndef W2N_AST_DECL_H
 #define W2N_AST_DECL_H
 
+#include <_types/_uint8_t.h>
+#include "llvm/Support/ErrorHandling.h"
 #include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/StringRef.h>
 #include <cstdint>
@@ -154,6 +156,10 @@ protected:
 
 public:
 
+  SourceLoc getLocFromSource() const {
+    return w2n_proto_implemented([] { return SourceLoc(); });
+  }
+
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, ValueDecl);
 };
 
@@ -168,6 +174,12 @@ public:
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, TypeDecl);
 };
 
+enum class SectionKind : uint8_t {
+#define DECL(Id, Parent)
+#define SECTION_DECL(Id, Parent) Id,
+#include <w2n/AST/DeclNodes.def>
+};
+
 class SectionDecl : public TypeDecl {
 protected:
 
@@ -175,6 +187,19 @@ protected:
   }
 
 public:
+
+  SectionKind getSectionKind() const {
+    switch (getKind()) {
+#define DECL(Id, Parent)
+#define SECTION_DECL(Id, Parent)                                         \
+  case DeclKind::Id:                                                     \
+    return SectionKind::Id;
+
+#include <w2n/AST/DeclNodes.def>
+
+    default: llvm_unreachable("unexpected decl.");
+    }
+  }
 
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, SectionDecl);
 };
@@ -394,11 +419,11 @@ public:
     return new (Ctx) ExportSectionDecl(&Ctx, Exports);
   }
 
-  std::vector<ExportDecl *>& getGlobals() {
+  std::vector<ExportDecl *>& getExports() {
     return Exports;
   }
 
-  const std::vector<ExportDecl *>& getGlobals() const {
+  const std::vector<ExportDecl *>& getExports() const {
     return Exports;
   }
 
@@ -452,58 +477,62 @@ class LocalNameSubsectionDecl;
 class NameSectionDecl final : public CustomSectionDecl {
 private:
 
-  ModuleNameSubsectionDecl * ModuleNames;
+  ModuleNameSubsectionDecl * ModuleNameSubsection;
 
-  FuncNameSubsectionDecl * FuncNames;
+  FuncNameSubsectionDecl * FuncNameSubsection;
 
-  LocalNameSubsectionDecl * LocalNames;
+  LocalNameSubsectionDecl * LocalNameSubsection;
 
   NameSectionDecl(
     ASTContext * Context,
-    ModuleNameSubsectionDecl * ModuleNames,
-    FuncNameSubsectionDecl * FuncNames,
-    LocalNameSubsectionDecl * LocalNames
+    ModuleNameSubsectionDecl * ModuleNameSubsection,
+    FuncNameSubsectionDecl * FuncNameSubsection,
+    LocalNameSubsectionDecl * LocalNameSubsection
   ) :
     CustomSectionDecl(DeclKind::NameSection, Context),
-    ModuleNames(ModuleNames),
-    FuncNames(FuncNames),
-    LocalNames(LocalNames) {
+    ModuleNameSubsection(ModuleNameSubsection),
+    FuncNameSubsection(FuncNameSubsection),
+    LocalNameSubsection(LocalNameSubsection) {
   }
 
 public:
 
   static NameSectionDecl * create(
     ASTContext& Context,
-    ModuleNameSubsectionDecl * ModuleNames,
-    FuncNameSubsectionDecl * FuncNames,
-    LocalNameSubsectionDecl * LocalNames
+    ModuleNameSubsectionDecl * ModuleNameSubsection,
+    FuncNameSubsectionDecl * FuncNameSubsection,
+    LocalNameSubsectionDecl * LocalNameSubsection
   ) {
-    return new (Context)
-      NameSectionDecl(&Context, ModuleNames, FuncNames, LocalNames);
+    return new (Context) NameSectionDecl(
+      &Context,
+      ModuleNameSubsection,
+      FuncNameSubsection,
+      LocalNameSubsection
+    );
   }
 
-  ModuleNameSubsectionDecl * getModuleNames() {
-    return ModuleNames;
+  ModuleNameSubsectionDecl * getModuleNameSubsection() {
+    return ModuleNameSubsection;
   }
 
-  const ModuleNameSubsectionDecl * getModuleNames() const {
-    return ModuleNames;
+  const ModuleNameSubsectionDecl * getModuleNameSubsection() const {
+    return ModuleNameSubsection;
   }
 
-  FuncNameSubsectionDecl * getFuncNames() {
-    return FuncNames;
+  FuncNameSubsectionDecl * getFuncNameSubsection() {
+    return FuncNameSubsection;
   }
 
-  const FuncNameSubsectionDecl * getFuncNames() const {
-    return FuncNames;
+  const FuncNameSubsectionDecl * getFuncNameSubsection() const {
+    return FuncNameSubsection;
   }
 
-  LocalNameSubsectionDecl * getLocalNames() {
-    return LocalNames;
+  LocalNameSubsectionDecl * getLocalNameSubsection() {
+    return LocalNameSubsection;
   }
 
-  const LocalNameSubsectionDecl * getLocalNames() const {
-    return LocalNames;
+  const LocalNameSubsectionDecl * getLocalNameSubsection() const {
+    return LocalNameSubsection;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
@@ -543,31 +572,33 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, CodeSection);
 };
 
-class DataDecl;
+class DataSegmentDecl;
 
 class DataSectionDecl final : public SectionDecl {
 private:
 
-  std::vector<DataDecl *> Data;
+  std::vector<DataSegmentDecl *> DataSegments;
 
-  DataSectionDecl(ASTContext * Ctx, std::vector<DataDecl *> Data) :
+  DataSectionDecl(
+    ASTContext * Ctx, std::vector<DataSegmentDecl *> DataSegments
+  ) :
     SectionDecl(DeclKind::CodeSection, Ctx),
-    Data(Data) {
+    DataSegments(DataSegments) {
   }
 
 public:
 
   static DataSectionDecl *
-  create(ASTContext& Ctx, std::vector<DataDecl *> Data) {
-    return new (Ctx) DataSectionDecl(&Ctx, Data);
+  create(ASTContext& Ctx, std::vector<DataSegmentDecl *> DataSegments) {
+    return new (Ctx) DataSectionDecl(&Ctx, DataSegments);
   }
 
-  std::vector<DataDecl *>& getData() {
-    return Data;
+  std::vector<DataSegmentDecl *>& getDataSegments() {
+    return DataSegments;
   }
 
-  const std::vector<DataDecl *>& getData() const {
-    return Data;
+  const std::vector<DataSegmentDecl *>& getDataSegments() const {
+    return DataSegments;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
@@ -966,23 +997,37 @@ class ExpressionDecl;
 class GlobalDecl final : public TypeDecl {
 private:
 
+  uint32_t Index;
+
   GlobalType * Type;
 
   ExpressionDecl * Init;
 
   GlobalDecl(
-    ASTContext * Context, GlobalType * Type, ExpressionDecl * Init
+    ASTContext * Context,
+    uint32_t Index,
+    GlobalType * Type,
+    ExpressionDecl * Init
   ) :
     TypeDecl(DeclKind::Global, Context),
+    Index(Index),
     Type(Type),
     Init(Init) {
   }
 
 public:
 
-  static GlobalDecl *
-  create(ASTContext& Context, GlobalType * Type, ExpressionDecl * Init) {
-    return new (Context) GlobalDecl(&Context, Type, Init);
+  static GlobalDecl * create(
+    ASTContext& Context,
+    uint32_t Index,
+    GlobalType * Type,
+    ExpressionDecl * Init
+  ) {
+    return new (Context) GlobalDecl(&Context, Index, Type, Init);
+  }
+
+  uint32_t getIndex() const {
+    return Index;
   }
 
   GlobalType * getType() {
@@ -1267,12 +1312,12 @@ public:
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, Local);
 };
 
-class DataDecl : public TypeDecl {
+class DataSegmentDecl : public TypeDecl {
 protected:
 
   std::vector<uint8_t> Data;
 
-  DataDecl(
+  DataSegmentDecl(
     DeclKind Kind, ASTContext * Context, std::vector<uint8_t> Data
   ) :
     TypeDecl(Kind, Context),
@@ -1291,39 +1336,39 @@ public:
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, DataDecl);
+  LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, DataSegmentDecl);
 };
 
 class ExpressionDecl;
 
-class DataActiveDecl : public DataDecl {
+class DataSegmentActiveDecl : public DataSegmentDecl {
 private:
 
   uint32_t MemoryIndex;
 
   ExpressionDecl * Expression;
 
-  DataActiveDecl(
+  DataSegmentActiveDecl(
     ASTContext * Context,
     uint32_t MemoryIndex,
     ExpressionDecl * Expression,
     std::vector<uint8_t> Data
   ) :
-    DataDecl(DeclKind::DataPassive, Context, Data),
+    DataSegmentDecl(DeclKind::DataSegmentPassive, Context, Data),
     MemoryIndex(MemoryIndex),
     Expression(Expression) {
   }
 
 public:
 
-  static DataActiveDecl * create(
+  static DataSegmentActiveDecl * create(
     ASTContext& Context,
     uint32_t MemoryIndex,
     ExpressionDecl * Expression,
     std::vector<uint8_t> Data
   ) {
     return new (Context)
-      DataActiveDecl(&Context, MemoryIndex, Expression, Data);
+      DataSegmentActiveDecl(&Context, MemoryIndex, Expression, Data);
   }
 
   uint32_t getMemoryIndex() const {
@@ -1340,26 +1385,28 @@ public:
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataActive);
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataSegmentActive);
 };
 
-class DataPassiveDecl : public DataDecl {
+class DataSegmentPassiveDecl : public DataSegmentDecl {
 private:
 
-  DataPassiveDecl(ASTContext * Context, std::vector<uint8_t> Data) :
-    DataDecl(DeclKind::DataPassive, Context, Data) {
+  DataSegmentPassiveDecl(
+    ASTContext * Context, std::vector<uint8_t> Data
+  ) :
+    DataSegmentDecl(DeclKind::DataSegmentPassive, Context, Data) {
   }
 
 public:
 
-  static DataPassiveDecl *
+  static DataSegmentPassiveDecl *
   create(ASTContext& Context, std::vector<uint8_t> Data) {
-    return new (Context) DataPassiveDecl(&Context, Data);
+    return new (Context) DataSegmentPassiveDecl(&Context, Data);
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
-  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataPassive);
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, DataSegmentPassive);
 };
 
 class InstNode;

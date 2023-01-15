@@ -148,10 +148,10 @@ proto_implemented\
 |FIRST_(DECL|STMT|EXPR|TYPE)\
 |LAST_(DECL|STMT|EXPR|TYPE)\
 |(DECL|STMT|EXPR|TYPE)_RANGE"
-  - key: readability-identifier-naming.MemberCase
-    value: CamelCase
-  - key: readability-identifier-naming.MethodCase
-    value: camelBack
+  # readability-identifier-naming.MemberCase no longer works because we
+  # defined public/private member's case separately
+  # readability-identifier-naming.MethodCase no longer works because we
+  # defined public/private method's case separately
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
   - key: readability-identifier-naming.ParameterCase
@@ -164,6 +164,8 @@ proto_implemented\
     value: CamelCase
   - key: readability-identifier-naming.PrivateMethodCase
     value: camelBack
+  - key: readability-identifier-naming.privateMethodIgnoredRegexp
+    value: ".+_begin|.+_end"
   - key: readability-identifier-naming.ProtectedMemberCase
     value: CamelCase
   - key: readability-identifier-naming.ProtectedMethodCase
@@ -172,6 +174,8 @@ proto_implemented\
     value: CamelCase
   - key: readability-identifier-naming.PublicMethodCase
     value: camelBack
+  - key: readability-identifier-naming.PublicMethodIgnoredRegexp
+    value: ".+_begin|.+_end"
   - key: readability-identifier-naming.ScopedEnumConstantCase
     value: CamelCase
   - key: readability-identifier-naming.StaticConstantCase
@@ -186,6 +190,9 @@ proto_implemented\
     value: CamelCase
   - key: readability-identifier-naming.TypeAliasCase
     value: CamelCase
+  - key: readability-identifier-naming.TypeAliasIgnoredRegexp
+    # Multi-line regex literal: double quote is required, `\` to break.
+    value: ".+_iterator"
   - key: readability-identifier-naming.TypedefCase
     value: CamelCase
   - key: readability-identifier-naming.TypeTemplateParameterCase

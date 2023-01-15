@@ -134,6 +134,7 @@ struct ReadContext {
   const uint8_t * Start;
   const uint8_t * Ptr;
   const uint8_t * End;
+  llvm::Optional<uint32_t> ElementIndex;
 };
 
 static uint8_t readUint8(ReadContext& Ctx) {
@@ -296,9 +297,11 @@ public:
     std::vector<T> Vector;
     Vector.reserve(Count);
     for (uint32_t I = 0; I < Count; I++) {
+      Ctx.ElementIndex = I;
       T Value = parse<T>(Ctx);
       Vector.push_back(Value);
     }
+    Ctx.ElementIndex = llvm::None;
     return Vector;
   }
 
@@ -486,7 +489,9 @@ public:
   GlobalDecl * parse<GlobalDecl *>(ReadContext& Ctx) {
     GlobalType * Ty = parse<GlobalType *>(Ctx);
     ExpressionDecl * Init = parse<ExpressionDecl *>(Ctx);
-    return GlobalDecl::create(getContext(), Ty, Init);
+    return GlobalDecl::create(
+      getContext(), Ctx.ElementIndex.value(), Ty, Init
+    );
   }
 
   template <>
@@ -546,7 +551,7 @@ public:
   }
 
   template <>
-  DataDecl * parse<DataDecl *>(ReadContext& Ctx) {
+  DataSegmentDecl * parse<DataSegmentDecl *>(ReadContext& Ctx) {
     uint32_t RawKind = readVaruint32(Ctx);
     assert(RawKind >= 0 && RawKind <= 2);
     DataKindImmediate Kind = (DataKindImmediate)RawKind;
@@ -554,17 +559,19 @@ public:
     case DataKindImmediate::ActiveZerothMemory: {
       ExpressionDecl * Expression = parse<ExpressionDecl *>(Ctx);
       std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
-      return DataActiveDecl::create(getContext(), 0, Expression, Data);
+      return DataSegmentActiveDecl::create(
+        getContext(), 0, Expression, Data
+      );
     }
     case DataKindImmediate::Passive: {
       std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
-      return DataPassiveDecl::create(getContext(), Data);
+      return DataSegmentPassiveDecl::create(getContext(), Data);
     }
     case DataKindImmediate::ActiveArbitraryMemory: {
       MemIndexTy MemoryIndex = parse<MemIndexTy>(Ctx);
       ExpressionDecl * Expression = parse<ExpressionDecl *>(Ctx);
       std::vector<uint8_t> Data = parseVector<uint8_t>(Ctx);
-      return DataActiveDecl::create(
+      return DataSegmentActiveDecl::create(
         getContext(), MemoryIndex, Expression, Data
       );
     }
@@ -1137,7 +1144,8 @@ public:
   ) {
     DataSection = SectionIdx;
     /// FIXME: \c Validate vector count with DataCountSection's data;
-    std::vector<DataDecl *> Data = parseVector<DataDecl *>(Ctx);
+    std::vector<DataSegmentDecl *> Data =
+      parseVector<DataSegmentDecl *>(Ctx);
     if (Ctx.Ptr != Ctx.End) {
       llvm_unreachable("data section ended prematurely");
     }

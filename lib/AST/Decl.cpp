@@ -71,8 +71,8 @@ StringRef Decl::getDescriptiveKindName(DescriptiveDeclKind K) const {
     W2N_ENTRY(Code, "code");
     W2N_ENTRY(Func, "function");
     W2N_ENTRY(Local, "local");
-    W2N_ENTRY(DataActive, "data segment - active");
-    W2N_ENTRY(DataPassive, "data segment - passive");
+    W2N_ENTRY(DataSegmentActive, "data segment - active");
+    W2N_ENTRY(DataSegmentPassive, "data segment - passive");
     W2N_ENTRY(Expression, "expression");
   }
 #undef ENTRY

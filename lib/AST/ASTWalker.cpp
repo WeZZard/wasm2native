@@ -56,6 +56,10 @@
 
 #include <w2n/AST/ASTVisitor.h>
 #include <w2n/AST/ASTWalker.h>
+#include <w2n/AST/Decl.h>
+#include <w2n/AST/Module.h>
+#include <w2n/Basic/Defer.h>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 
@@ -122,23 +126,11 @@ private:
     return Inherited::visit(S);
   }
 
-  //===--------------------------------------------------------------===//
-  //                            Decls
-  //===--------------------------------------------------------------===//
-
-#define DECL(Id, Parent) Decl * visit##Id##Decl(Id##Decl * S);
+#define DECL(Id, Parent) bool visit##Id##Decl(Id##Decl * D);
 #include <w2n/AST/DeclNodes.def>
 
-  //===--------------------------------------------------------------===//
-  //                            Exprs
-  //===--------------------------------------------------------------===//
-
-#define EXPR(Id, Parent) Expr * visit##Id##Expr(Id##Expr * S);
+#define EXPR(Id, Parent) Expr * visit##Id##Expr(Id##Expr * E);
 #include <w2n/AST/ExprNodes.def>
-
-  //===--------------------------------------------------------------===//
-  //                            Stmts
-  //===--------------------------------------------------------------===//
 
 #define STMT(Id, Parent) Stmt * visit##Id##Stmt(Id##Stmt * S);
 #include <w2n/AST/StmtNodes.def>
@@ -241,6 +233,190 @@ public:
     );
   }
 };
+
+//===----------------------------------------------------------------===//
+//                               Decls
+//===----------------------------------------------------------------===//
+
+bool Traversal::visitModuleDecl(ModuleDecl * D) {
+  return llvm::any_of(D->getSectionDecls(), [this](auto * Sect) {
+#define DECL(Id, Parent)
+#define SECTION_DECL(Id, Parent)                                         \
+  if (doIt(Sect)) {                                                      \
+    return true;                                                         \
+  }
+
+#include <w2n/AST/DeclNodes.def>
+    return false;
+  });
+}
+
+bool Traversal::visitNameSectionDecl(NameSectionDecl * D) {
+#define DECL(Id, Parent)
+#define NAME_SUB_SECTION_DECL(Id, Parent)                                \
+  if (doIt(D->get##Id())) {                                              \
+    return true;                                                         \
+  }
+
+#include <w2n/AST/DeclNodes.def>
+  return false;
+}
+
+bool Traversal::visitTypeSectionDecl(TypeSectionDecl * D) {
+  return llvm::any_of(D->getTypes(), [this](auto * FuncType) {
+    return doIt(FuncType);
+  });
+}
+
+bool Traversal::visitImportSectionDecl(ImportSectionDecl * D) {
+  return llvm::any_of(D->getImports(), [this](auto * Import) {
+#define DECL(Id, Parent)
+#define IMPORT_DECL(Id, Parent)                                          \
+  if (doIt(Import)) {                                                    \
+    return true;                                                         \
+  }
+
+#include <w2n/AST/DeclNodes.def>
+    return false;
+  });
+}
+
+bool Traversal::visitFuncSectionDecl(FuncSectionDecl * D) {
+  return false;
+}
+
+bool Traversal::visitTableSectionDecl(TableSectionDecl * D) {
+  return llvm::any_of(D->getTables(), [this](auto * Tables) {
+    return doIt(Tables);
+  });
+}
+
+bool Traversal::visitMemorySectionDecl(MemorySectionDecl * D) {
+  return llvm::any_of(D->getMemories(), [this](auto * Memory) {
+    return doIt(Memory);
+  });
+}
+
+bool Traversal::visitGlobalSectionDecl(GlobalSectionDecl * D) {
+  return llvm::any_of(D->getGlobals(), [this](auto * Global) {
+    return doIt(Global);
+  });
+}
+
+bool Traversal::visitExportSectionDecl(ExportSectionDecl * D) {
+  return llvm::any_of(D->getExports(), [this](auto * Export) {
+    return doIt(Export);
+  });
+}
+
+bool Traversal::visitStartSectionDecl(StartSectionDecl * D) {
+  return w2n_proto_implemented([] { return false; });
+}
+
+bool Traversal::visitElementSectionDecl(ElementSectionDecl * D) {
+  return w2n_proto_implemented([] { return false; });
+}
+
+bool Traversal::visitCodeSectionDecl(CodeSectionDecl * D) {
+  return llvm::any_of(D->getCodes(), [this](auto * Code) {
+    return visitCodeDecl(Code);
+  });
+}
+
+bool Traversal::visitDataSectionDecl(DataSectionDecl * D) {
+  return llvm::any_of(D->getDataSegments(), [this](auto * Data) {
+#define DECL(Id, Parent)
+#define DATA_SEG_DECL(Id, Parent)                                        \
+  if (dyn_cast<Id##Decl>(Data)) {                                        \
+    if (visit##Id##Decl(dyn_cast<Id##Decl>(Data))) {                     \
+      return true;                                                       \
+    }                                                                    \
+  }
+
+#include <w2n/AST/DeclNodes.def>
+    return false;
+  });
+}
+
+bool Traversal::visitDataCountSectionDecl(DataCountSectionDecl * D) {
+  return w2n_proto_implemented([] { return false; });
+}
+
+bool Traversal::visitFuncTypeDecl(FuncTypeDecl * D) {
+  return false;
+}
+
+bool Traversal::visitImportFuncDecl(ImportFuncDecl * D) {
+  return false;
+}
+
+bool Traversal::visitImportTableDecl(ImportTableDecl * D) {
+  return false;
+}
+
+bool Traversal::visitImportMemoryDecl(ImportMemoryDecl * D) {
+  return false;
+}
+
+bool Traversal::visitImportGlobalDecl(ImportGlobalDecl * D) {
+  return false;
+}
+
+bool Traversal::visitTableDecl(TableDecl * D) {
+  return false;
+}
+
+bool Traversal::visitMemoryDecl(MemoryDecl * D) {
+  return false;
+}
+
+bool Traversal::visitGlobalDecl(GlobalDecl * D) {
+  return false;
+}
+
+bool Traversal::visitExportTableDecl(ExportTableDecl * D) {
+  return false;
+}
+
+bool Traversal::visitExportMemoryDecl(ExportMemoryDecl * D) {
+  return false;
+}
+
+bool Traversal::visitExportGlobalDecl(ExportGlobalDecl * D) {
+  return false;
+}
+
+bool Traversal::visitCodeDecl(CodeDecl * D) {
+  return false;
+}
+
+bool Traversal::visitFuncDecl(FuncDecl * D) {
+  return false;
+}
+
+bool Traversal::visitLocalDecl(LocalDecl * D) {
+  return false;
+}
+
+bool Traversal::visitDataSegmentActiveDecl(DataSegmentActiveDecl * D) {
+  return false;
+}
+
+bool Traversal::visitDataSegmentPassiveDecl(DataSegmentPassiveDecl * D) {
+  return false;
+}
+
+bool Traversal::visitExpressionDecl(ExpressionDecl * D) {
+  return false;
+}
+
+//===----------------------------------------------------------------===//
+//                               Exprs
+//===----------------------------------------------------------------===//
+
+//===----------------------------------------------------------------===//
+//                               Stmts
+//===----------------------------------------------------------------===//
 
 } // end anonymous namespace
 

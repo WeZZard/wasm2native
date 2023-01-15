@@ -91,9 +91,9 @@ char CyclicalRequestError<Request>::ID = '\0';
 /// detected.
 template <typename Request>
 typename Request::OutputType evaluateOrDefault(
-  Evaluator& Eval, Request req, typename Request::OutputType DefaultValue
+  Evaluator& Eval, Request Req, typename Request::OutputType DefaultValue
 ) {
-  auto Result = Eval(req);
+  auto Result = Eval(Req);
   if (auto Err = Result.takeError()) {
     llvm::handleAllErrors(
       std::move(Err),

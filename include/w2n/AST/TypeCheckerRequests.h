@@ -3,7 +3,11 @@
 #ifndef W2N_TYPE_CHECK_REQUESTS_H
 #define W2N_TYPE_CHECK_REQUESTS_H
 
+#include <memory>
 #include <w2n/AST/Evaluator.h>
+#include <w2n/AST/EvaluatorDependencies.h>
+#include <w2n/AST/GlobalVariable.h>
+#include <w2n/AST/Module.h>
 #include <w2n/AST/SimpleRequest.h>
 
 namespace w2n {
@@ -27,7 +31,7 @@ private:
   friend SimpleRequest;
 
   ArrayRef<SourceFile *>
-  evaluate(Evaluator& evaluator, ModuleDecl * mod) const;
+  evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
 
 public:
 
@@ -35,6 +39,39 @@ public:
   bool isCached() const {
     return true;
   }
+};
+
+/// Retrieves the global variables in the a module.
+/// FIXME: This isn't really a type-checking request, if we ever split off
+/// a zone for more basic AST requests, this should be moved there.
+class GlobalVariableRequest :
+  public SimpleRequest<
+    GlobalVariableRequest,
+    std::shared_ptr<ModuleDecl::GlobalListType>(ModuleDecl *),
+    RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
+public:
+
+  using SimpleRequest::SimpleRequest;
+
+private:
+
+  friend SimpleRequest;
+
+  OutputType evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
+
+public:
+
+  // Cached.
+  bool isCached() const {
+    return true;
+  }
+
+  Optional<OutputType> getCachedResult() const;
+
+  void cacheResult(OutputType Result) const;
+
+  evaluator::DependencySource
+  readDependencySource(const evaluator::DependencyRecorder&) const;
 };
 
 #define W2N_TYPEID_ZONE   TypeChecker

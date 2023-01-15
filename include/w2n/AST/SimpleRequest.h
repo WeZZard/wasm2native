@@ -12,6 +12,7 @@
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/DiagnosticsCommon.h>
 #include <w2n/Basic/SimpleDisplay.h>
+#include <w2n/Basic/Statistic.h>
 #include <w2n/Basic/TypeID.h>
 
 namespace w2n {
@@ -50,10 +51,10 @@ enum class RequestFlags {
 };
 
 static constexpr inline RequestFlags
-operator|(RequestFlags lhs, RequestFlags rhs) {
+operator|(RequestFlags Lhs, RequestFlags Rhs) {
   return RequestFlags(
-    static_cast<std::underlying_type<RequestFlags>::type>(lhs)
-    | static_cast<std::underlying_type<RequestFlags>::type>(rhs)
+    static_cast<std::underlying_type<RequestFlags>::type>(Lhs)
+    | static_cast<std::underlying_type<RequestFlags>::type>(Rhs)
   );
 }
 
@@ -72,9 +73,9 @@ constexpr bool anyTrue() {
   return false;
 }
 
-template <typename... Rest>
-constexpr bool anyTrue(bool current, Rest... rest) {
-  return current || anyTrue(rest...);
+template <typename... RestTy>
+constexpr bool anyTrue(bool Current, RestTy... Rest) {
+  return Current || anyTrue(Rest...);
 }
 } // namespace detail
 
@@ -93,8 +94,8 @@ template <
   typename T,
   typename =
     typename std::enable_if<canExtractNearestSourceLoc<T>()>::type>
-SourceLoc maybeExtractNearestSourceLoc(const T& value) {
-  return extractNearestSourceLoc(value);
+SourceLoc maybeExtractNearestSourceLoc(const T& Value) {
+  return extractNearestSourceLoc(Value);
 }
 
 template <
@@ -102,7 +103,7 @@ template <
   typename = void,
   typename =
     typename std::enable_if<!canExtractNearestSourceLoc<T>()>::type>
-SourceLoc maybeExtractNearestSourceLoc(const T& value) {
+SourceLoc maybeExtractNearestSourceLoc(const T& Value) {
   return SourceLoc();
 }
 
@@ -113,12 +114,12 @@ template <
   typename = typename std::enable_if<
     canExtractNearestSourceLoc<T>()
     && canExtractNearestSourceLoc<U>()>::type>
-SourceLoc extractNearestSourceLoc(const llvm::PointerUnion<T, U>& value) {
-  if (auto first = value.template dyn_cast<T>()) {
-    return extractNearestSourceLoc(first);
+SourceLoc extractNearestSourceLoc(const llvm::PointerUnion<T, U>& Value) {
+  if (auto First = Value.template dyn_cast<T>()) {
+    return extractNearestSourceLoc(First);
   }
-  if (auto second = value.template dyn_cast<U>()) {
-    return extractNearestSourceLoc(second);
+  if (auto Second = Value.template dyn_cast<U>()) {
+    return extractNearestSourceLoc(Second);
   }
   return SourceLoc();
 }
@@ -130,7 +131,7 @@ template <
   typename... Types,
   typename = void,
   typename = typename std::enable_if<(Index >= sizeof...(Types))>::type>
-SourceLoc extractNearestSourceLocTuple(const std::tuple<Types...>&) {
+SourceLoc extractNearestSourceLocTuple(const std::tuple<Types...>& _) {
   return SourceLoc();
 }
 
@@ -139,37 +140,37 @@ template <
   unsigned Index,
   typename... Types,
   typename = typename std::enable_if<(Index < sizeof...(Types))>::type>
-SourceLoc extractNearestSourceLocTuple(const std::tuple<Types...>& value
+SourceLoc extractNearestSourceLocTuple(const std::tuple<Types...>& Value
 ) {
-  SourceLoc loc = maybeExtractNearestSourceLoc(std::get<Index>(value));
+  SourceLoc loc = maybeExtractNearestSourceLoc(std::get<Index>(Value));
   if (loc.isValid())
     return loc;
 
-  return extractNearestSourceLocTuple<Index + 1>(value);
+  return extractNearestSourceLocTuple<Index + 1>(Value);
 }
 } // namespace detail
 
 namespace detail {
-constexpr bool cacheContains(RequestFlags kind, RequestFlags needle) {
+constexpr bool cacheContains(RequestFlags Kind, RequestFlags Needle) {
   using cache_t = std::underlying_type<RequestFlags>::type;
-  return (static_cast<cache_t>(kind) & static_cast<cache_t>(needle))
-      == static_cast<cache_t>(needle);
+  return (static_cast<cache_t>(Kind) & static_cast<cache_t>(Needle))
+      == static_cast<cache_t>(Needle);
 }
 
-constexpr bool isEverCached(RequestFlags kind) {
-  return !cacheContains(kind, RequestFlags::Uncached);
+constexpr bool isEverCached(RequestFlags Kind) {
+  return !cacheContains(Kind, RequestFlags::Uncached);
 }
 
-constexpr bool hasExternalCache(RequestFlags kind) {
-  return cacheContains(kind, RequestFlags::SeparatelyCached);
+constexpr bool hasExternalCache(RequestFlags Kind) {
+  return cacheContains(Kind, RequestFlags::SeparatelyCached);
 }
 
-constexpr bool isDependencySource(RequestFlags kind) {
-  return cacheContains(kind, RequestFlags::DependencySource);
+constexpr bool isDependencySource(RequestFlags Kind) {
+  return cacheContains(Kind, RequestFlags::DependencySource);
 }
 
-constexpr bool isDependencySink(RequestFlags kind) {
-  return cacheContains(kind, RequestFlags::DependencySink);
+constexpr bool isDependencySink(RequestFlags Kind) {
+  return cacheContains(Kind, RequestFlags::DependencySink);
 }
 } // end namespace detail
 
@@ -181,9 +182,9 @@ template <
     canExtractNearestSourceLoc<First>(),
     canExtractNearestSourceLoc<Rest>()...
   )>::type>
-SourceLoc extractNearestSourceLoc(const std::tuple<First, Rest...>& value
+SourceLoc extractNearestSourceLoc(const std::tuple<First, Rest...>& Value
 ) {
-  return detail::extractNearestSourceLocTuple<0>(value);
+  return detail::extractNearestSourceLocTuple<0>(Value);
 }
 
 /// -------------------------------------------------------------------------
@@ -258,7 +259,7 @@ template <
   typename Output,
   typename... Inputs>
 class SimpleRequest<Derived, Output(Inputs...), Caching> {
-  std::tuple<Inputs...> storage;
+  std::tuple<Inputs...> Storage;
 
   Derived& asDerived() {
     return *static_cast<Derived *>(this);
@@ -270,19 +271,18 @@ class SimpleRequest<Derived, Output(Inputs...), Caching> {
 
   template <size_t... Indices>
   Output
-  callDerived(Evaluator& evaluator, std::index_sequence<Indices...>)
-    const {
+  callDerived(Evaluator& Eval, std::index_sequence<Indices...>) const {
     static_assert(
       sizeof...(Indices) > 0, "Subclass must define evaluate()"
     );
-    return asDerived().evaluate(evaluator, std::get<Indices>(storage)...);
+    return asDerived().evaluate(Eval, std::get<Indices>(Storage)...);
   }
 
 protected:
 
   /// Retrieve the storage value directly.
   const std::tuple<Inputs...>& getStorage() const {
-    return storage;
+    return Storage;
   }
 
 public:
@@ -300,67 +300,63 @@ public:
 
   using OutputType = Output;
 
-  explicit SimpleRequest(const Inputs&... inputs) : storage(inputs...) {
+  explicit SimpleRequest(const Inputs&... I) : Storage(I...) {
   }
 
   /// Request evaluation function that will be registered with the
   /// evaluator.
-  static OutputType
-  evaluateRequest(const Derived& request, Evaluator& evaluator) {
-    return request.callDerived(
-      evaluator, std::index_sequence_for<Inputs...>()
-    );
+  static OutputType evaluateRequest(const Derived& Req, Evaluator& Eval) {
+    return Req.callDerived(Eval, std::index_sequence_for<Inputs...>());
   }
 
   /// Retrieve the nearest source location to which this request applies.
   SourceLoc getNearestLoc() const {
-    return extractNearestSourceLoc(storage);
+    return extractNearestSourceLoc(Storage);
   }
 
-  void diagnoseCycle(DiagnosticEngine& diags) const {
-    diags.diagnose(asDerived().getNearestLoc(), diag::circular_reference);
+  void diagnoseCycle(DiagnosticEngine& Diags) const {
+    Diags.diagnose(asDerived().getNearestLoc(), diag::circular_reference);
   }
 
-  void noteCycleStep(DiagnosticEngine& diags) const {
-    diags.diagnose(
+  void noteCycleStep(DiagnosticEngine& Diags) const {
+    Diags.diagnose(
       asDerived().getNearestLoc(), diag::circular_reference_through
     );
   }
 
   friend bool
-  operator==(const SimpleRequest& lhs, const SimpleRequest& rhs) {
-    return lhs.storage == rhs.storage;
+  operator==(const SimpleRequest& Lhs, const SimpleRequest& Rhs) {
+    return Lhs.Storage == Rhs.Storage;
   }
 
   friend bool
-  operator!=(const SimpleRequest& lhs, const SimpleRequest& rhs) {
-    return !(lhs == rhs);
+  operator!=(const SimpleRequest& Lhs, const SimpleRequest& Rhs) {
+    return !(Lhs == Rhs);
   }
 
-  friend llvm::hash_code hash_value(const SimpleRequest& request) {
+  friend llvm::hash_code hash_value(const SimpleRequest& Req) {
     using llvm::hash_combine;
-    return hash_combine(request.storage);
+    return hash_combine(Req.Storage);
   }
 
-  friend void
-  simple_display(llvm::raw_ostream& out, const Derived& request) {
-    out << TypeID<Derived>::getName();
-    simple_display(out, request.storage);
+  friend void simple_display(llvm::raw_ostream& Out, const Derived& Req) {
+    Out << TypeID<Derived>::getName();
+    simple_display(Out, Req.Storage);
   }
 
-  // FIXME: statistics
-  // friend FrontendStatsTracer
-  // make_tracer(UnifiedStatsReporter *Reporter, const Derived &request) {
-  //   return make_tracer(Reporter, TypeID<Derived>::getName(),
-  //   request.storage);
-  // }
+  friend FrontendStatsTracer
+  make_tracer(UnifiedStatsReporter * Reporter, const Derived& Request) {
+    return make_tracer(
+      Reporter, TypeID<Derived>::getName(), Request.Storage
+    );
+  }
 };
 } // namespace w2n
 
 namespace llvm {
 template <typename T, unsigned N>
-llvm::hash_code hash_value(const SmallVector<T, N>& vec) {
-  return hash_combine_range(vec.begin(), vec.end());
+llvm::hash_code hash_value(const SmallVector<T, N>& Vec) {
+  return hash_combine_range(Vec.begin(), Vec.end());
 }
 } // namespace llvm
 

@@ -30,8 +30,7 @@ private:
 
   friend SimpleRequest;
 
-  ArrayRef<SourceFile *>
-  evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
+  OutputType evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
 
 public:
 

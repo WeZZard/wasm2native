@@ -70,7 +70,7 @@ void SourceFile::collectLinkLibraries(
 
 #pragma mark - PrimarySourceFilesRequest
 
-ArrayRef<SourceFile *> PrimarySourceFilesRequest::evaluate(
+PrimarySourceFilesRequest::OutputType PrimarySourceFilesRequest::evaluate(
   Evaluator& Eval, ModuleDecl * Mod
 ) const {
   assert(

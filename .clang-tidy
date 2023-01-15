@@ -118,7 +118,8 @@ proto_implemented\
 |report_prototype_implementation\
 |report_assertion\
 |simple_display\
-|hash_value"
+|hash_value\
+|make_tracer"
   - key: readability-identifier-naming.GlobalPointerCase
     value: CamelCase
   - key: readability-identifier-naming.GlobalVariableCase

@@ -1,7 +1,11 @@
+#include <_types/_uint32_t.h>
+#include <cassert>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/FileUnit.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/NameAssociation.h>
+#include <w2n/AST/Type.h>
 #include <w2n/AST/TypeCheckerRequests.h>
 
 using namespace w2n;
@@ -12,7 +16,6 @@ GlobalVariableRequest::OutputType
 GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   assert(Mod);
   GlobalSectionDecl * G = Mod->getGlobalSection();
-  ExportSectionDecl * E = Mod->getExportSection();
 
   auto Globals = std::make_shared<ModuleDecl::GlobalListType>();
 
@@ -24,16 +27,12 @@ GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
     return LinkageKind::Internal;
   };
 
-  auto GetName = [](GlobalDecl * D) -> StringRef {
-    return "";
-  };
-
   for (GlobalDecl * D : G->getGlobals()) {
     GlobalVariable * V = GlobalVariable::create(
       *Mod,
       GetLinkageKind(D),
       D->getIndex(),
-      GetName(D),
+      None,
       D->getType()->getType(),
       D->getType()->isMutable(),
       D
@@ -72,28 +71,108 @@ void GlobalVariableRequest::cacheResult(
 FunctionRequest::OutputType
 FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   assert(Mod);
-  CodeSectionDecl * F = Mod->getCodeSection();
-  ExportSectionDecl * E = Mod->getExportSection();
+  TypeSectionDecl * TypeSection = Mod->getTypeSection();
+  CodeSectionDecl * CodeSection = Mod->getCodeSection();
+  FuncSectionDecl * FuncSection = Mod->getFuncSection();
+  ExportSectionDecl * ExportSection = Mod->getExportSection();
+  NameSectionDecl * NameSection = Mod->getNameSection();
 
   auto Functions = std::make_shared<ModuleDecl::FunctionListType>();
 
-  if (F == nullptr || F->getCodes().empty()) {
+  if (TypeSection == nullptr || TypeSection->getTypes().empty()) {
     return Functions;
   }
 
-  auto GetLinkageKind = [](GlobalDecl * D) -> LinkageKind {
-    return LinkageKind::Internal;
-  };
-
-  auto GetName = [](GlobalDecl * D) -> StringRef {
-    return "";
-  };
-
-  for (CodeDecl * C : F->getCodes()) {
-    //
+  if (CodeSection == nullptr || CodeSection->getCodes().empty()) {
+    return Functions;
   }
 
-  // FIXME: not implemented
+  size_t CodeCount = CodeSection->getCodes().size();
+  size_t FuncCount = FuncSection->getFuncTypes().size();
+
+  // TODO: Diagnostic info rather than assertion.
+  assert(CodeCount == FuncCount);
+
+  struct WorkItem {
+    Optional<Identifier> Name;
+    FuncTypeDecl * Type;
+    std::vector<LocalDecl *> LocalVariables;
+    ExpressionDecl * Expression;
+    bool IsExported;
+  };
+
+  std::vector<WorkItem> WorkItems;
+  WorkItems.reserve(CodeCount);
+
+  for (CodeDecl * C : CodeSection->getCodes()) {
+    WorkItems.push_back({
+      None,
+      nullptr,
+      C->getFunc()->getLocals(),
+      C->getFunc()->getExpression(),
+      false,
+    });
+  }
+
+  auto& FuncTypeIndices = FuncSection->getFuncTypes();
+  auto& Types = TypeSection->getTypes();
+
+  auto FindFuncName = [&](uint32_t Index) -> Optional<Identifier> {
+    if (NameSection == nullptr) {
+      return None;
+    }
+
+    auto& FuncNameMap =
+      NameSection->getFuncNameSubsection()->getNameMap();
+    auto Iter = std::find_if(
+      FuncNameMap.begin(),
+      FuncNameMap.end(),
+      [&](NameAssociation Entry) -> bool { return Entry.Index == Index; }
+    );
+
+    if (Iter != FuncNameMap.end()) {
+      return Iter->Name;
+    }
+
+    return None;
+  };
+
+  auto GetExport = [&](uint32_t Index) -> bool {
+    if (ExportSection == nullptr) {
+      return false;
+    }
+    auto& Exports = ExportSection->getExports();
+
+    auto Iter = std::find_if(
+      Exports.begin(),
+      Exports.end(),
+      [&](ExportDecl * D) -> bool {
+        auto * F = dyn_cast<ExportFuncDecl>(D);
+        return F->getFuncIndex() == Index;
+      }
+    );
+
+    return Iter != Exports.end();
+  };
+
+  for (size_t Index = 0; Index < FuncCount; Index++) {
+    auto FuncTypeIdx = FuncTypeIndices[Index];
+    auto * Type = Types[FuncTypeIdx];
+    WorkItems[Index].Type = Type;
+    WorkItems[Index].Name = FindFuncName(Index);
+    WorkItems[Index].IsExported = GetExport(Index);
+  }
+
+  for (const auto& WorkItem : WorkItems) {
+    Function * F = Function::createFunction(
+      WorkItem.Name,
+      WorkItem.Type,
+      WorkItem.LocalVariables,
+      WorkItem.Expression,
+      WorkItem.IsExported
+    );
+    Functions->push_back(F);
+  }
 
   return Functions;
 }
@@ -126,7 +205,6 @@ TableRequest::OutputType
 TableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   assert(Mod);
   CodeSectionDecl * F = Mod->getCodeSection();
-  ExportSectionDecl * E = Mod->getExportSection();
 
   auto Tables = std::make_shared<ModuleDecl::TableListType>();
 
@@ -165,7 +243,6 @@ MemoryRequest::OutputType
 MemoryRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   assert(Mod);
   CodeSectionDecl * F = Mod->getCodeSection();
-  ExportSectionDecl * E = Mod->getExportSection();
 
   auto Memories = std::make_shared<ModuleDecl::MemoryListType>();
 

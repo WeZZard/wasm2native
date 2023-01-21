@@ -23,25 +23,29 @@ class Function :
   public ASTAllocated<Function> {
 private:
 
-  FuncType * Type;
+  llvm::Optional<Identifier> Name;
+
+  FuncTypeDecl * Type;
 
   /// @note: Global variable's init expression does not have locals.
   std::vector<LocalDecl *> Locals;
 
   ExpressionDecl * Expression;
 
-  llvm::Optional<Identifier> Name;
+  bool Exported;
 
   Function(
-    FuncType * Type,
+    llvm::Optional<Identifier> Name,
+    FuncTypeDecl * Type,
     std::vector<LocalDecl *> Locals,
     ExpressionDecl * Expression,
-    llvm::Optional<Identifier> Name
+    bool IsExported
   ) :
+    Name(Name),
     Type(Type),
     Locals(Locals),
     Expression(Expression),
-    Name(Name) {
+    Exported(IsExported) {
   }
 
 public:
@@ -49,29 +53,30 @@ public:
   ~Function() {
   }
 
-  static Function * create(
-    FuncType * Type,
+  static Function * createFunction(
+    llvm::Optional<Identifier> Name,
+    FuncTypeDecl * Type,
     std::vector<LocalDecl *> Locals,
     ExpressionDecl * Expression,
-    llvm::Optional<Identifier> Name
+    bool IsExported
   ) {
     return new (Expression->getASTContext())
-      Function(Type, Locals, Expression, Name);
+      Function(Name, Type, Locals, Expression, IsExported);
   }
 
-  static Function * create(
-    FuncType * Type,
+  static Function * createInit(
+    FuncTypeDecl * Type,
     ExpressionDecl * Expression,
     llvm::Optional<Identifier> Name
   ) {
-    return create(Type, {}, Expression, Name);
+    return createFunction(Name, Type, {}, Expression, false);
   }
 
-  FuncType * getType() {
+  FuncTypeDecl * getType() {
     return Type;
   }
 
-  const FuncType * getType() const {
+  const FuncTypeDecl * getType() const {
     return Type;
   }
 
@@ -101,6 +106,10 @@ public:
 
   bool hasName() const {
     return Name.has_value();
+  }
+
+  bool isExported() const {
+    return Exported;
   }
 };
 

@@ -1081,24 +1081,24 @@ public:
 class ExportFuncDecl : public ExportDecl {
 private:
 
-  uint32_t TypeIndex;
+  uint32_t FuncIndex;
 
   ExportFuncDecl(
-    ASTContext * Context, Identifier Name, uint32_t TypeIndex
+    ASTContext * Context, Identifier Name, uint32_t FuncIndex
   ) :
     ExportDecl(DeclKind::ExportFunc, Context, Name),
-    TypeIndex(TypeIndex) {
+    FuncIndex(FuncIndex) {
   }
 
 public:
 
   static ExportFuncDecl *
-  create(ASTContext& Context, Identifier Name, uint32_t TypeIndex) {
-    return new (Context) ExportFuncDecl(&Context, Name, TypeIndex);
+  create(ASTContext& Context, Identifier Name, uint32_t FuncIndex) {
+    return new (Context) ExportFuncDecl(&Context, Name, FuncIndex);
   }
 
-  uint32_t getTypeIndex() const {
-    return TypeIndex;
+  uint32_t getFuncIndex() const {
+    return FuncIndex;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;

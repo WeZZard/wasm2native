@@ -27,7 +27,7 @@ private:
   ModuleDecl& Module;
   LinkageKind Linkage;
   uint32_t Index;
-  StringRef Name;
+  llvm::Optional<Identifier> Name;
   ValueType * Ty;
   bool IsMutable;
   // Function& Init;
@@ -37,7 +37,7 @@ private:
     ModuleDecl& Module,
     LinkageKind Linkage,
     uint32_t Index,
-    StringRef Name,
+    llvm::Optional<Identifier> Name,
     ValueType * Ty,
     bool IsMutable,
     // Function& Init,
@@ -50,7 +50,7 @@ public:
     ModuleDecl& Module,
     LinkageKind Linkage,
     uint32_t Index,
-    StringRef Name,
+    llvm::Optional<Identifier> Name,
     ValueType * Ty,
     bool IsMutable,
     // Function& Init,
@@ -76,7 +76,7 @@ public:
     return Index;
   }
 
-  StringRef getName() const {
+  llvm::Optional<Identifier> getName() const {
     return Name;
   }
 

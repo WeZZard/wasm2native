@@ -1,4 +1,5 @@
 #include <w2n/AST/ASTContext.h>
+#include <w2n/AST/Decl.h>
 #include <w2n/AST/FileUnit.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/TypeCheckerRequests.h>
@@ -52,11 +53,7 @@ evaluator::DependencySource GlobalVariableRequest::readDependencySource(
 Optional<GlobalVariableRequest::OutputType>
 GlobalVariableRequest::getCachedResult() const {
   auto * Mod = std::get<0>(getStorage());
-  if (Mod == nullptr) {
-    return None;
-  }
-
-  if (Mod->Globals == nullptr) {
+  if (Mod == nullptr || Mod->Globals == nullptr) {
     return None;
   }
 
@@ -68,6 +65,138 @@ void GlobalVariableRequest::cacheResult(
 ) const {
   auto * Mod = std::get<0>(getStorage());
   Mod->Globals = Result;
+}
+
+#pragma mark - FunctionRequest
+
+FunctionRequest::OutputType
+FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
+  assert(Mod);
+  CodeSectionDecl * F = Mod->getCodeSection();
+  ExportSectionDecl * E = Mod->getExportSection();
+
+  auto Functions = std::make_shared<ModuleDecl::FunctionListType>();
+
+  if (F == nullptr || F->getCodes().empty()) {
+    return Functions;
+  }
+
+  auto GetLinkageKind = [](GlobalDecl * D) -> LinkageKind {
+    return LinkageKind::Internal;
+  };
+
+  auto GetName = [](GlobalDecl * D) -> StringRef {
+    return "";
+  };
+
+  for (CodeDecl * C : F->getCodes()) {
+    //
+  }
+
+  // FIXME: not implemented
+
+  return Functions;
+}
+
+evaluator::DependencySource FunctionRequest::readDependencySource(
+  const evaluator::DependencyRecorder& E
+) const {
+  return std::get<0>(getStorage())->getParentSourceFile();
+}
+
+Optional<FunctionRequest::OutputType>
+FunctionRequest::getCachedResult() const {
+  auto * Mod = std::get<0>(getStorage());
+  if (Mod == nullptr || Mod->Functions == nullptr) {
+    return None;
+  }
+
+  return Mod->Functions;
+}
+
+void FunctionRequest::cacheResult(FunctionRequest::OutputType Result
+) const {
+  auto * Mod = std::get<0>(getStorage());
+  Mod->Functions = Result;
+}
+
+#pragma mark - TableRequest
+
+TableRequest::OutputType
+TableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
+  assert(Mod);
+  CodeSectionDecl * F = Mod->getCodeSection();
+  ExportSectionDecl * E = Mod->getExportSection();
+
+  auto Tables = std::make_shared<ModuleDecl::TableListType>();
+
+  if (F == nullptr || F->getCodes().empty()) {
+    return Tables;
+  }
+
+  // FIXME: not implemented
+
+  return Tables;
+}
+
+evaluator::DependencySource
+TableRequest::readDependencySource(const evaluator::DependencyRecorder& E
+) const {
+  return std::get<0>(getStorage())->getParentSourceFile();
+}
+
+Optional<TableRequest::OutputType> TableRequest::getCachedResult() const {
+  auto * Mod = std::get<0>(getStorage());
+  if (Mod == nullptr || Mod->Tables == nullptr) {
+    return None;
+  }
+
+  return Mod->Tables;
+}
+
+void TableRequest::cacheResult(TableRequest::OutputType Result) const {
+  auto * Mod = std::get<0>(getStorage());
+  Mod->Tables = Result;
+}
+
+#pragma mark - MemoryRequest
+
+MemoryRequest::OutputType
+MemoryRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
+  assert(Mod);
+  CodeSectionDecl * F = Mod->getCodeSection();
+  ExportSectionDecl * E = Mod->getExportSection();
+
+  auto Memories = std::make_shared<ModuleDecl::MemoryListType>();
+
+  if (F == nullptr || F->getCodes().empty()) {
+    return Memories;
+  }
+
+  // FIXME: not implemented
+
+  return Memories;
+}
+
+evaluator::DependencySource
+MemoryRequest::readDependencySource(const evaluator::DependencyRecorder& E
+) const {
+  return std::get<0>(getStorage())->getParentSourceFile();
+}
+
+Optional<MemoryRequest::OutputType>
+MemoryRequest::getCachedResult() const {
+  auto * Mod = std::get<0>(getStorage());
+  if (Mod == nullptr || Mod->Memories == nullptr) {
+    return None;
+  }
+
+  return Mod->Memories;
+}
+
+void MemoryRequest::cacheResult(MemoryRequest::OutputType Result) const {
+  auto * Mod = std::get<0>(getStorage());
+  Mod->Memories = Result;
 }
 
 namespace w2n {

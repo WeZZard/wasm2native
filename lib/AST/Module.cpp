@@ -1,4 +1,4 @@
-#include "llvm/Support/Casting.h"
+#include <llvm/Support/Casting.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <cassert>
 #include <memory>
@@ -46,6 +46,25 @@ const ModuleDecl::GlobalListType& ModuleDecl::getGlobalListImpl() const {
   auto& Eval = getASTContext().Eval;
   auto * Mutable = const_cast<ModuleDecl *>(this);
   return *evaluateOrDefault(Eval, GlobalVariableRequest{Mutable}, {});
+}
+
+const ModuleDecl::FunctionListType&
+ModuleDecl::getFunctionListImpl() const {
+  auto& Eval = getASTContext().Eval;
+  auto * Mutable = const_cast<ModuleDecl *>(this);
+  return *evaluateOrDefault(Eval, FunctionRequest{Mutable}, {});
+}
+
+const ModuleDecl::TableListType& ModuleDecl::getTableListImpl() const {
+  auto& Eval = getASTContext().Eval;
+  auto * Mutable = const_cast<ModuleDecl *>(this);
+  return *evaluateOrDefault(Eval, TableRequest{Mutable}, {});
+}
+
+const ModuleDecl::MemoryListType& ModuleDecl::getMemoryListImpl() const {
+  auto& Eval = getASTContext().Eval;
+  auto * Mutable = const_cast<ModuleDecl *>(this);
+  return *evaluateOrDefault(Eval, MemoryRequest{Mutable}, {});
 }
 
 #pragma mark Accessing Linkage Infos

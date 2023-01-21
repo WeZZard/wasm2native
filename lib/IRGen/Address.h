@@ -18,13 +18,13 @@
 #ifndef W2N_IRGEN_ADDRESS_H
 #define W2N_IRGEN_ADDRESS_H
 
+#include "IRGenInternal.h"
 #include <llvm/ADT/ilist.h>
 #include <llvm/IR/Argument.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/Value.h>
-#include <w2n/IRGen/IRGen.h>
 
 namespace w2n {
 namespace irgen {

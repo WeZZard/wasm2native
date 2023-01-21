@@ -68,7 +68,7 @@ public:
   /// Generates the list of libraries needed to link this file, based on
   /// its imports.
   virtual void
-  collectLinkLibraries(ModuleDecl::LinkLibraryCallback callback) const {
+  collectLinkLibraries(ModuleDecl::LinkLibraryCallback Callback) const {
   }
 
   using ASTAllocated<FileUnit>::operator new;

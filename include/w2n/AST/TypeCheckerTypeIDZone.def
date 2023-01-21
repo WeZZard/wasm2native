@@ -16,3 +16,27 @@ W2N_REQUEST(
   Cached,
   NoLocationInfo
 )
+
+W2N_REQUEST(
+  TypeChecker,
+  FunctionRequest,
+  std::shared_ptr<ModuleDecl::FunctionListType>(ModuleDecl *),
+  Cached,
+  NoLocationInfo
+)
+
+W2N_REQUEST(
+  TypeChecker,
+  TableRequest,
+  std::shared_ptr<ModuleDecl::TableListType>(ModuleDecl *),
+  Cached,
+  NoLocationInfo
+)
+
+W2N_REQUEST(
+  TypeChecker,
+  MemoryRequest,
+  std::shared_ptr<ModuleDecl::MemoryListType>(ModuleDecl *),
+  Cached,
+  NoLocationInfo
+)

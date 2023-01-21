@@ -73,6 +73,105 @@ public:
   readDependencySource(const evaluator::DependencyRecorder&) const;
 };
 
+/// Retrieves the functions in the a module.
+/// FIXME: This isn't really a type-checking request, if we ever split off
+/// a zone for more basic AST requests, this should be moved there.
+class FunctionRequest :
+  public SimpleRequest<
+    FunctionRequest,
+    std::shared_ptr<ModuleDecl::FunctionListType>(ModuleDecl *),
+    RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
+public:
+
+  using SimpleRequest::SimpleRequest;
+
+private:
+
+  friend SimpleRequest;
+
+  OutputType evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
+
+public:
+
+  // Cached.
+  bool isCached() const {
+    return true;
+  }
+
+  Optional<OutputType> getCachedResult() const;
+
+  void cacheResult(OutputType Result) const;
+
+  evaluator::DependencySource
+  readDependencySource(const evaluator::DependencyRecorder&) const;
+};
+
+/// Retrieves the functions in the a module.
+/// FIXME: This isn't really a type-checking request, if we ever split off
+/// a zone for more basic AST requests, this should be moved there.
+class TableRequest :
+  public SimpleRequest<
+    TableRequest,
+    std::shared_ptr<ModuleDecl::TableListType>(ModuleDecl *),
+    RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
+public:
+
+  using SimpleRequest::SimpleRequest;
+
+private:
+
+  friend SimpleRequest;
+
+  OutputType evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
+
+public:
+
+  // Cached.
+  bool isCached() const {
+    return true;
+  }
+
+  Optional<OutputType> getCachedResult() const;
+
+  void cacheResult(OutputType Result) const;
+
+  evaluator::DependencySource
+  readDependencySource(const evaluator::DependencyRecorder&) const;
+};
+
+/// Retrieves the functions in the a module.
+/// FIXME: This isn't really a type-checking request, if we ever split off
+/// a zone for more basic AST requests, this should be moved there.
+class MemoryRequest :
+  public SimpleRequest<
+    MemoryRequest,
+    std::shared_ptr<ModuleDecl::MemoryListType>(ModuleDecl *),
+    RequestFlags::SeparatelyCached | RequestFlags::DependencySource> {
+public:
+
+  using SimpleRequest::SimpleRequest;
+
+private:
+
+  friend SimpleRequest;
+
+  OutputType evaluate(Evaluator& Eval, ModuleDecl * Mod) const;
+
+public:
+
+  // Cached.
+  bool isCached() const {
+    return true;
+  }
+
+  Optional<OutputType> getCachedResult() const;
+
+  void cacheResult(OutputType Result) const;
+
+  evaluator::DependencySource
+  readDependencySource(const evaluator::DependencyRecorder&) const;
+};
+
 #define W2N_TYPEID_ZONE   TypeChecker
 #define W2N_TYPEID_HEADER <w2n/AST/TypeCheckerTypeIDZone.def>
 #include <w2n/Basic/DefineTypeIDZone.h>

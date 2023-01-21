@@ -1,10 +1,11 @@
-#include "llvm/ADT/Twine.h"
-#include "llvm/Support/Alignment.h"
+#include "Address.h"
 #include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/Support/Alignment.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <cassert>
@@ -16,7 +17,6 @@
 #include <w2n/AST/IRGenRequests.h>
 #include <w2n/AST/Module.h>
 #include <w2n/Basic/Unimplemented.h>
-#include <w2n/IRGen/Address.h>
 #include <w2n/IRGen/IRGenModule.h>
 #include <w2n/IRGen/Linking.h>
 

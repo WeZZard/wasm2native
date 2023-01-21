@@ -1,5 +1,5 @@
-#ifndef W2N_AST_FUNCTION
-#define W2N_AST_FUNCTION
+#ifndef W2N_AST_FUNCTION_H
+#define W2N_AST_FUNCTION_H
 
 #include <llvm/ADT/ilist.h>
 #include <w2n/AST/ASTAllocated.h>
@@ -10,7 +10,8 @@
 namespace w2n {
 
 /**
- * @brief Represents a function in WebAssembly.
+ * @brief Represents a function or the init procedure of a global in
+ * WebAssembly.
  *
  * Wasm file guarantees one-pass validation. This makes informations about
  * one object in wasm file are speratedly located in the file. This class
@@ -19,7 +20,89 @@ namespace w2n {
  */
 class Function :
   public llvm::ilist_node<Function>,
-  public ASTAllocated<Function> {};
+  public ASTAllocated<Function> {
+private:
+
+  FuncType * Type;
+
+  /// @note: Global variable's init expression does not have locals.
+  std::vector<LocalDecl *> Locals;
+
+  ExpressionDecl * Expression;
+
+  llvm::Optional<Identifier> Name;
+
+  Function(
+    FuncType * Type,
+    std::vector<LocalDecl *> Locals,
+    ExpressionDecl * Expression,
+    llvm::Optional<Identifier> Name
+  ) :
+    Type(Type),
+    Locals(Locals),
+    Expression(Expression),
+    Name(Name) {
+  }
+
+public:
+
+  ~Function() {
+  }
+
+  static Function * create(
+    FuncType * Type,
+    std::vector<LocalDecl *> Locals,
+    ExpressionDecl * Expression,
+    llvm::Optional<Identifier> Name
+  ) {
+    return new (Expression->getASTContext())
+      Function(Type, Locals, Expression, Name);
+  }
+
+  static Function * create(
+    FuncType * Type,
+    ExpressionDecl * Expression,
+    llvm::Optional<Identifier> Name
+  ) {
+    return create(Type, {}, Expression, Name);
+  }
+
+  FuncType * getType() {
+    return Type;
+  }
+
+  const FuncType * getType() const {
+    return Type;
+  }
+
+  std::vector<LocalDecl *>& getLocals() {
+    return Locals;
+  }
+
+  const std::vector<LocalDecl *>& getLocals() const {
+    return Locals;
+  }
+
+  ExpressionDecl * getExpression() {
+    return Expression;
+  }
+
+  const ExpressionDecl * getExpression() const {
+    return Expression;
+  }
+
+  llvm::Optional<Identifier> getName() {
+    return Name;
+  }
+
+  llvm::Optional<Identifier> getName() const {
+    return Name;
+  }
+
+  bool hasName() const {
+    return Name.has_value();
+  }
+};
 
 } // namespace w2n
 
@@ -47,4 +130,4 @@ private:
 
 } // namespace llvm
 
-#endif // W2N_AST_FUNCTION
+#endif // W2N_AST_FUNCTION_H

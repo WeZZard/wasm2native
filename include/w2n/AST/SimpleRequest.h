@@ -142,9 +142,10 @@ template <
   typename = typename std::enable_if<(Index < sizeof...(Types))>::type>
 SourceLoc extractNearestSourceLocTuple(const std::tuple<Types...>& Value
 ) {
-  SourceLoc loc = maybeExtractNearestSourceLoc(std::get<Index>(Value));
-  if (loc.isValid())
-    return loc;
+  SourceLoc Loc = maybeExtractNearestSourceLoc(std::get<Index>(Value));
+  if (Loc.isValid()) {
+    return Loc;
+  }
 
   return extractNearestSourceLocTuple<Index + 1>(Value);
 }
@@ -290,8 +291,6 @@ public:
   constexpr static bool isEverCached = detail::isEverCached(Caching);
   constexpr static bool hasExternalCache =
     detail::hasExternalCache(Caching);
-
-public:
 
   constexpr static bool isDependencySource =
     detail::isDependencySource(Caching);

@@ -12,9 +12,12 @@
 #include <memory>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/DeclContext.h>
+#include <w2n/AST/Function.h>
 #include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/Identifier.h>
 #include <w2n/AST/LinkLibrary.h>
+#include <w2n/AST/Memory.h>
+#include <w2n/AST/Table.h>
 #include <w2n/Basic/LLVM.h>
 
 namespace w2n {
@@ -31,13 +34,27 @@ class ModuleDecl :
 public:
 
   friend class Decl;
-  friend class GlobalVariable;
   friend class GlobalVariableRequest;
+  friend class FunctionRequest;
+  friend class MemoryRequest;
+  friend class TableRequest;
 
   using GlobalListType = llvm::ilist<GlobalVariable>;
+  using FunctionListType = llvm::ilist<Function>;
+  using MemoryListType = llvm::ilist<Memory>;
+  using TableListType = llvm::ilist<Table>;
 
   using global_iterator = GlobalListType::iterator;
   using const_global_iterator = GlobalListType::const_iterator;
+
+  using function_iterator = FunctionListType::iterator;
+  using const_function_iterator = FunctionListType::const_iterator;
+
+  using memory_iterator = MemoryListType::iterator;
+  using const_memory_iterator = MemoryListType::const_iterator;
+
+  using table_iterator = TableListType::iterator;
+  using const_table_iterator = TableListType::const_iterator;
 
 private:
 
@@ -60,6 +77,15 @@ private:
   ModuleDecl(Identifier Name, ASTContext& Context);
 
   mutable std::shared_ptr<GlobalListType> Globals = nullptr;
+
+  mutable std::shared_ptr<FunctionListType> Functions = nullptr;
+
+  mutable std::shared_ptr<TableListType> Tables = nullptr;
+
+  mutable std::shared_ptr<MemoryListType> Memories = nullptr;
+
+  /// Unused functions kept for generating debug info.
+  FunctionListType ZombieFunctions;
 
 public:
 
@@ -196,47 +222,60 @@ public:
 
   using Decl::getASTContext;
 
-#pragma mark Accessing Globals
+#pragma mark Accessing Module Primitives
 
-private:
+#define W2N_MODULE_PRIMITIVE_ACCESSOR(Id, id)                            \
+  W2N_MODULE_PRIMITIVE_ACCESSOR_2(Id, Id##s, id, id##s)
 
-  const GlobalListType& getGlobalListImpl() const;
-
-public:
-
-  GlobalListType& getGlobalList() {
-    return const_cast<GlobalListType&>(
-      const_cast<const ModuleDecl *>(this)->getGlobalList()
-    );
+#define W2N_MODULE_PRIMITIVE_ACCESSOR_2(Id, Ids, id, ids)                \
+                                                                         \
+private:                                                                 \
+                                                                         \
+  const Id##ListType& get##Id##ListImpl() const;                         \
+                                                                         \
+public:                                                                  \
+                                                                         \
+  Id##ListType& get##Id##List() {                                        \
+    return const_cast<Id##ListType&>(                                    \
+      const_cast<const ModuleDecl *>(this)->get##Id##List()              \
+    );                                                                   \
+  }                                                                      \
+                                                                         \
+  const Id##ListType& get##Id##List() const {                            \
+    return get##Id##ListImpl();                                          \
+  }                                                                      \
+                                                                         \
+  id##_iterator id##_begin() {                                           \
+    return get##Id##List().begin();                                      \
+  }                                                                      \
+                                                                         \
+  id##_iterator id##_end() {                                             \
+    return get##Id##List().end();                                        \
+  }                                                                      \
+                                                                         \
+  const_##id##_iterator id##_begin() const {                             \
+    return get##Id##List().begin();                                      \
+  }                                                                      \
+                                                                         \
+  const_##id##_iterator id##_end() const {                               \
+    return get##Id##List().end();                                        \
+  }                                                                      \
+                                                                         \
+  iterator_range<id##_iterator> get##Ids() {                             \
+    return {id##_begin(), id##_end()};                                   \
+  }                                                                      \
+                                                                         \
+  iterator_range<const_##id##_iterator> get##Ids() const {               \
+    return {id##_begin(), id##_end()};                                   \
   }
 
-  const GlobalListType& getGlobalList() const {
-    return getGlobalListImpl();
-  }
+  W2N_MODULE_PRIMITIVE_ACCESSOR(Global, global);
 
-  global_iterator global_begin() {
-    return getGlobalList().begin();
-  }
+  W2N_MODULE_PRIMITIVE_ACCESSOR(Function, function);
 
-  global_iterator global_end() {
-    return getGlobalList().end();
-  }
+  W2N_MODULE_PRIMITIVE_ACCESSOR(Table, table);
 
-  const_global_iterator global_begin() const {
-    return getGlobalList().begin();
-  }
-
-  const_global_iterator global_end() const {
-    return getGlobalList().end();
-  }
-
-  iterator_range<global_iterator> getGlobals() {
-    return {global_begin(), global_end()};
-  }
-
-  iterator_range<const_global_iterator> getGlobals() const {
-    return {global_begin(), global_end()};
-  }
+  W2N_MODULE_PRIMITIVE_ACCESSOR_2(Memory, Memories, memory, memories);
 
 #pragma mark Accessing Linkage Infos
 

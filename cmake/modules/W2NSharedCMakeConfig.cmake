@@ -190,7 +190,7 @@ endmacro()
 macro(w2n_common_standalone_build_config_clang product)
   find_package(Clang CONFIG REQUIRED NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
 
-  if (NOT CMAKE_CROSSCOMPILING AND NOT SWIFT_PREBUILT_CLANG)
+  if (NOT CMAKE_CROSSCOMPILING AND NOT W2N_PREBUILT_CLANG)
     set(${product}_NATIVE_CLANG_TOOLS_PATH "${LLVM_TOOLS_BINARY_DIR}")
   endif()
 

@@ -11,6 +11,8 @@
 //
 //===----------------------------------------------------------------===//
 
+#include <llvm/Support/Compiler.h>
+
 #ifndef W2N_BASIC_COMPILER_H
 #define W2N_BASIC_COMPILER_H
 

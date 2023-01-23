@@ -8,14 +8,21 @@
 #include <llvm/Target/TargetMachine.h>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/DiagnosticEngine.h>
+#include <w2n/AST/DiagnosticsIRGen.h>
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/IRGenRequests.h>
 #include <w2n/Basic/Statistic.h>
 #include <w2n/TBDGen/TBDGen.h>
 
 namespace w2n {
+class ClusteredBitVector;
+enum ForDefinition_t : bool;
 
 namespace irgen {
+/// In IRGen, we use Swift's ClusteredBitVector data structure to
+/// store vectors of spare bits.
+using SpareBitVector = ClusteredBitVector;
+
 class IRGenFunction;
 
 enum class StackProtectorMode : bool {
@@ -204,26 +211,27 @@ inline bool operator<=(OperationCost l, OperationCost r) {
 class Alignment {
 public:
 
-  using int_type = uint64_t;
+  using IntTy = uint64_t;
 
   constexpr Alignment() : Shift(0) {
   }
 
-  explicit Alignment(int_type Value) : Shift(llvm::Log2_64(Value)) {
+  explicit Alignment(IntTy Value) : Shift(llvm::Log2_64(Value)) {
     assert(llvm::isPowerOf2_64(Value));
   }
 
   // TODO: explicit Alignment(clang::CharUnits value)
 
-  constexpr int_type getValue() const {
-    return int_type(1) << Shift;
+  constexpr IntTy getValue() const {
+    return IntTy(1) << Shift;
   }
 
-  constexpr int_type getMaskValue() const {
+  constexpr IntTy getMaskValue() const {
     return getValue() - 1;
   }
 
   Alignment alignmentAtOffset(Size S) const;
+
   Size asSize() const;
 
   unsigned log2() const {
@@ -264,9 +272,9 @@ public:
 
   template <unsigned Value>
   static constexpr Alignment create() {
-    Alignment result;
-    result.Shift = llvm::CTLog2<Value>();
-    return result;
+    Alignment Result;
+    Result.Shift = llvm::CTLog2<Value>();
+    return Result;
   }
 
 private:
@@ -278,21 +286,21 @@ private:
 class Size {
 public:
 
-  using int_type = uint64_t;
+  using IntTy = uint64_t;
 
   constexpr Size() : Value(0) {
   }
 
-  explicit constexpr Size(int_type Value) : Value(Value) {
+  explicit constexpr Size(IntTy Value) : Value(Value) {
   }
 
-  static constexpr Size forBits(int_type bitSize) {
-    return Size((bitSize + 7U) / 8U);
+  static constexpr Size forBits(IntTy BitSize) {
+    return Size((BitSize + 7U) / 8U);
   }
 
   /// An "invalid" size, equal to the maximum possible size.
   static constexpr Size invalid() {
-    return Size(~int_type(0));
+    return Size(~IntTy(0));
   }
 
   /// Is this the "invalid" size value?
@@ -300,11 +308,11 @@ public:
     return *this == Size::invalid();
   }
 
-  constexpr int_type getValue() const {
+  constexpr IntTy getValue() const {
     return Value;
   }
 
-  int_type getValueInBits() const {
+  IntTy getValueInBits() const {
     return Value * 8;
   }
 
@@ -330,20 +338,20 @@ public:
     return L;
   }
 
-  friend Size operator*(Size L, int_type R) {
+  friend Size operator*(Size L, IntTy R) {
     return Size(L.Value * R);
   }
 
-  friend Size operator*(int_type L, Size R) {
+  friend Size operator*(IntTy L, Size R) {
     return Size(L * R.Value);
   }
 
-  friend Size& operator*=(Size& L, int_type R) {
+  friend Size& operator*=(Size& L, IntTy R) {
     L.Value *= R;
     return L;
   }
 
-  friend int_type operator/(Size L, Size R) {
+  friend IntTy operator/(Size L, Size R) {
     return L.Value / R.Value;
   }
 
@@ -352,17 +360,17 @@ public:
   }
 
   Size roundUpToAlignment(Alignment align) const {
-    int_type value = getValue() + align.getValue() - 1;
-    return Size(value & ~int_type(align.getValue() - 1));
+    IntTy Value = getValue() + align.getValue() - 1;
+    return Size(Value & ~IntTy(align.getValue() - 1));
   }
 
   bool isPowerOf2() const {
-    auto value = getValue();
-    return ((value & -value) == value);
+    auto Value = getValue();
+    return ((Value & -Value) == Value);
   }
 
-  bool isMultipleOf(Size other) const {
-    return (Value % other.Value) == 0;
+  bool isMultipleOf(Size Other) const {
+    return (Value % Other.Value) == 0;
   }
 
   unsigned log2() const {
@@ -403,7 +411,7 @@ public:
 
 private:
 
-  int_type Value;
+  IntTy Value;
 };
 
 /// Compute the alignment of a pointer which points S bytes after a
@@ -412,16 +420,18 @@ inline Alignment Alignment::alignmentAtOffset(Size S) const {
   assert(getValue() && "called on object with zero alignment");
 
   // If the offset is zero, use the original alignment.
-  Size::int_type V = S.getValue();
-  if (!V)
+  Size::IntTy V = S.getValue();
+  if (V == 0) {
     return *this;
+  }
 
   // Find the offset's largest power-of-two factor.
   V = V & -V;
 
   // The alignment at the offset is then the min of the two values.
-  if (V < getValue())
-    return Alignment(static_cast<Alignment::int_type>(V));
+  if (V < getValue()) {
+    return Alignment(static_cast<Alignment::IntTy>(V));
+  }
   return *this;
 }
 
@@ -447,15 +457,15 @@ class Offset {
 
 public:
 
-  explicit Offset(llvm::Value * offset) :
-    Data(reinterpret_cast<uintptr_t>(offset) | Dynamic) {
+  explicit Offset(llvm::Value * Offset) :
+    Data(reinterpret_cast<uintptr_t>(Offset) | Dynamic) {
   }
 
-  explicit Offset(Size offset) :
+  explicit Offset(Size Offset) :
     Data(
-      (static_cast<uint64_t>(offset.getValue()) << KindBits) | Static
+      (static_cast<uint64_t>(Offset.getValue()) << KindBits) | Static
     ) {
-    assert(getStatic() == offset && "overflow");
+    assert(getStatic() == Offset && "overflow");
   }
 
   bool isStatic() const {
@@ -477,7 +487,8 @@ public:
   }
 
   llvm::Value * getAsValue(IRGenFunction& IGF) const;
-  Offset offsetBy(IRGenFunction& IGF, Size other) const;
+
+  Offset offsetBy(IRGenFunction& IGF, Size Other) const;
 };
 
 } // end namespace irgen

@@ -23,14 +23,14 @@ GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
     return Globals;
   }
 
-  auto GetLinkageKind = [](GlobalDecl * D) -> LinkageKind {
-    return LinkageKind::Internal;
+  auto GetASTLinkage = [](GlobalDecl * D) -> ASTLinkage {
+    return ASTLinkage::Internal;
   };
 
   for (GlobalDecl * D : G->getGlobals()) {
     GlobalVariable * V = GlobalVariable::create(
       *Mod,
-      GetLinkageKind(D),
+      GetASTLinkage(D),
       D->getIndex(),
       None,
       D->getType()->getType(),
@@ -94,6 +94,7 @@ FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   assert(CodeCount == FuncCount);
 
   struct WorkItem {
+    uint32_t Index;
     Optional<Identifier> Name;
     FuncTypeDecl * Type;
     std::vector<LocalDecl *> LocalVariables;
@@ -104,14 +105,17 @@ FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   std::vector<WorkItem> WorkItems;
   WorkItems.reserve(CodeCount);
 
+  uint32_t WorkItemIndex = 0;
   for (CodeDecl * C : CodeSection->getCodes()) {
     WorkItems.push_back({
+      WorkItemIndex,
       None,
       nullptr,
       C->getFunc()->getLocals(),
       C->getFunc()->getExpression(),
       false,
     });
+    WorkItemIndex += 1;
   }
 
   auto& FuncTypeIndices = FuncSection->getFuncTypes();
@@ -165,6 +169,7 @@ FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
 
   for (const auto& WorkItem : WorkItems) {
     Function * F = Function::createFunction(
+      WorkItem.Index,
       WorkItem.Name,
       WorkItem.Type,
       WorkItem.LocalVariables,

@@ -1,16 +1,17 @@
 #ifndef W2N_IRGEN_IRGENMODULE_H
 #define W2N_IRGEN_IRGENMODULE_H
 
-#include <_types/_uint32_t.h>
-#include "llvm/ADT/ArrayRef.h"
-#include "llvm/ADT/DenseMap.h"
-#include "llvm/ADT/Hashing.h"
-#include "llvm/Support/ErrorHandling.h"
+#include "IRGenerator.h"
+#include "WasmTargetInfo.h"
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/Support/ErrorHandling.h>
 #include <llvm/Target/TargetMachine.h>
 #include <cstdint>
 #include <map>
@@ -20,7 +21,6 @@
 #include <w2n/AST/SourceFile.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/FileSystem.h>
-#include <w2n/IRGen/IRGenerator.h>
 #include <w2n/IRGen/Linking.h>
 
 namespace w2n::irgen {
@@ -75,6 +75,10 @@ public:
 
   std::unique_ptr<llvm::LLVMContext> LLVMContext;
 
+  const llvm::DataLayout DataLayout;
+
+  const llvm::Triple Triple;
+
   IRGenerator& IRGen;
 
   ASTContext& Context;
@@ -103,7 +107,8 @@ public:
 
   llvm::SmallString<CommonPathLength> MainInputFilenameForDebugInfo;
 
-  // FIXME: TargetInfo
+  /// Order dependency -- TargetInfo must be initialized after Opts.
+  const WasmTargetInfo TargetInfo;
 
   // FIXME: DebugInfo
 
@@ -145,6 +150,14 @@ public:
   /// invalid.
   bool finalize();
 
+#pragma mark Reporting Errors
+
+  void unimplemented(SourceLoc, StringRef Message);
+
+  [[noreturn]] void fatal_unimplemented(SourceLoc, StringRef Message);
+
+  void error(SourceLoc loc, const Twine& message);
+
 #pragma mark Accessing Module Contents
 
   llvm::Module * getModule() const;
@@ -153,14 +166,23 @@ public:
     GlobalVariable * Global, ForDefinition_t ForDefinition
   );
 
-#pragma mark Accessing Types
+  llvm::Function *
+  getAddrOfFunction(Function * F, ForDefinition_t ForDefinition);
+
+#pragma mark Types
 
 private:
 
-  llvm::IntegerType * Int32Ty; /// i32
-  llvm::IntegerType * Int64Ty; /// i64
-  llvm::Type * FloatTy;        /// f32
-  llvm::Type * DoubleTy;       /// f64
+  llvm::IntegerType * I8Ty;  /// i8
+  llvm::IntegerType * I16Ty; /// i16
+  llvm::IntegerType * I32Ty; /// i32
+  llvm::IntegerType * I64Ty; /// i64
+  llvm::IntegerType * U8Ty;  /// u8
+  llvm::IntegerType * U16Ty; /// u16
+  llvm::IntegerType * U32Ty; /// u32
+  llvm::IntegerType * U64Ty; /// u64
+  llvm::Type * F32Ty;        /// f32, float
+  llvm::Type * F64Ty;        /// f64, double
 
   mutable llvm::DenseMap<VectorTyKey, llvm::StructType *> VectorTys;
 
@@ -168,16 +190,16 @@ public:
 
   llvm::Type * getType(ValueType * Ty) const {
     if (isa<I32Type>(Ty)) {
-      return Int32Ty;
+      return I32Ty;
     }
     if (isa<I64Type>(Ty)) {
-      return Int64Ty;
+      return I64Ty;
     }
     if (isa<F32Type>(Ty)) {
-      return FloatTy;
+      return F32Ty;
     }
     if (isa<F64Type>(Ty)) {
-      return DoubleTy;
+      return F64Ty;
     }
     llvm_unreachable("unexpected value type.");
   }
@@ -198,6 +220,29 @@ public:
     VectorTys.insert(std::make_pair(Key, Ty));
     return Ty;
   }
+
+  llvm::Type * getStorageType(Type * T);
+
+#pragma mark Globals
+
+  void addUsedGlobal(llvm::GlobalValue * Global);
+  void addCompilerUsedGlobal(llvm::GlobalValue * Global);
+
+private:
+
+  /// LLVMUsed - List of global values which are required to be
+  /// present in the object file; bitcast to i8*. This is used for
+  /// forcing visibility of symbols which may otherwise be optimized
+  /// out.
+  SmallVector<llvm::WeakTrackingVH, 4> LLVMUsed;
+
+  /// LLVMCompilerUsed - List of global values which are required to be
+  /// present in the object file; bitcast to i8*. This is used for
+  /// forcing visibility of symbols which may otherwise be optimized
+  /// out.
+  ///
+  /// Similar to LLVMUsed, but emitted as llvm.compiler.used.
+  SmallVector<llvm::WeakTrackingVH, 4> LLVMCompilerUsed;
 };
 
 /// Stores a pointer to an IRGenModule.

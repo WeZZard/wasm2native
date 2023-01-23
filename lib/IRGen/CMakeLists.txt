@@ -1,9 +1,13 @@
 
 add_w2n_host_library(w2nIRGen STATIC
+  DebugTypeInfo.cpp
+  GenDecl.cpp
   IRGen.cpp
   IRGenerator.cpp
   IRGenModule.cpp
   IRGenRequests.cpp
+  Linking.cpp
+  WasmTargetInfo.cpp
   LLVM_LINK_COMPONENTS
     target
     transformutils

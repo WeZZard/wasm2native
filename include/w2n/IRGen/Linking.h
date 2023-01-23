@@ -15,18 +15,19 @@
 #define W2N_IRGEN_LINKING_H
 
 #include <llvm/ADT/DenseMapInfo.h>
+#include <llvm/ADT/Triple.h>
 #include <llvm/IR/GlobalObject.h>
 #include <llvm/IR/GlobalValue.h>
 #include <llvm/IR/Module.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/Table.h>
 
 namespace llvm {
 class Triple;
 } // namespace llvm
 
 namespace w2n {
-class AvailabilityContext;
 
 /// ported from SIL in Swift
 enum ForDefinition_t : bool {
@@ -39,7 +40,7 @@ class IRGenModule;
 class Alignment;
 
 /// Determine if the triple uses the DLL storage.
-bool useDllStorage(const llvm::Triple& triple);
+bool useDllStorage(const llvm::Triple& Triple);
 
 class UniversalLinkageInfo {
 public:
@@ -59,10 +60,10 @@ public:
   explicit UniversalLinkageInfo(IRGenModule& IGM);
 
   UniversalLinkageInfo(
-    const llvm::Triple& triple,
-    bool hasMultipleIGMs,
-    bool forcePublicDecls,
-    bool isStaticLibrary
+    const llvm::Triple& Triple,
+    bool HasMultipleIgMs,
+    bool ForcePublicDecls,
+    bool IsStaticLibrary
   );
 
   /// In case of multiple llvm modules (in multi-threaded compilation) all
@@ -95,13 +96,13 @@ public:
 /// For example, functions may be uncurried at different levels, each of
 /// which potentially creates a different top-level function.
 class LinkEntity {
-  /// ValueDecl*, SILFunction*, or TypeBase*, depending on Kind.
+  /// ValueDecl *, Function *, or Type *, depending on Kind.
   void * Pointer;
 
   /// ProtocolConformance*, depending on Kind.
   void * SecondaryPointer;
 
-  /// A hand-rolled bitfield with the following layout:
+  /// A hand-rolled bitfield with the following layout.
   unsigned Data;
 
   enum : unsigned {
@@ -109,17 +110,28 @@ class LinkEntity {
     KindMask = 0xFF,
   };
 
-#define LINKENTITY_SET_FIELD(field, value) (value << field##Shift)
-#define LINKENTITY_GET_FIELD(value, field)                               \
-  ((value & field##Mask) >> field##Shift)
+#define W2N_LINK_ENTITY_SET_FIELD(Field, Value) (Value << Field##Shift)
+#define W2N_LINK_ENTITY_GET_FIELD(Value, Field)                          \
+  ((Value & Field##Mask) >> Field##Shift)
 
   enum class Kind {
+    /// A function. The pointer is a `w2n::Function *`.
+    Function,
+
+    /// A table. The pointer is a `w2n::Table *`.
+    Table,
+
+    /// A memory. The pointer is a `w2n::Memory *`.
+    Memory,
+
+    /// A global variable. The pointer is a `w2n::GlobalVariable *`.
+    GlobalVariable,
   };
 
   friend struct llvm::DenseMapInfo<LinkEntity>;
 
   Kind getKind() const {
-    return Kind(LINKENTITY_GET_FIELD(Data, Kind));
+    return Kind(W2N_LINK_ENTITY_GET_FIELD(Data, Kind));
   }
 
   LinkEntity() = default;
@@ -129,8 +141,15 @@ public:
   // TODO: static LinkEntity forXXX(...);
 
   void mangle(llvm::raw_ostream& out) const;
+
   void mangle(SmallVectorImpl<char>& buffer) const;
+
   std::string mangleAsString() const;
+
+  ASTLinkage getLinkage(ForDefinition_t ForDefinition) const;
+
+  /// Get the preferred alignment for the definition of this entity.
+  Alignment getAlignment(IRGenModule& IGM) const;
 };
 
 struct IRLinkage {
@@ -156,26 +175,32 @@ public:
   ApplyIRLinkage(IRLinkage IRL) : IRL(IRL) {
   }
 
-  void to(llvm::GlobalValue * GV, bool definition = true) const {
+  void to(llvm::GlobalValue * GV, bool Definition = true) const {
     llvm::Module * M = GV->getParent();
     const llvm::Triple Triple(M->getTargetTriple());
 
     GV->setLinkage(IRL.Linkage);
     GV->setVisibility(IRL.Visibility);
-    if (Triple.isOSBinFormatCOFF() && !Triple.isOSCygMing())
+    if (Triple.isOSBinFormatCOFF() && !Triple.isOSCygMing()) {
       GV->setDLLStorageClass(IRL.DLLStorage);
+    }
 
     // TODO: BFD and gold do not handle COMDATs properly
-    if (Triple.isOSBinFormatELF())
+    if (Triple.isOSBinFormatELF()) {
       return;
+    }
 
     // COMDATs cannot be applied to declarations.  If we have a
     // definition, apply the COMDAT.
-    if (definition)
-      if (IRL.Linkage == llvm::GlobalValue::LinkOnceODRLinkage || IRL.Linkage == llvm::GlobalValue::WeakODRLinkage)
-        if (Triple.supportsCOMDAT())
-          if (llvm::GlobalObject * GO = dyn_cast<llvm::GlobalObject>(GV))
+    if (Definition) {
+      if (IRL.Linkage == llvm::GlobalValue::LinkOnceODRLinkage || IRL.Linkage == llvm::GlobalValue::WeakODRLinkage) {
+        if (Triple.supportsCOMDAT()) {
+          if (llvm::GlobalObject * GO = dyn_cast<llvm::GlobalObject>(GV)) {
             GO->setComdat(M->getOrInsertComdat(GV->getName()));
+          }
+        }
+      }
+    }
   }
 };
 
@@ -192,24 +217,23 @@ public:
   /// Compute linkage information for the given
   static LinkInfo get(
     IRGenModule& IGM,
-    const LinkEntity& entity,
-    ForDefinition_t forDefinition
+    const LinkEntity& Entity,
+    ForDefinition_t ForDefinition
+  );
+
+  static LinkInfo get(
+    const UniversalLinkageInfo& LinkInfo,
+    ModuleDecl * WasmModule,
+    const LinkEntity& Entity,
+    ForDefinition_t ForDefinition
   );
 
   static LinkInfo get(
     const UniversalLinkageInfo& linkInfo,
-    ModuleDecl * w2nModule,
-    const LinkEntity& entity,
-    ForDefinition_t forDefinition
+    StringRef name,
+    ASTLinkage linkage,
+    ForDefinition_t isDefinition
   );
-
-  // static LinkInfo get(
-  //   const UniversalLinkageInfo& linkInfo,
-  //   StringRef name,
-  //   SILLinkage linkage, FIXME: SILLinkage -> ASTLinkage
-  //   ForDefinition_t isDefinition,
-  //   bool isWeakImported
-  // );
 
   StringRef getName() const {
     return Name.str();
@@ -228,18 +252,18 @@ public:
   }
 
   bool isForDefinition() const {
-    return ForDefinition;
+    return ForDefinition != 0U;
   }
 
   bool isUsed() const {
-    return ForDefinition && isUsed(IRL);
+    return isForDefinition() && isUsed(IRL);
   }
 
   static bool isUsed(IRLinkage IRL);
 };
 
 StringRef encodeForceLoadSymbolName(
-  llvm::SmallVectorImpl<char>& buf, StringRef name
+  llvm::SmallVectorImpl<char>& Buf, StringRef Name
 );
 } // namespace irgen
 } // namespace w2n
@@ -251,25 +275,25 @@ struct DenseMapInfo<w2n::irgen::LinkEntity> {
   using LinkEntity = w2n::irgen::LinkEntity;
 
   static LinkEntity getEmptyKey() {
-    LinkEntity entity;
-    entity.Pointer = nullptr;
-    entity.SecondaryPointer = nullptr;
-    entity.Data = 0;
-    return entity;
+    LinkEntity Entity;
+    Entity.Pointer = nullptr;
+    Entity.SecondaryPointer = nullptr;
+    Entity.Data = 0;
+    return Entity;
   }
 
   static LinkEntity getTombstoneKey() {
-    LinkEntity entity;
-    entity.Pointer = nullptr;
-    entity.SecondaryPointer = nullptr;
-    entity.Data = 1;
-    return entity;
+    LinkEntity Entity;
+    Entity.Pointer = nullptr;
+    Entity.SecondaryPointer = nullptr;
+    Entity.Data = 1;
+    return Entity;
   }
 
-  static unsigned getHashValue(const LinkEntity& entity) {
-    return DenseMapInfo<void *>::getHashValue(entity.Pointer)
-         ^ DenseMapInfo<void *>::getHashValue(entity.SecondaryPointer)
-         ^ entity.Data;
+  static unsigned getHashValue(const LinkEntity& Entity) {
+    return DenseMapInfo<void *>::getHashValue(Entity.Pointer)
+         ^ DenseMapInfo<void *>::getHashValue(Entity.SecondaryPointer)
+         ^ Entity.Data;
   }
 
   static bool isEqual(const LinkEntity& LHS, const LinkEntity& RHS) {

@@ -25,7 +25,7 @@ class GlobalVariable :
 private:
 
   ModuleDecl& Module;
-  LinkageKind Linkage;
+  ASTLinkage Linkage;
   uint32_t Index;
   llvm::Optional<Identifier> Name;
   ValueType * Ty;
@@ -35,7 +35,7 @@ private:
 
   GlobalVariable(
     ModuleDecl& Module,
-    LinkageKind Linkage,
+    ASTLinkage Linkage,
     uint32_t Index,
     llvm::Optional<Identifier> Name,
     ValueType * Ty,
@@ -48,7 +48,7 @@ public:
 
   static GlobalVariable * create(
     ModuleDecl& Module,
-    LinkageKind Linkage,
+    ASTLinkage Linkage,
     uint32_t Index,
     llvm::Optional<Identifier> Name,
     ValueType * Ty,
@@ -68,7 +68,7 @@ public:
     return Module;
   }
 
-  LinkageKind getLinkageKind() const {
+  ASTLinkage getASTLinkage() const {
     return Linkage;
   }
 

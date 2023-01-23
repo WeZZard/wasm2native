@@ -1,4 +1,7 @@
+#include "IRGenModule.h"
 #include "Address.h"
+#include "IRBuilder.h"
+#include "IRGenFunction.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
@@ -17,11 +20,20 @@
 #include <w2n/AST/IRGenRequests.h>
 #include <w2n/AST/Module.h>
 #include <w2n/Basic/Unimplemented.h>
-#include <w2n/IRGen/IRGenModule.h>
 #include <w2n/IRGen/Linking.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
+
+// FIXME: Move to IRGenerator
+static llvm::DataLayout getDataLayout(const llvm::TargetMachine& Target) {
+  return Target.createDataLayout();
+}
+
+// FIXME: Move to IRGenerator
+static llvm::Triple getTriple(const llvm::TargetMachine& Target) {
+  return Target.getTargetTriple();
+}
 
 IRGenModule::IRGenModule(
   IRGenerator& IRGen,
@@ -32,19 +44,27 @@ IRGenModule::IRGenModule(
   StringRef MainInputFilenameForDebugInfo
 ) :
   LLVMContext(new llvm::LLVMContext()),
+  DataLayout(getDataLayout(*Target)),
+  Triple(getTriple(*Target)),
   IRGen(IRGen),
   Context(IRGen.Module.getASTContext()),
   Module(std::make_unique<llvm::Module>(ModuleName, *LLVMContext)),
   TargetMachine(std::move(Target)),
   OutputFilename(OutputFilename),
   MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
-  ModuleHash(nullptr) {
+  TargetInfo(WasmTargetInfo::get(*this)),
+  ModuleHash(nullptr),
+  I8Ty(llvm::Type::getInt8Ty(getLLVMContext())),
+  I16Ty(llvm::Type::getInt16Ty(getLLVMContext())),
+  I32Ty(llvm::Type::getInt32Ty(getLLVMContext())),
+  I64Ty(llvm::Type::getInt64Ty(getLLVMContext())),
+  U8Ty(llvm::Type::getInt8Ty(getLLVMContext())),
+  U16Ty(llvm::Type::getInt16Ty(getLLVMContext())),
+  U32Ty(llvm::Type::getInt32Ty(getLLVMContext())),
+  U64Ty(llvm::Type::getInt64Ty(getLLVMContext())),
+  F32Ty(llvm::Type::getFloatTy(getLLVMContext())),
+  F64Ty(llvm::Type::getDoubleTy(getLLVMContext())) {
   IRGen.addGenModule(SF, this);
-
-  Int32Ty = llvm::Type::getInt32Ty(getLLVMContext());
-  Int64Ty = llvm::Type::getInt64Ty(getLLVMContext());
-  FloatTy = llvm::Type::getFloatTy(getLLVMContext());
-  DoubleTy = llvm::Type::getDoubleTy(getLLVMContext());
 }
 
 IRGenModule::~IRGenModule() {
@@ -76,8 +96,6 @@ void IRGenModule::addLinkLibrary(const LinkLibrary& LinkLib) {
   w2n_unimplemented();
 }
 
-#pragma mark Gen Decls
-
 /// Emit all the top-level code in the source file.
 void IRGenModule::emitSourceFile(SourceFile& SF) {
   for (Decl * D : SF.getTopLevelDecls()) {
@@ -85,16 +103,37 @@ void IRGenModule::emitSourceFile(SourceFile& SF) {
     if (M == nullptr) {
       continue;
     }
-    auto Globals = M->getGlobals();
-    for (GlobalVariable& V : Globals) {
+    for (GlobalVariable& V : M->getGlobals()) {
       GlobalDecl * VarDecl = V.getDecl();
       CurrentIGMPtr IGM = IRGen.getGenModule(
         VarDecl != nullptr ? VarDecl->getDeclContext() : nullptr
       );
       IGM->emitGlobalVariable(&V);
     }
+
+    for (Function& F : M->getFunctions()) {
+      // TODO: IRGenFunction
+    }
   }
   w2n_proto_implemented();
+}
+
+void IRGenModule::unimplemented(SourceLoc loc, StringRef message) {
+  Context.Diags.diagnose(loc, diag::irgen_unimplemented, message);
+}
+
+void IRGenModule::fatal_unimplemented(SourceLoc loc, StringRef message) {
+  Context.Diags.diagnose(loc, diag::irgen_unimplemented, message);
+  llvm::report_fatal_error(
+    llvm::Twine("unimplemented IRGen feature! ") + message
+  );
+}
+
+void IRGenModule::error(SourceLoc loc, const Twine& message) {
+  SmallVector<char, 128> buffer;
+  Context.Diags.diagnose(
+    loc, diag::irgen_failure, message.toStringRef(buffer)
+  );
 }
 
 llvm::Module * IRGenModule::getModule() const {
@@ -137,4 +176,65 @@ Address IRGenModule::getAddrOfGlobalVariable(
     llvm::ConstantExpr::getBitCast(Addr, StorageType->getPointerTo());
 
   return Address(Addr, StorageType, Alignment(GVar->getAlignment()));
+}
+
+llvm::Function *
+IRGenModule::getAddrOfFunction(Function * F, ForDefinition_t D) {
+  // Check whether we've created the function already.
+  // FIXME: We should integrate this into the LinkEntity cache more
+  // cleanly.
+  llvm::Function * Fn = Module->getFunction(F->getUniqueName());
+  if (Fn != nullptr) {
+    if (D == ForDefinition) {
+      // FIXME: updateLinkageForDefinition
+    }
+    return Fn;
+  }
+
+  w2n_unimplemented();
+}
+
+llvm::Type * IRGenModule::getStorageType(Type * T) {
+#define TYPE(Id, Parent)
+#define NUMBER_TYPE(Id, Parent)                                          \
+  case TypeKind::Id: return Id##Ty;
+
+  switch (T->getKind()) {
+#include <w2n/AST/TypeNodes.def>
+  case TypeKind::V128:
+  case TypeKind::FuncRef:
+  case TypeKind::ExternRef:
+  case TypeKind::Void:
+  case TypeKind::Result:
+  case TypeKind::Func:
+  case TypeKind::Limits:
+  case TypeKind::Memory:
+  case TypeKind::Table:
+  case TypeKind::Global:
+  case TypeKind::TypeIndex:
+  case TypeKind::Block: w2n_unimplemented();
+  }
+}
+
+/// Add the given global value to @llvm.used.
+///
+/// This value must have a definition by the time the module is finalized.
+void IRGenModule::addUsedGlobal(llvm::GlobalValue * Global) {
+  // As of reviews.llvm.org/D97448 "ELF: Create unique SHF_GNU_RETAIN
+  // sections for llvm.used global objects" LLVM creates separate sections
+  // for globals in llvm.used on ELF.  Therefore we use llvm.compiler.used
+  // on ELF instead.
+  if (TargetInfo.OutputObjectFormat == llvm::Triple::ELF) {
+    addCompilerUsedGlobal(Global);
+    return;
+  }
+
+  LLVMUsed.push_back(Global);
+}
+
+/// Add the given global value to @llvm.compiler.used.
+///
+/// This value must have a definition by the time the module is finalized.
+void IRGenModule::addCompilerUsedGlobal(llvm::GlobalValue * Global) {
+  LLVMCompilerUsed.push_back(Global);
 }

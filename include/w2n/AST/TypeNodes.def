@@ -27,7 +27,7 @@
 
 /// Number type that serializable to be stored in a binary .wasm file.
 #ifndef SERIALIZABLE_NUMBER_TYPE
-#define SERIALIZABLE_NUMBER_TYPE(Id, Parent) VALUE_TYPE(Id, Parent)
+#define SERIALIZABLE_NUMBER_TYPE(Id, Parent) NUMBER_TYPE(Id, Parent)
 #endif
 
 #ifndef VECTOR_TYPE

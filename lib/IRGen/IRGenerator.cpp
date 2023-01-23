@@ -1,6 +1,6 @@
+#include "IRGenerator.h"
+#include "IRGenModule.h"
 #include <cassert>
-#include <w2n/IRGen/IRGenModule.h>
-#include <w2n/IRGen/IRGenerator.h>
 
 using namespace w2n;
 using namespace w2n::irgen;

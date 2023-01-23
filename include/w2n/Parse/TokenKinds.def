@@ -19,7 +19,7 @@
 ///
 /// TOKEN(name)
 ///   KEYWORD(kw)
-///     SWIFT_KEYWORD(kw)
+///     W2N_KEYWORD(kw)
 ///       DECL_KEYWORD(kw)
 ///       STMT_KEYWORD(kw)
 ///       EXPR_KEYWORD(kw)
@@ -58,7 +58,7 @@
 /// STMT_KEYWORD(kw)
 ///   Expands for every WebAssembly keyword used in statement grammar.
 #ifndef STMT_KEYWORD
-#define STMT_KEYWORD(kw) SWIFT_KEYWORD(kw)
+#define STMT_KEYWORD(kw) W2N_KEYWORD(kw)
 #endif
 
 /// EXPR_KEYWORD(kw)

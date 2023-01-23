@@ -1,6 +1,9 @@
 #ifndef W2N_AST_FUNCTION_H
 #define W2N_AST_FUNCTION_H
 
+#include <_types/_uint32_t.h>
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/Twine.h"
 #include <llvm/ADT/ilist.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/Decl.h>
@@ -21,7 +24,18 @@ namespace w2n {
 class Function :
   public llvm::ilist_node<Function>,
   public ASTAllocated<Function> {
+public:
+
+  enum class FunctionKind {
+    GlobalInit,
+    Function,
+  };
+
 private:
+
+  FunctionKind Kind;
+
+  uint32_t Index;
 
   llvm::Optional<Identifier> Name;
 
@@ -35,6 +49,8 @@ private:
   bool Exported;
 
   Function(
+    FunctionKind Kind,
+    uint32_t Index,
     llvm::Optional<Identifier> Name,
     FuncTypeDecl * Type,
     std::vector<LocalDecl *> Locals,
@@ -54,22 +70,41 @@ public:
   }
 
   static Function * createFunction(
+    uint32_t Index,
     llvm::Optional<Identifier> Name,
     FuncTypeDecl * Type,
     std::vector<LocalDecl *> Locals,
     ExpressionDecl * Expression,
     bool IsExported
   ) {
-    return new (Expression->getASTContext())
-      Function(Name, Type, Locals, Expression, IsExported);
+    return new (Expression->getASTContext()) Function(
+      FunctionKind::Function,
+      Index,
+      Name,
+      Type,
+      Locals,
+      Expression,
+      IsExported
+    );
   }
 
   static Function * createInit(
+    uint32_t Index,
     FuncTypeDecl * Type,
     ExpressionDecl * Expression,
     llvm::Optional<Identifier> Name
   ) {
-    return createFunction(Name, Type, {}, Expression, false);
+    return new (Expression->getASTContext()) Function(
+      FunctionKind::GlobalInit, Index, Name, Type, {}, Expression, false
+    );
+  }
+
+  FunctionKind getKind() const {
+    return Kind;
+  }
+
+  uint32_t getIndex() const {
+    return Index;
   }
 
   FuncTypeDecl * getType() {
@@ -110,6 +145,28 @@ public:
 
   bool isExported() const {
     return Exported;
+  }
+
+  StringRef getDescriptiveKindName() const {
+    switch (Kind) {
+    case FunctionKind::GlobalInit: return "global-init";
+    case FunctionKind::Function: return "function";
+    }
+  }
+
+  StringRef getUniqueName() const {
+    return (llvm::Twine(getDescriptiveKindName()) + llvm::Twine("$")
+            + llvm::Twine(Index))
+      .getSingleStringRef();
+  }
+
+  StringRef getUnmangledName() const {
+    if (hasName()) {
+      return (llvm::Twine(getUniqueName()) + llvm::Twine(" : ")
+              + llvm::Twine(getName().value().get()))
+        .getSingleStringRef();
+    }
+    return getUniqueName();
   }
 };
 

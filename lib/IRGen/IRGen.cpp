@@ -1,4 +1,5 @@
 #include "IRGenInternal.h"
+#include "IRGenModule.h"
 #include <llvm/Analysis/TargetTransformInfo.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeWriterPass.h>
@@ -28,7 +29,6 @@
 #include <w2n/Basic/Defer.h>
 #include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/IRGen.h>
-#include <w2n/IRGen/IRGenModule.h>
 
 using namespace w2n;
 using namespace w2n::irgen;

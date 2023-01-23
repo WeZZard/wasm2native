@@ -74,6 +74,14 @@ public:
   /// Emit functions to separate sections.
   unsigned FunctionSections : 1;
 
+  /// Internalize symbols (static library) - do not export any public
+  /// symbols.
+  unsigned InternalizeSymbols : 1;
+
+  /// Force public linkage for private symbols. Used only by the LLDB
+  /// expression evaluator.
+  unsigned ForcePublicLinkage : 1;
+
   bool shouldOptimize() const {
     return OptMode > OptimizationMode::NoOptimization;
   }

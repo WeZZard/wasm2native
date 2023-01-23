@@ -5,7 +5,7 @@
 
 namespace w2n {
 
-enum class LinkageKind : uint8_t {
+enum class ASTLinkage : uint8_t {
   Public,
   Internal,
 };

@@ -46,7 +46,7 @@ CheckOptions:
   # Readability - Function Cognitive Complexity Began
   ########################################################################
   - key: readability-function-cognitive-complexity.Threshold
-    value: 5
+    value: 25
   - key: readability-function-cognitive-complexity.DescribeBasicIncrements
     value: true
   - key: readability-function-cognitive-complexity.IgnoreMacros
@@ -99,8 +99,8 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
-  - key: readability-identifier-naming.EnumConstantCase
-    value: CamelCase
+  - key: readability-identifier-naming.EnumIgnoredRegexp
+    value: [A-Za-z0-9]+_t
   - key: readability-identifier-naming.EnumConstantCase
     value: CamelCase
   - key: readability-identifier-naming.FunctionCase
@@ -179,6 +179,8 @@ proto_implemented\
     value: ".+_begin|.+_end"
   - key: readability-identifier-naming.ScopedEnumConstantCase
     value: CamelCase
+  - key: readability-identifier-naming.ScopedEnumConstantIgnoredRegexp
+    value: '(First|Last)_[A-Za-z0-9]+'
   - key: readability-identifier-naming.StaticConstantCase
     value: CamelCase
   - key: readability-identifier-naming.StaticVariableCase

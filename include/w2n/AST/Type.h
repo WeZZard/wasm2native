@@ -1,13 +1,15 @@
 #ifndef W2N_AST_TYPE_H
 #define W2N_AST_TYPE_H
 
-#include "llvm/ADT/Optional.h"
-#include "llvm/ADT/PointerUnion.h"
+#include <llvm/ADT/Optional.h>
+#include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/BinaryFormat/Wasm.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/Basic/Compiler.h>
+#include <w2n/Basic/Debug.h>
+#include <w2n/Basic/LLVM.h>
 #include <w2n/Basic/LLVMRTTI.h>
 
 namespace w2n {
@@ -22,6 +24,8 @@ enum class TypeKind {
 #include <w2n/AST/TypeNodes.def>
 };
 
+// TODO: Is it necessary to rename `Type` into `TypeBase` and wrap
+// `TypeBase *` with `Type`?
 class Type : public ASTAllocated<Type> {
 private:
 
@@ -37,6 +41,13 @@ public:
   TypeKind getKind() const {
     return Kind;
   }
+
+  static Type *
+  getBuiltinIntegerType(unsigned BitWidth, const ASTContext& C);
+
+  W2N_DEBUG_DUMP;
+
+  void dump(raw_ostream& os, unsigned indent = 0) const;
 
   LLVM_RTTI_CLASSOF_ROOT_CLASS(Type);
 };

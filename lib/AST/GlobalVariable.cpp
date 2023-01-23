@@ -6,7 +6,7 @@ using namespace w2n;
 
 GlobalVariable::GlobalVariable(
   ModuleDecl& Module,
-  LinkageKind Linkage,
+  ASTLinkage Linkage,
   uint32_t Index,
   llvm::Optional<Identifier> Name,
   ValueType * Ty,
@@ -25,7 +25,7 @@ GlobalVariable::GlobalVariable(
 
 GlobalVariable * GlobalVariable::create(
   ModuleDecl& Module,
-  LinkageKind Linkage,
+  ASTLinkage Linkage,
   uint32_t Index,
   llvm::Optional<Identifier> Name,
   ValueType * Ty,

@@ -40,7 +40,7 @@ private:
 
   // Stores the IGM from which a function is referenced the first time.
   // It is used if a function has no source-file association.
-  llvm::DenseMap<FuncDecl *, IRGenModule *> DefaultIGMForFunction;
+  llvm::DenseMap<Function *, IRGenModule *> DefaultIGMForFunction;
 
   // The IGM of the first source file.
   IRGenModule * PrimaryIGM = nullptr;
@@ -48,11 +48,20 @@ private:
   // The current IGM for which IR is generated.
   IRGenModule * CurrentIGM = nullptr;
 
+  /// If this is true, adding anything to the below queues is an error.
+  bool FinishedEmittingLazyDefinitions = false;
+
+  /// Functions that have already been lazily emitted, or are queued up.
+  llvm::SmallPtrSet<Function *, 4> LazilyEmittedFunctions;
+
+  /// The queue of functions to emit.
+  llvm::SmallVector<Function *, 4> LazyFunctionDefinitions;
+
   // TODO: data for IR emission.
 
-  /// The order in which all the SIL function definitions should
-  /// appear in the translation unit.
-  llvm::DenseMap<FuncDecl *, unsigned> FunctionOrder;
+  /// The order in which all the function definitions should appear in the
+  /// translation unit.
+  llvm::DenseMap<Function *, unsigned> FunctionOrder;
 
   /// The queue of IRGenModules for multi-threaded compilation.
   SmallVector<IRGenModule *, AssumedMaxQueueCount> Queue;
@@ -65,6 +74,14 @@ public:
 
   /// Attempt to create an llvm::TargetMachine for the current target.
   std::unique_ptr<llvm::TargetMachine> createTargetMachine();
+
+  const IRGenOptions& getOptions() {
+    return Opts;
+  }
+
+  const IRGenOptions& getOptions() const {
+    return Opts;
+  }
 
   /// Add an IRGenModule for a source file.
   /// Should only be called from IRGenModule's constructor.
@@ -135,7 +152,9 @@ public:
   /// Emit everything which is reachable from already emitted IR.
   void emitLazyDefinitions();
 
-  unsigned getFunctionOrder(FuncDecl * F) {
+  void addLazyFunction(Function * F);
+
+  unsigned getFunctionOrder(Function * F) {
     auto It = FunctionOrder.find(F);
     assert(
       It != FunctionOrder.end()

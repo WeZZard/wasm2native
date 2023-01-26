@@ -9,3 +9,13 @@ def use_malloc : Flag<["-"], "use-malloc">,
            "(for memory debugging)">;
 
 }
+
+def enable_stack_protector :
+  Flag<["-"], "enable-stack-protector">,
+  HelpText<"Enable the stack protector">;
+def disable_stack_protector :
+  Flag<["-"], "disable-stack-protector">,
+  HelpText<"Disable the stack-protector">;
+def enable_move_inout_stack_protector :
+  Flag<["-"], "enable-move-inout-stack-protector">,
+  HelpText<"Enable the stack protector by moving values to temporaries">;

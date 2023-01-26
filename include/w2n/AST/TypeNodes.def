@@ -96,6 +96,7 @@ LAST_TYPE(Block)
 
 #undef TYPE
 #undef ABSTRACT_TYPE
+#undef BUILTIN_TYPE
 #undef VALUE_TYPE
 #undef NUMBER_TYPE
 #undef VECTOR_TYPE

@@ -82,6 +82,8 @@ public:
   /// expression evaluator.
   unsigned ForcePublicLinkage : 1;
 
+  unsigned EnableStackProtection : 1;
+
   bool shouldOptimize() const {
     return OptMode > OptimizationMode::NoOptimization;
   }

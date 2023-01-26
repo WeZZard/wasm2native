@@ -20,6 +20,7 @@
 #include <llvm/IR/GlobalValue.h>
 #include <llvm/IR/Module.h>
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/Table.h>
 
@@ -115,17 +116,20 @@ class LinkEntity {
   ((Value & Field##Mask) >> Field##Shift)
 
   enum class Kind {
-    /// A function. The pointer is a `w2n::Function *`.
+    /// A function. Points to a `w2n::Function *`.
     Function,
 
-    /// A table. The pointer is a `w2n::Table *`.
+    /// A table. Points to a `w2n::Table *`.
     Table,
 
-    /// A memory. The pointer is a `w2n::Memory *`.
+    /// A memory. Points to a `w2n::Memory *`.
     Memory,
 
-    /// A global variable. The pointer is a `w2n::GlobalVariable *`.
+    /// A global variable. Points to a `w2n::GlobalVariable *`.
     GlobalVariable,
+
+    /// A readonly global variable. Points to a `w2n::GlobalVariable *`.
+    ReadonlyGlobalVariable,
   };
 
   friend struct llvm::DenseMapInfo<LinkEntity>;
@@ -138,7 +142,13 @@ class LinkEntity {
 
 public:
 
-  // TODO: static LinkEntity forXXX(...);
+  static LinkEntity forGlobalVariable(GlobalVariable * G);
+
+  static LinkEntity forFunction(Function * F);
+
+  static LinkEntity forTable(Table * T);
+
+  static LinkEntity forMemory(Memory * M);
 
   void mangle(llvm::raw_ostream& out) const;
 

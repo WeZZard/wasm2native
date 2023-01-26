@@ -43,6 +43,86 @@
 using namespace w2n;
 using namespace irgen;
 
+static void
+addLLVMFunctionAttributes(Function * f, Signature& signature) {
+  // TODO: Swift deals with inline and readonly here.
+}
+
+// Eagerly emit functions that are externally visible. Functions that are
+// dynamic replacements must also be eagerly emitted.
+static bool isLazilyEmittedFunction(Function * F, IRGenModule * M) {
+  if (F->isPossiblyUsedExternally())
+    return false;
+
+  // Needed by lldb to print global variables which are propagated by the
+  // mandatory GlobalOpt.
+  if (M->getOptions().OptMode == OptimizationMode::NoOptimization && F->isGlobalInit())
+    return false;
+
+  return true;
+}
+
+llvm::Function * IRGenModule::getAddrOfFunction(
+  Function * F, ForDefinition_t forDefinition
+) {
+  LinkEntity entity = LinkEntity::forFunction(F);
+
+  // Check whether we've created the function already.
+  // FIXME: We should integrate this into the LinkEntity cache more
+  // cleanly.
+  llvm::Function * Fn = Module->getFunction(entity.mangleAsString());
+  if (Fn) {
+    if (forDefinition) {
+      updateLinkageForDefinition(*this, Fn, entity);
+    }
+    return Fn;
+  }
+
+  LinkInfo Link = LinkInfo::get(*this, entity, forDefinition);
+  bool isDefinition = F->isDefinition();
+  bool hasOrderNumber = isDefinition;
+  unsigned orderNumber = ~0U;
+  llvm::Function * InsertBefore = nullptr;
+
+  // If the SIL function has a definition, we should have an order
+  // number for it; make sure to insert it in that position relative
+  // to other ordered functions.
+  if (hasOrderNumber) {
+    orderNumber = IRGen.getFunctionOrder(F);
+    if (auto emittedFunctionIterator = EmittedFunctionsByOrder.findLeastUpperBound(orderNumber))
+      InsertBefore = *emittedFunctionIterator;
+  }
+
+  if (isDefinition && !forDefinition && isLazilyEmittedFunction(F, this)) {
+    IRGen.addLazyFunction(F);
+  }
+
+  Signature Sig = getSignature(F->getType()->getType());
+  addLLVMFunctionAttributes(F, Sig);
+
+  Fn = createFunction(
+    *this,
+    Link,
+    Sig,
+    InsertBefore,
+    getOptions().OptMode,
+    shouldEmitStackProtector(F)
+  );
+
+  if (!forDefinition) {
+    Fn->setComdat(nullptr);
+  }
+
+  // If we have an order number for this function, set it up as
+  // appropriate.
+  if (hasOrderNumber) {
+    EmittedFunctionsByOrder.insert(orderNumber, Fn);
+  }
+  return Fn;
+}
+
+#pragma mark - GenDecl
+
 /// Given that we're going to define a global value but already have a
 /// forward-declaration of it, update its linkage.
 void irgen::updateLinkageForDefinition(

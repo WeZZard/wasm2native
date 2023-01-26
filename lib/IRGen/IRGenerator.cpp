@@ -1,6 +1,7 @@
 #include "IRGenerator.h"
 #include "IRGenModule.h"
 #include <cassert>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
@@ -83,4 +84,23 @@ void IRGenerator::emitCoverageMapping() {
 
 void IRGenerator::emitLazyDefinitions() {
   w2n_proto_implemented();
+}
+
+void IRGenerator::addLazyFunction(Function * f) {
+  // Add it to the queue if it hasn't already been put there.
+  if (!LazilyEmittedFunctions.insert(f).second)
+    return;
+
+  assert(!FinishedEmittingLazyDefinitions);
+  LazyFunctionDefinitions.push_back(f);
+
+  if (auto * dc = f->getDeclContext())
+    if (dc->getParentSourceFile())
+      return;
+
+  if (CurrentIGM == nullptr)
+    return;
+
+  // Don't update the map if we already have an entry.
+  DefaultIGMForFunction.insert(std::make_pair(f, CurrentIGM));
 }

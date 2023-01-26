@@ -5,6 +5,7 @@
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Type.h>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
@@ -69,12 +70,6 @@ using GlobalTypeKey = TypeKey<ValueType *, bool>;
 using MemoryTypeKey = TypeKey<LimitsType *>;
 
 using TypeIndexTypeKey = TypeKey<uint32_t>;
-
-/// \c TypeKey storage hash support.
-template <typename T>
-hash_code hash_value(const std::vector<T *>& Vec) {
-  return llvm::hash_combine_range(Vec.begin(), Vec.end());
-}
 
 } // namespace w2n
 

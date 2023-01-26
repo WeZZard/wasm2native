@@ -1,7 +1,10 @@
 #include "IRGenModule.h"
 #include "Address.h"
+#include "GenDecl.h"
 #include "IRBuilder.h"
 #include "IRGenFunction.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Type.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
@@ -54,6 +57,7 @@ IRGenModule::IRGenModule(
   MainInputFilenameForDebugInfo(MainInputFilenameForDebugInfo),
   TargetInfo(WasmTargetInfo::get(*this)),
   ModuleHash(nullptr),
+  VoidTy(llvm::Type::getVoidTy(getLLVMContext())),
   I8Ty(llvm::Type::getInt8Ty(getLLVMContext())),
   I16Ty(llvm::Type::getInt16Ty(getLLVMContext())),
   I32Ty(llvm::Type::getInt32Ty(getLLVMContext())),
@@ -178,20 +182,23 @@ Address IRGenModule::getAddrOfGlobalVariable(
   return Address(Addr, StorageType, Alignment(GVar->getAlignment()));
 }
 
-llvm::Function *
-IRGenModule::getAddrOfFunction(Function * F, ForDefinition_t D) {
-  // Check whether we've created the function already.
-  // FIXME: We should integrate this into the LinkEntity cache more
-  // cleanly.
-  llvm::Function * Fn = Module->getFunction(F->getUniqueName());
-  if (Fn != nullptr) {
-    if (D == ForDefinition) {
-      // FIXME: updateLinkageForDefinition
-    }
-    return Fn;
-  }
+static bool isLazilyEmittedFunction(Function& F, IRGenModule& IGM) {
+  if (F.isExported())
+    return false;
 
-  w2n_unimplemented();
+  // Needed by lldb to print global variables which are propagated by the
+  // mandatory GlobalOpt.
+  if (IGM.getOptions().OptMode == OptimizationMode::NoOptimization && F.isGlobalInit())
+    return false;
+
+  return true;
+}
+
+StackProtectorMode IRGenModule::shouldEmitStackProtector(Function * F) {
+  auto& Opts = IRGen.getOptions();
+  return (Opts.EnableStackProtection)
+         ? StackProtectorMode::StackProtector
+         : StackProtectorMode::NoStackProtector;
 }
 
 llvm::Type * IRGenModule::getStorageType(Type * T) {
@@ -237,4 +244,8 @@ void IRGenModule::addUsedGlobal(llvm::GlobalValue * Global) {
 /// This value must have a definition by the time the module is finalized.
 void IRGenModule::addCompilerUsedGlobal(llvm::GlobalValue * Global) {
   LLVMCompilerUsed.push_back(Global);
+}
+
+Signature IRGenModule::getSignature(FuncType * Ty) {
+  return Signature::getUncached(*this, Ty);
 }

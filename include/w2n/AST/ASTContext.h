@@ -5,6 +5,7 @@
 #include <llvm/ADT/SetVector.h>
 #include <llvm/Support/Allocator.h>
 #include <w2n/AST/ASTAllocated.h>
+#include <w2n/AST/Decl.h>
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/Evaluator.h>
 #include <w2n/AST/Identifier.h>

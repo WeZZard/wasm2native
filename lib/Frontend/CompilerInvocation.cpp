@@ -219,6 +219,11 @@ bool parseIRGenOptions(
 ) {
   w2n_proto_implemented([&]() -> void {
     Options.OutputKind = IRGenOutputKind::ObjectFile;
+    Options.EnableStackProtection = Arguments.hasFlag(
+      options::OPT_enable_stack_protector,
+      options::OPT_disable_stack_protector,
+      Options.EnableStackProtection
+    );
   });
   return false;
 }

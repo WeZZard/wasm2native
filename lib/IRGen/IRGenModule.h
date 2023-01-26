@@ -2,59 +2,35 @@
 #define W2N_IRGEN_IRGENMODULE_H
 
 #include "IRGenerator.h"
+#include "Signature.h"
+#include "TypeLowering.h"
 #include "WasmTargetInfo.h"
+#include "llvm/ADT/PointerUnion.h"
+#include "llvm/IR/Type.h"
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Target/TargetMachine.h>
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <w2n/AST/Function.h>
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/LinkLibrary.h>
 #include <w2n/AST/SourceFile.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/FileSystem.h>
+#include <w2n/Basic/SuccessorMap.h>
+#include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
-
-namespace w2n::irgen {
-
-struct VectorTyKey {
-  llvm::Type * ElementTy;
-  uint32_t Count;
-};
-
-} // namespace w2n::irgen
-
-namespace llvm {
-
-using namespace w2n::irgen;
-
-template <>
-struct DenseMapInfo<VectorTyKey> {
-  static inline VectorTyKey getEmptyKey() {
-    return {nullptr, 0};
-  }
-
-  static inline VectorTyKey getTombstoneKey() {
-    return {nullptr, UINT32_MAX};
-  }
-
-  static unsigned getHashValue(const VectorTyKey& Key) {
-    return hash_combine(Key.ElementTy, Key.Count);
-  }
-
-  static bool isEqual(const VectorTyKey& LHS, const VectorTyKey& RHS) {
-    return LHS.ElementTy == RHS.ElementTy && LHS.Count == RHS.Count;
-  }
-};
-} // namespace llvm
 
 namespace w2n {
 
@@ -154,7 +130,7 @@ public:
 
   void unimplemented(SourceLoc, StringRef Message);
 
-  [[noreturn]] void fatal_unimplemented(SourceLoc, StringRef Message);
+  W2N_NO_RETURN void fatal_unimplemented(SourceLoc, StringRef Message);
 
   void error(SourceLoc loc, const Twine& message);
 
@@ -173,6 +149,7 @@ public:
 
 private:
 
+  llvm::Type * VoidTy;
   llvm::IntegerType * I8Ty;  /// i8
   llvm::IntegerType * I16Ty; /// i16
   llvm::IntegerType * I32Ty; /// i32
@@ -184,39 +161,116 @@ private:
   llvm::Type * F32Ty;        /// f32, float
   llvm::Type * F64Ty;        /// f64, double
 
-  mutable llvm::DenseMap<VectorTyKey, llvm::StructType *> VectorTys;
+  mutable llvm::DenseMap<VectorTyKey, llvm::ArrayType *> VectorTys;
+
+  mutable llvm::DenseMap<StructTyKey, llvm::StructType *> StructTys;
+
+  mutable llvm::DenseMap<FuncTyKey, llvm::FunctionType *> FuncTys;
 
 public:
 
-  llvm::Type * getType(ValueType * Ty) const {
-    if (isa<I32Type>(Ty)) {
-      return I32Ty;
-    }
-    if (isa<I64Type>(Ty)) {
-      return I64Ty;
-    }
-    if (isa<F32Type>(Ty)) {
-      return F32Ty;
-    }
-    if (isa<F64Type>(Ty)) {
-      return F64Ty;
+  llvm::Type * getType(Type * Ty) const {
+#define TYPE(Id, Parent)
+#define NUMBER_TYPE(Id, Parent)                                          \
+  case TypeKind::Id: return Id##Ty;
+    switch (Ty->getKind()) {
+#include <w2n/AST/TypeNodes.def>
+    case TypeKind::V128:
+      llvm_unreachable("vector type in WebAssembly does not have fixed "
+                       "reflection in LLVM.");
+    case TypeKind::Void: return VoidTy;
+    case TypeKind::Func: return getFuncType(dyn_cast<FuncType>(Ty));
+    case TypeKind::Result: return getResultType(dyn_cast<ResultType>(Ty));
+    case TypeKind::Global: return getGlobalTy(dyn_cast<GlobalType>(Ty));
+    case TypeKind::Limits:
+    case TypeKind::Table:
+    case TypeKind::Memory:
+    case TypeKind::FuncRef:
+    case TypeKind::ExternRef: w2n_unimplemented();
     }
     llvm_unreachable("unexpected value type.");
   }
 
-  llvm::StructType *
-  getVectorType(uint32_t Size, llvm::Type * ElementTy) const {
+  llvm::Type * getGlobalTy(GlobalType * Ty) const {
+    return getType(Ty->getType());
+  }
+
+private:
+
+  std::vector<llvm::Type *> lowerResultType(ResultType * Ty) const {
+    auto& ResultType = Ty->getValueTypes();
+
+    std::vector<llvm::Type *> LoweredResultTypes;
+    std::transform(
+      ResultType.begin(),
+      ResultType.end(),
+      LoweredResultTypes.end(),
+      [&](ValueType * Ty) -> llvm::Type * { return getType(Ty); }
+    );
+
+    return LoweredResultTypes;
+  }
+
+public:
+
+  llvm::FunctionType * getFuncType(FuncType * Ty) const {
+    auto LoweredParamTypes = lowerResultType(Ty->getParameters());
+
+    std::vector<llvm::Type *> LoweredResultTypes =
+      lowerResultType(Ty->getReturns());
+
+    FuncTyKey FuncKey = {
+      LoweredParamTypes,
+      LoweredResultTypes,
+      {
+        LoweredParamTypes.size(),
+        LoweredResultTypes.size(),
+      },
+    };
+
+    auto Iter = FuncTys.find(FuncKey);
+
+    if (Iter != FuncTys.end()) {
+      return Iter->second;
+    }
+
+    auto ResultTy = getResultType(Ty->getReturns());
+
+    auto FuncTy = llvm::FunctionType::get(
+      ResultTy, LoweredParamTypes, /*variadic*/ false
+    );
+
+    FuncTys.insert({FuncKey, FuncTy});
+
+    return FuncTy;
+  }
+
+  llvm::StructType * getResultType(ResultType * Ty) const {
+    std::vector<llvm::Type *> Subtypes = lowerResultType(Ty);
+
+    StructTyKey Key = {Subtypes};
+
+    auto Iter = StructTys.find(Key);
+
+    if (Iter != StructTys.end()) {
+      return Iter->second;
+    }
+
+    auto StructTy = llvm::StructType::create(*LLVMContext, Subtypes);
+
+    StructTys.insert({Key, StructTy});
+
+    return StructTy;
+  }
+
+  llvm::ArrayType *
+  getVectorOfType(uint32_t Size, llvm::Type * ElementTy) const {
     VectorTyKey Key = VectorTyKey{ElementTy, Size};
     const auto I = VectorTys.find(Key);
     if (I != VectorTys.end()) {
       return I->second;
     }
-    std::vector<llvm::Type *> Types;
-    Types.reserve(Size);
-    for (uint32_t I = 0; I < Size; I++) {
-      Types.insert(Types.end(), ElementTy);
-    }
-    auto * Ty = llvm::StructType::create(Types);
+    auto * Ty = llvm::ArrayType::get(ElementTy, Size);
     VectorTys.insert(std::make_pair(Key, Ty));
     return Ty;
   }
@@ -243,6 +297,16 @@ private:
   ///
   /// Similar to LLVMUsed, but emitted as llvm.compiler.used.
   SmallVector<llvm::WeakTrackingVH, 4> LLVMCompilerUsed;
+
+  /// A mapping from order numbers to the LLVM functions which we
+  /// created for the SIL functions with those orders.
+  SuccessorMap<unsigned, llvm::Function *> EmittedFunctionsByOrder;
+
+#pragma mark Function
+
+  StackProtectorMode shouldEmitStackProtector(Function * F);
+
+  Signature getSignature(FuncType * Ty);
 };
 
 /// Stores a pointer to an IRGenModule.

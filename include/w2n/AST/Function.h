@@ -7,6 +7,7 @@
 #include <llvm/ADT/ilist.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Linkage.h>
 #include <w2n/AST/Type.h>
 
@@ -103,6 +104,10 @@ public:
     return Kind;
   }
 
+  bool isGlobalInit() const {
+    return Kind == FunctionKind::GlobalInit;
+  }
+
   uint32_t getIndex() const {
     return Index;
   }
@@ -145,6 +150,20 @@ public:
 
   bool isExported() const {
     return Exported;
+  }
+
+  /// Before function importing get implemented, \c Function::isDefinition
+  /// always returns true.
+  bool isDefinition() const {
+    return true;
+  }
+
+  bool isPossiblyUsedExternally() const {
+    return isExported();
+  }
+
+  DeclContext * getDeclContext() const {
+    return getExpression()->getDeclContext();
   }
 
   StringRef getDescriptiveKindName() const {

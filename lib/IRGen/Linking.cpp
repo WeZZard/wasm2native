@@ -94,6 +94,43 @@ UniversalLinkageInfo::UniversalLinkageInfo(
   ForcePublicDecls(forcePublicDecls) {
 }
 
+LinkEntity LinkEntity::forGlobalVariable(GlobalVariable * G) {
+  LinkEntity Entity;
+  Entity.Pointer = G;
+  Entity.SecondaryPointer = nullptr;
+  Entity.Data = W2N_LINK_ENTITY_SET_FIELD(
+    Kind,
+    unsigned(
+      G->isMutable() ? Kind::GlobalVariable : Kind::ReadonlyGlobalVariable
+    )
+  );
+  return Entity;
+}
+
+LinkEntity LinkEntity::forFunction(Function * F) {
+  LinkEntity Entity;
+  Entity.Pointer = F;
+  Entity.SecondaryPointer = nullptr;
+  Entity.Data = W2N_LINK_ENTITY_SET_FIELD(Kind, unsigned(Kind::Function));
+  return Entity;
+}
+
+LinkEntity LinkEntity::forTable(Table * T) {
+  LinkEntity Entity;
+  Entity.Pointer = T;
+  Entity.SecondaryPointer = nullptr;
+  Entity.Data = W2N_LINK_ENTITY_SET_FIELD(Kind, unsigned(Kind::Table));
+  return Entity;
+}
+
+LinkEntity LinkEntity::forMemory(Memory * M) {
+  LinkEntity Entity;
+  Entity.Pointer = M;
+  Entity.SecondaryPointer = nullptr;
+  Entity.Data = W2N_LINK_ENTITY_SET_FIELD(Kind, unsigned(Kind::Memory));
+  return Entity;
+}
+
 /// Mangle this entity into the given buffer.
 void LinkEntity::mangle(SmallVectorImpl<char>& buffer) const {
   llvm::raw_svector_ostream stream(buffer);

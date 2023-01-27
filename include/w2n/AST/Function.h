@@ -152,10 +152,14 @@ public:
     return Exported;
   }
 
-  /// Before function importing get implemented, \c Function::isDefinition
-  /// always returns true.
+  /// Before function importing get implemented, \c isExternalDeclaration
+  /// always returns \c false.
+  bool isExternalDeclaration() const {
+    return false;
+  }
+
   bool isDefinition() const {
-    return true;
+    return !isExternalDeclaration();
   }
 
   bool isPossiblyUsedExternally() const {

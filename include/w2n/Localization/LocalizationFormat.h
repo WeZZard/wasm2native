@@ -4,7 +4,6 @@
 #define W2N_LOCALIZATIONFORMAT_H
 
 #include <llvm/ADT/ArrayRef.h>
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/Optional.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/StringRef.h>
@@ -22,6 +21,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <w2n/Basic/LLVMHashing.h>
 
 namespace w2n {
 enum class DiagID : uint32_t;

@@ -14,9 +14,9 @@
 #ifndef W2N_IRGEN_TBDGEN_H
 #define W2N_IRGEN_TBDGEN_H
 
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/StringSet.h>
 #include <vector>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/Version.h>
 
 namespace llvm {

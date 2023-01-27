@@ -9,7 +9,6 @@
 #include "llvm/IR/Type.h"
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/DenseMap.h>
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/IRBuilder.h>
@@ -28,6 +27,7 @@
 #include <w2n/AST/SourceFile.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/FileSystem.h>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/SuccessorMap.h>
 #include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
@@ -112,9 +112,12 @@ public:
   }
 
   void emitSourceFile(SourceFile& SF);
+
   void addLinkLibrary(const LinkLibrary& LinkLib);
 
   void emitGlobalVariable(GlobalVariable * V);
+
+  void emitFunction(Function * Func);
 
   void emitCoverageMapping();
 

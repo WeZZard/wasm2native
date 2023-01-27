@@ -4,6 +4,7 @@ add_w2n_host_library(w2nIRGen STATIC
   GenDecl.cpp
   IRGen.cpp
   IRGenerator.cpp
+  IRGenFunction.cpp
   IRGenModule.cpp
   IRGenRequests.cpp
   Linking.cpp

@@ -25,17 +25,22 @@ public:
   OptimizationMode OptMode;
 
   llvm::Function * CurFn;
+
+  Function * Fn;
+
   ModuleDecl * getWasmModule() const;
   const IRGenOptions& getOptions() const;
 
   IRGenFunction(
     IRGenModule& IGM,
-    llvm::Function * Fn,
+    Function * Fn,
     OptimizationMode Mode = OptimizationMode::NotSet
     // const DebugScope * DbgScope = nullptr,
     // Optional<Location> DbgLoc = None
   );
   ~IRGenFunction();
+
+  void emitFunction();
 
   void unimplemented(SourceLoc Loc, StringRef Message);
 

@@ -4,13 +4,13 @@
 #ifndef W2N_AST_SIMPLEREQUEST_H
 #define W2N_AST_SIMPLEREQUEST_H
 
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Support/Error.h>
 #include <tuple>
 #include <type_traits>
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/DiagnosticsCommon.h>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/SimpleDisplay.h>
 #include <w2n/Basic/Statistic.h>
 #include <w2n/Basic/TypeID.h>

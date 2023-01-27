@@ -24,6 +24,7 @@
 #include <w2n/AST/Module.h>
 #include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
+#include <w2n/Sema/Sema.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
@@ -84,6 +85,14 @@ void IRGenModule::emitGlobalVariable(GlobalVariable * V) {
   getAddrOfGlobalVariable(V, ForDefinition);
 }
 
+void IRGenModule::emitFunction(Function * F) {
+  if (F->isExternalDeclaration())
+    return;
+
+  // TODO: PrettyStackTraceFunction stackTrace("emitting IR", f);
+  IRGenFunction(*this, F).emitFunction();
+}
+
 void IRGenModule::emitCoverageMapping() {
   w2n_proto_implemented();
 }
@@ -116,7 +125,7 @@ void IRGenModule::emitSourceFile(SourceFile& SF) {
     }
 
     for (Function& F : M->getFunctions()) {
-      // TODO: IRGenFunction
+      emitFunction(&F);
     }
   }
   w2n_proto_implemented();

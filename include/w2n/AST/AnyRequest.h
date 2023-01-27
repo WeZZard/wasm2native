@@ -5,9 +5,9 @@
 #define W2N_AST_ANYREQUEST_H
 
 #include <llvm/ADT/DenseMapInfo.h>
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/PointerIntPair.h>
 #include <string>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/SourceLoc.h>
 #include <w2n/Basic/TypeID.h>
 

@@ -3,12 +3,12 @@
 #define W2N_BASIC_SOURCELOC_H
 
 #include <llvm/ADT/DenseMapInfo.h>
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/SMLoc.h>
 #include <functional>
 #include <w2n/Basic/Debug.h>
 #include <w2n/Basic/LLVM.h>
+#include <w2n/Basic/LLVMHashing.h>
 
 namespace w2n {
 class SourceManager;

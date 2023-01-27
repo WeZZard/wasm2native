@@ -1,5 +1,4 @@
 #include <llvm/ADT/DenseMapInfo.h>
-#include <llvm/ADT/Hashing.h>
 #include <llvm/ADT/MapVector.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <w2n/AST/ASTAllocated.h>

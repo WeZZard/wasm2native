@@ -125,7 +125,9 @@ void IRGenModule::emitSourceFile(SourceFile& SF) {
     }
 
     for (Function& F : M->getFunctions()) {
-      emitFunction(&F);
+      auto * DC = F.getDeclContext();
+      CurrentIGMPtr IGM = IRGen.getGenModule(DC);
+      IGM->emitFunction(&F);
     }
   }
   w2n_proto_implemented();
@@ -156,6 +158,9 @@ llvm::Module * IRGenModule::getModule() const {
 Address IRGenModule::getAddrOfGlobalVariable(
   GlobalVariable * Global, ForDefinition_t ForDefinition
 ) {
+  LinkEntity entity = LinkEntity::forGlobalVariable(Global);
+  LinkInfo link = LinkInfo::get(*this, entity, ForDefinition);
+
   std::string UniqueName = (Twine("$") + Twine(0)).str();
 
   auto * GVar =
@@ -164,18 +169,10 @@ Address IRGenModule::getAddrOfGlobalVariable(
   llvm::Type * StorageType = getType(Global->getType());
 
   if (GVar == nullptr) {
-    GVar = new llvm::GlobalVariable(
-      *Module,
-      StorageType,
-      /*constant*/ false,
-      // FIXME: linkInfo.getLinkage(),
-      llvm::GlobalValue::LinkageTypes::InternalLinkage,
-      /*initializer*/ nullptr,
-      UniqueName
-    );
-
     // FIXME: Temporary workaround
-    GVar->setAlignment(llvm::MaybeAlign(4));
+    Alignment FixedAlignment = Alignment(4);
+    GVar = createGlobalVariable(*this, link, StorageType, FixedAlignment);
+
     /// Add a zero initializer.
     if (ForDefinition != 0) {
       GVar->setInitializer(llvm::Constant::getNullValue(StorageType));

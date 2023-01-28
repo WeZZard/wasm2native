@@ -34,7 +34,7 @@ llvm::Function * createFunction(
   StackProtectorMode StackProtect = StackProtectorMode::NoStackProtector
 );
 
-llvm::GlobalVariable * createVariable(
+llvm::GlobalVariable * createGlobalVariable(
   IRGenModule& IGM,
   LinkInfo& LinkInfo,
   llvm::Type * ObjectType,

@@ -23,6 +23,7 @@
 #include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/Table.h>
+#include <w2n/Basic/Unimplemented.h>
 
 namespace llvm {
 class Triple;
@@ -97,7 +98,9 @@ public:
 /// For example, functions may be uncurried at different levels, each of
 /// which potentially creates a different top-level function.
 class LinkEntity {
-  /// ValueDecl *, Function *, or Type *, depending on Kind.
+  /// Function *, Table *, Memory *, or GlobalVariable *, depending on
+  /// Kind.
+  /// TODO: Can optimize with llvm::PointerUnion?
   void * Pointer;
 
   /// ProtocolConformance*, depending on Kind.
@@ -138,6 +141,22 @@ class LinkEntity {
     return Kind(W2N_LINK_ENTITY_GET_FIELD(Data, Kind));
   }
 
+  GlobalVariable * getGlobalVariable() const {
+    return reinterpret_cast<GlobalVariable *>(Pointer);
+  }
+
+  Function * getFunction() const {
+    return reinterpret_cast<Function *>(Pointer);
+  }
+
+  Table * getTable() const {
+    return reinterpret_cast<Table *>(Pointer);
+  }
+
+  Memory * getMemory() const {
+    return reinterpret_cast<Memory *>(Pointer);
+  }
+
   LinkEntity() = default;
 
 public:
@@ -157,6 +176,24 @@ public:
   std::string mangleAsString() const;
 
   ASTLinkage getLinkage(ForDefinition_t ForDefinition) const;
+
+  /// Determine whether this entity will be weak-imported.
+  bool isWeakImported(ModuleDecl * module) const {
+    return w2n_proto_implemented(
+      "Standard WebAssembly spec does not have weak import.",
+      [&] { return false; }
+    );
+  }
+
+  bool isAlwaysSharedLinkage() const {
+    // TODO: What is always shared linkage in Swift?
+    // TODO: How to map always shared linkage from Swift to Wasm?
+    return w2n_proto_implemented([&] { return false; });
+  }
+
+  /// Return the module scope context whose codegen should trigger
+  /// emission of this link entity, if one can be identified.
+  DeclContext * getDeclContextForEmission() const;
 
   /// Get the preferred alignment for the definition of this entity.
   Alignment getAlignment(IRGenModule& IGM) const;
@@ -232,17 +269,17 @@ public:
   );
 
   static LinkInfo get(
-    const UniversalLinkageInfo& LinkInfo,
+    const UniversalLinkageInfo& Info,
     ModuleDecl * WasmModule,
     const LinkEntity& Entity,
     ForDefinition_t ForDefinition
   );
 
   static LinkInfo get(
-    const UniversalLinkageInfo& linkInfo,
-    StringRef name,
-    ASTLinkage linkage,
-    ForDefinition_t isDefinition
+    const UniversalLinkageInfo& Info,
+    StringRef Name,
+    ASTLinkage Linkage,
+    ForDefinition_t ForDefinition
   );
 
   StringRef getName() const {

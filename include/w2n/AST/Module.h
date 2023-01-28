@@ -19,6 +19,7 @@
 #include <w2n/AST/Memory.h>
 #include <w2n/AST/Table.h>
 #include <w2n/Basic/LLVM.h>
+#include <w2n/Basic/Unimplemented.h>
 
 namespace w2n {
 
@@ -284,6 +285,12 @@ public:                                                                  \
   /// Generate the list of libraries needed to link this module, based on
   /// its imports.
   void collectLinkLibraries(LinkLibraryCallback Callback) const;
+
+  bool isStaticLibrary() const {
+    return w2n_proto_implemented(
+      "Static library has not supported yet.", [&] { return false; }
+    );
+  }
 
 #pragma mark Implementing LLVM RTTI Methods
 

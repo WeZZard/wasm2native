@@ -12,8 +12,8 @@ namespace irgen {
 
 class IRGenModule;
 
-/// IRGenFunction - Primary class for emitting LLVM instructions for a
-/// specific function.
+/// IRGenFunction - The primary class for emitting LLVM instructions for a
+/// specific function with RAII-style.
 class IRGenFunction {
 public:
 

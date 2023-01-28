@@ -167,7 +167,7 @@ static void markGlobalAsUsedBasedOnLinkage(
   }
 }
 
-llvm::GlobalVariable * irgen::createVariable(
+llvm::GlobalVariable * irgen::createGlobalVariable(
   IRGenModule& IGM,
   LinkInfo& LinkInfo,
   llvm::Type * ObjectType,
@@ -177,9 +177,9 @@ llvm::GlobalVariable * irgen::createVariable(
   StringRef DebugName
 ) {
   auto Name = LinkInfo.getName();
-  llvm::GlobalValue * existingValue = IGM.Module->getNamedGlobal(Name);
-  if (existingValue) {
-    auto existingVar = dyn_cast<llvm::GlobalVariable>(existingValue);
+  llvm::GlobalValue * ExistingValue = IGM.Module->getNamedGlobal(Name);
+  if (ExistingValue) {
+    auto existingVar = dyn_cast<llvm::GlobalVariable>(ExistingValue);
     if (existingVar && existingVar->getValueType() == ObjectType)
       return existingVar;
 
@@ -190,10 +190,10 @@ llvm::GlobalVariable * irgen::createVariable(
 
     // Note that this will implicitly unique if the .unique name is also
     // taken.
-    existingValue->setName(Name + ".unique");
+    ExistingValue->setName(Name + ".unique");
   }
 
-  auto var = new llvm::GlobalVariable(
+  auto Var = new llvm::GlobalVariable(
     *IGM.Module,
     ObjectType,
     /*constant*/ false,
@@ -204,17 +204,17 @@ llvm::GlobalVariable * irgen::createVariable(
   ApplyIRLinkage({LinkInfo.getLinkage(),
                   LinkInfo.getVisibility(),
                   LinkInfo.getDLLStorage()})
-    .to(var, LinkInfo.isForDefinition());
-  var->setAlignment(llvm::MaybeAlign(Alignment.getValue()));
+    .to(Var, LinkInfo.isForDefinition());
+  Var->setAlignment(llvm::MaybeAlign(Alignment.getValue()));
 
-  markGlobalAsUsedBasedOnLinkage(IGM, LinkInfo, var);
+  markGlobalAsUsedBasedOnLinkage(IGM, LinkInfo, Var);
 
   // TODO: IGM.DebugInfo->emitGlobalVariableDeclaration
   // if (IGM.DebugInfo && !DbgTy.isNull() && LinkInfo.isForDefinition()) {
   //   IGM.DebugInfo->emitGlobalVariableDeclaration
   // }
 
-  return var;
+  return Var;
 }
 
 llvm::GlobalVariable *

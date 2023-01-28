@@ -5,6 +5,7 @@
 
 namespace w2n {
 
+// FIXME: Is it enough to offer just two AST-level linkages?
 enum class ASTLinkage : uint8_t {
   Public,
   Internal,

@@ -16,15 +16,19 @@
 //===----------------------------------------------------------------===//
 
 #include "IRGenModule.h"
+#include "llvm/Support/Casting.h"
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/Compiler.h>
 #include <llvm/Support/raw_ostream.h>
 #include <w2n/AST/IRGenOptions.h>
+#include <w2n/AST/Linkage.h>
 #include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
 
 using namespace w2n;
 using namespace irgen;
+
+#pragma mark - IRLinkage
 
 const IRLinkage IRLinkage::InternalLinkOnceODR = {
   llvm::GlobalValue::LinkOnceODRLinkage,
@@ -68,9 +72,72 @@ const IRLinkage IRLinkage::ExternalExport = {
   llvm::GlobalValue::DLLExportStorageClass,
 };
 
+static IRLinkage getIRLinkage(
+  const UniversalLinkageInfo& info,
+  ASTLinkage linkage,
+  ForDefinition_t isDefinition,
+  bool isWeakImported,
+  bool isKnownLocal = false
+) {
+#define RESULT(LINKAGE, VISIBILITY, DLL_STORAGE)                         \
+  IRLinkage{                                                             \
+    llvm::GlobalValue::LINKAGE##Linkage,                                 \
+    llvm::GlobalValue::VISIBILITY##Visibility,                           \
+    llvm::GlobalValue::DLL_STORAGE##StorageClass}
+
+  // Use protected visibility for public symbols we define on ELF.  ld.so
+  // doesn't support relative relocations at load time, which interferes
+  // with our metadata formats.  Default visibility should suffice for
+  // other object formats.
+  llvm::GlobalValue::VisibilityTypes PublicDefinitionVisibility =
+    info.IsELFObject ? llvm::GlobalValue::ProtectedVisibility
+                     : llvm::GlobalValue::DefaultVisibility;
+  llvm::GlobalValue::DLLStorageClassTypes ExportedStorage =
+    info.UseDLLStorage ? llvm::GlobalValue::DLLExportStorageClass
+                       : llvm::GlobalValue::DefaultStorageClass;
+  W2N_UNUSED
+  llvm::GlobalValue::DLLStorageClassTypes ImportedStorage =
+    info.UseDLLStorage ? llvm::GlobalValue::DLLImportStorageClass
+                       : llvm::GlobalValue::DefaultStorageClass;
+
+  switch (linkage) {
+  case ASTLinkage::Public:
+    return {
+      llvm::GlobalValue::ExternalLinkage,
+      PublicDefinitionVisibility,
+      info.Internalize ? llvm::GlobalValue::DefaultStorageClass
+                       : ExportedStorage};
+
+  case ASTLinkage::Internal: {
+    if (info.forcePublicDecls() && !isDefinition)
+      return getIRLinkage(
+        info,
+        ASTLinkage::Public,
+        isDefinition,
+        isWeakImported,
+        isKnownLocal
+      );
+
+    auto linkage = info.needLinkerToMergeDuplicateSymbols()
+                   ? llvm::GlobalValue::LinkOnceODRLinkage
+                   : llvm::GlobalValue::InternalLinkage;
+    auto visibility = info.shouldAllPrivateDeclsBeVisibleFromOtherFiles()
+                      ? llvm::GlobalValue::HiddenVisibility
+                      : llvm::GlobalValue::DefaultVisibility;
+    return {linkage, visibility, llvm::GlobalValue::DefaultStorageClass};
+  }
+  }
+
+  llvm_unreachable("bad AST linkage");
+}
+
+#pragma mark - irgen Standalone Functions
+
 bool w2n::irgen::useDllStorage(const llvm::Triple& triple) {
   return triple.isOSBinFormatCOFF() && !triple.isOSCygMing();
 }
+
+#pragma mark - UniversalLinkageInfo
 
 UniversalLinkageInfo::UniversalLinkageInfo(IRGenModule& IGM) :
   UniversalLinkageInfo(
@@ -93,6 +160,8 @@ UniversalLinkageInfo::UniversalLinkageInfo(
   HasMultipleIGMs(hasMultipleIGMs),
   ForcePublicDecls(forcePublicDecls) {
 }
+
+#pragma mark - LinkEntity
 
 LinkEntity LinkEntity::forGlobalVariable(GlobalVariable * G) {
   LinkEntity Entity;
@@ -158,6 +227,69 @@ ASTLinkage LinkEntity::getLinkage(ForDefinition_t forDefinition) const {
   llvm_unreachable("bad link entity kind");
 }
 
+DeclContext * LinkEntity::getDeclContextForEmission() const {
+  switch (getKind()) {
+  case Kind::Function: return getFunction()->getDeclContext();
+  case Kind::Table:
+  case Kind::Memory: w2n_unimplemented(); break;
+  case Kind::GlobalVariable:
+  case Kind::ReadonlyGlobalVariable:
+    return getGlobalVariable()->getDecl()->getDeclContext();
+  }
+}
+
 Alignment LinkEntity::getAlignment(IRGenModule& IGM) const {
   llvm_unreachable("alignment not specified");
+}
+
+#pragma mark - LinkInfo
+
+LinkInfo LinkInfo::get(
+  IRGenModule& IGM,
+  const LinkEntity& Entity,
+  ForDefinition_t ForDefinition
+) {
+  return LinkInfo::get(
+    UniversalLinkageInfo(IGM), IGM.getWasmModule(), Entity, ForDefinition
+  );
+}
+
+LinkInfo LinkInfo::get(
+  const UniversalLinkageInfo& Info,
+  ModuleDecl * WasmModule,
+  const LinkEntity& entity,
+  ForDefinition_t isDefinition
+) {
+  LinkInfo result;
+  entity.mangle(result.Name);
+
+  bool isKnownLocal = entity.isAlwaysSharedLinkage();
+  if (const auto * DC = entity.getDeclContextForEmission()) {
+    if (const auto * MD = DC->getParentModule())
+      isKnownLocal = MD == WasmModule || MD->isStaticLibrary();
+  }
+
+  result.IRL = getIRLinkage(
+    Info, entity.getLinkage(isDefinition), isDefinition, isKnownLocal
+  );
+  result.ForDefinition = isDefinition;
+  return result;
+}
+
+LinkInfo LinkInfo::get(
+  const UniversalLinkageInfo& linkInfo,
+  StringRef name,
+  ASTLinkage linkage,
+  ForDefinition_t isDefinition
+) {
+}
+
+bool LinkInfo::isUsed(IRLinkage IRL) {
+  // Everything externally visible is considered used in Swift.
+  // That mostly means we need to be good at not marking things external.
+  return IRL.Linkage == llvm::GlobalValue::ExternalLinkage
+      && (IRL.Visibility == llvm::GlobalValue::DefaultVisibility
+          || IRL.Visibility == llvm::GlobalValue::ProtectedVisibility)
+      && (IRL.DLLStorage == llvm::GlobalValue::DefaultStorageClass
+          || IRL.DLLStorage == llvm::GlobalValue::DLLExportStorageClass);
 }

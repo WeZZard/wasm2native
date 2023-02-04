@@ -65,7 +65,7 @@ namespace w2n {
 class Decl;
 class ProtocolConformance;
 class Expr;
-class SILFunction;
+class Function;
 class FrontendStatsTracer;
 class Pattern;
 class SourceFile;
@@ -278,7 +278,7 @@ public:
   FrontendStatsTracer(
     UnifiedStatsReporter * Reporter,
     StringRef EventName,
-    const SILFunction * F
+    const Function * F
   );
   FrontendStatsTracer(
     UnifiedStatsReporter * Reporter,
@@ -326,7 +326,7 @@ FrontendStatsTracer::getTraceFormatter<const Expr *>();
 
 template <>
 const UnifiedStatsReporter::TraceFormatter *
-FrontendStatsTracer::getTraceFormatter<const SILFunction *>();
+FrontendStatsTracer::getTraceFormatter<const Function *>();
 
 template <>
 const UnifiedStatsReporter::TraceFormatter *
@@ -385,9 +385,9 @@ inline FrontendStatsTracer::FrontendStatsTracer(
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(
-  UnifiedStatsReporter * R, StringRef S, const SILFunction * F
+  UnifiedStatsReporter * R, StringRef S, const Function * F
 ) :
-  FrontendStatsTracer(R, S, F, getTraceFormatter<const SILFunction *>()) {
+  FrontendStatsTracer(R, S, F, getTraceFormatter<const Function *>()) {
 }
 
 inline FrontendStatsTracer::FrontendStatsTracer(

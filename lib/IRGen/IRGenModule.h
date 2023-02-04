@@ -185,11 +185,13 @@ public:
     case TypeKind::Func: return getFuncType(dyn_cast<FuncType>(Ty));
     case TypeKind::Result: return getResultType(dyn_cast<ResultType>(Ty));
     case TypeKind::Global: return getGlobalTy(dyn_cast<GlobalType>(Ty));
-    case TypeKind::Limits:
-    case TypeKind::Table:
-    case TypeKind::Memory:
+    case TypeKind::Block:
+    case TypeKind::ExternRef:
     case TypeKind::FuncRef:
-    case TypeKind::ExternRef: w2n_unimplemented();
+    case TypeKind::Limits:
+    case TypeKind::Memory:
+    case TypeKind::Table:
+    case TypeKind::TypeIndex: w2n_unimplemented();
     }
     llvm_unreachable("unexpected value type.");
   }
@@ -304,6 +306,10 @@ private:
   /// A mapping from order numbers to the LLVM functions which we
   /// created for the SIL functions with those orders.
   SuccessorMap<unsigned, llvm::Function *> EmittedFunctionsByOrder;
+
+  /// List of all of the functions, which can be lookup by name
+  /// up at runtime.
+  SmallVector<Function *, 4> AccessibleFunctions;
 
 #pragma mark Function
 

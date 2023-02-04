@@ -52,6 +52,9 @@
 
 #define CTRL_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
 
+// TODO: Reflect STRUCT_INST on class hierarchy of related Stmt subclass
+#define STRUCT_INST(Id, Opcode0, ...) CTRL_INST(Id, Opcode0, __VA_ARGS__)
+
 #define PARAM_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
 
 #define VAR_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
@@ -61,9 +64,9 @@
 #define NUM_INST(Id, Opcode0, ...) INST(Id, Opcode0, __VA_ARGS__)
 
 CTRL_INST(Unreachable, 0x00)
-CTRL_INST(Block, 0x02, BlockType)
-CTRL_INST(Loop, 0x03, BlockType)
-CTRL_INST(If, 0x04, BlockType)
+STRUCT_INST(Block, 0x02, BlockType)
+STRUCT_INST(Loop, 0x03, BlockType)
+STRUCT_INST(If, 0x04, BlockType)
 CTRL_INST(End, 0x0B)
 CTRL_INST(Br, 0x0C, LabelIdx)
 CTRL_INST(BrIf, 0x0D, LabelIdx)

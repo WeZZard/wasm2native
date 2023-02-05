@@ -176,8 +176,13 @@ if [[ $NEEDS_CLEAN -eq 1 ]]; then
   done
 fi
 
+SECONDS=0
 for PRODUCT_NAME in "${PRODUCTS_TO_BUILD[@]}"; do
   build $PRODUCT_NAME $CONFIG_ONLY
 done
+
+# do some work
+DURATION=$SECONDS
+echo "build ${PRODUCTS_TO_BUILD} with $(($DURATION / 60)) minutes and $(($DURATION % 60)) seconds elapsed."
 
 exit 0

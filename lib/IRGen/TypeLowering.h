@@ -1,5 +1,5 @@
-#ifndef W2N_IRGEN_TYPELOWERING_H
-#define W2N_IRGEN_TYPELOWERING_H
+#ifndef IRGEN_TYPELOWERING_H
+#define IRGEN_TYPELOWERING_H
 
 #include <llvm/IR/Type.h>
 #include <cstdint>
@@ -12,11 +12,24 @@ namespace w2n::irgen {
 struct VectorTyKey {
   llvm::Type * ElementTy;
 
-  uint32_t Count;
+  union {
+    uint32_t Count;
+
+    struct {
+      bool IsEmpty;
+      bool IsTombstone;
+    };
+  };
+
+  VectorTyKey(llvm::Type * ElementTy, uint32_t Count) :
+    ElementTy(ElementTy),
+    Count(Count) {
+  }
 };
 
 struct StructTyKey {
   std::vector<llvm::Type *> ElementTypes;
+  bool IsEmpty = false;
   bool IsTombstone = false;
 };
 
@@ -26,11 +39,26 @@ struct FuncTyKey {
   std::vector<llvm::Type *> ResultTypes;
 
   struct {
-    size_t ArgumentEltCount;
+    union {
+      size_t ArgumentEltCount;
+      bool IsEmpty;
+    };
 
-    size_t ResultEltCount;
+    union {
+      size_t ResultEltCount;
+      bool IsTombstone;
+    };
+  };
 
-  } Discriminator;
+  FuncTyKey(
+    std::vector<llvm::Type *> ArgumentTypes,
+    std::vector<llvm::Type *> ResultTypes
+  ) :
+    ArgumentTypes(ArgumentTypes),
+    ResultTypes(ResultTypes),
+    ArgumentEltCount(ArgumentTypes.size()),
+    ResultEltCount(ResultTypes.size()) {
+  }
 };
 
 } // namespace w2n::irgen
@@ -42,11 +70,15 @@ struct DenseMapInfo<w2n::irgen::VectorTyKey> {
   using VectorTyKey = w2n::irgen::VectorTyKey;
 
   static inline VectorTyKey getEmptyKey() {
-    return {nullptr, 0};
+    auto Key = VectorTyKey(nullptr, 0);
+    Key.IsEmpty = true;
+    return Key;
   }
 
   static inline VectorTyKey getTombstoneKey() {
-    return {nullptr, UINT32_MAX};
+    auto Key = VectorTyKey(nullptr, 0);
+    Key.IsTombstone = true;
+    return Key;
   }
 
   static unsigned getHashValue(const VectorTyKey& Key) {
@@ -63,19 +95,20 @@ struct DenseMapInfo<w2n::irgen::StructTyKey> {
   using StructTyKey = w2n::irgen::StructTyKey;
 
   static inline StructTyKey getEmptyKey() {
-    return {{}, false};
+    return {{}, true, false};
   }
 
   static inline StructTyKey getTombstoneKey() {
-    return {{}, true};
+    return {{}, false, true};
   }
 
   static unsigned getHashValue(const StructTyKey& Key) {
-    return hash_combine(Key.ElementTypes, Key.IsTombstone);
+    return hash_combine(Key.ElementTypes, Key.IsEmpty, Key.IsTombstone);
   }
 
   static bool isEqual(const StructTyKey& LHS, const StructTyKey& RHS) {
     return LHS.ElementTypes == RHS.ElementTypes
+        && LHS.IsEmpty == RHS.IsEmpty
         && LHS.IsTombstone == RHS.IsTombstone;
   }
 };
@@ -85,31 +118,33 @@ struct DenseMapInfo<w2n::irgen::FuncTyKey> {
   using FuncTyKey = w2n::irgen::FuncTyKey;
 
   static inline FuncTyKey getEmptyKey() {
-    return {{}, {}, {0, 0}};
+    auto Key = FuncTyKey({}, {});
+    Key.IsEmpty = true;
+    return Key;
   }
 
   static inline FuncTyKey getTombstoneKey() {
-    return {{}, {}, {SIZE_T_MAX, SIZE_T_MAX}};
+    auto Key = FuncTyKey({}, {});
+    Key.IsTombstone = true;
+    return Key;
   }
 
   static unsigned getHashValue(const FuncTyKey& Key) {
     return hash_combine(
       Key.ArgumentTypes,
       Key.ResultTypes,
-      Key.Discriminator.ArgumentEltCount,
-      Key.Discriminator.ResultEltCount
+      Key.ArgumentEltCount,
+      Key.ResultEltCount
     );
   }
 
   static bool isEqual(const FuncTyKey& LHS, const FuncTyKey& RHS) {
     return LHS.ArgumentTypes == RHS.ArgumentTypes
         && LHS.ResultTypes == RHS.ResultTypes
-        && LHS.Discriminator.ArgumentEltCount
-             == RHS.Discriminator.ArgumentEltCount
-        && LHS.Discriminator.ResultEltCount
-             == RHS.Discriminator.ResultEltCount;
+        && LHS.ArgumentEltCount == RHS.ArgumentEltCount
+        && LHS.ResultEltCount == RHS.ResultEltCount;
   }
 };
 } // namespace llvm
 
-#endif // W2N_IRGEN_TYPELOWERING_H
+#endif // IRGEN_TYPELOWERING_H

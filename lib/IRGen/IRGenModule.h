@@ -1,5 +1,5 @@
-#ifndef W2N_IRGEN_IRGENMODULE_H
-#define W2N_IRGEN_IRGENMODULE_H
+#ifndef IRGEN_IRGENMODULE_H
+#define IRGEN_IRGENMODULE_H
 
 #include "IRGenerator.h"
 #include "Signature.h"
@@ -19,6 +19,7 @@
 #include <llvm/Target/TargetMachine.h>
 #include <algorithm>
 #include <cstdint>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <w2n/AST/Function.h>
@@ -206,10 +207,11 @@ private:
     auto& ResultType = Ty->getValueTypes();
 
     std::vector<llvm::Type *> LoweredResultTypes;
+    LoweredResultTypes.reserve(ResultType.size());
     std::transform(
-      ResultType.begin(),
-      ResultType.end(),
-      LoweredResultTypes.end(),
+      ResultType.cbegin(),
+      ResultType.cend(),
+      std::back_inserter(LoweredResultTypes),
       [&](ValueType * Ty) -> llvm::Type * { return getType(Ty); }
     );
 
@@ -224,14 +226,7 @@ public:
     std::vector<llvm::Type *> LoweredResultTypes =
       lowerResultType(Ty->getReturns());
 
-    FuncTyKey FuncKey = {
-      LoweredParamTypes,
-      LoweredResultTypes,
-      {
-        LoweredParamTypes.size(),
-        LoweredResultTypes.size(),
-      },
-    };
+    FuncTyKey FuncKey = FuncTyKey(LoweredParamTypes, LoweredResultTypes);
 
     auto Iter = FuncTys.find(FuncKey);
 
@@ -250,8 +245,16 @@ public:
     return FuncTy;
   }
 
-  llvm::StructType * getResultType(ResultType * Ty) const {
+  llvm::Type * getResultType(ResultType * Ty) const {
     std::vector<llvm::Type *> Subtypes = lowerResultType(Ty);
+
+    if (Subtypes.empty()) {
+      return llvm::Type::getVoidTy(getLLVMContext());
+    }
+
+    if (Subtypes.size() == 1) {
+      return Subtypes[0];
+    }
 
     StructTyKey Key = {Subtypes};
 
@@ -349,4 +352,4 @@ public:
 
 } // namespace w2n
 
-#endif // W2N_IRGEN_IRGENMODULE_H
+#endif // IRGEN_IRGENMODULE_H

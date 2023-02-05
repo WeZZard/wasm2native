@@ -20,6 +20,7 @@
 #ifndef W2N_AST_REDUCTION_H
 #define W2N_AST_REDUCTION_H
 
+#include <_types/_uint32_t.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/ErrorHandling.h>
@@ -33,6 +34,8 @@
 #include <w2n/AST/Function.h>
 
 namespace w2n {
+
+namespace Lowering {
 
 enum class StackContentKind {
   Unspecified,
@@ -68,8 +71,21 @@ public:
   Label(const Label&) = delete;
   Label& operator=(const Label&) = delete;
 
-  Label(Label&&);
-  Label& operator=(const Label&&);
+  Label(Label&& X) {
+    *this = std::move(X);
+  }
+
+  Label& operator=(Label&& X) {
+    this->Builder = X.Builder;
+    this->EnterBB = X.EnterBB;
+    this->ExitBB = X.ExitBB;
+    this->DebugLabel = X.DebugLabel;
+    X.Builder = nullptr;
+    X.EnterBB = nullptr;
+    X.ExitBB = nullptr;
+    X.DebugLabel = nullptr;
+    return *this;
+  }
 
   llvm::BasicBlock * getEnterBB();
 
@@ -103,8 +119,27 @@ public:
   Value(const Value&) = delete;
   Value& operator=(const Value&) = delete;
 
-  Value(Value&&);
-  Value& operator=(const Value&&);
+  Value(Value&& X) {
+    *this = std::move(X);
+  }
+
+  Value& operator=(Value&& X) {
+    this->Val = X.Val;
+    X.Val = nullptr;
+    return *this;
+  }
+
+  llvm::Value * getLowered() {
+    return Val;
+  }
+
+  const llvm::Value * getLowered() const {
+    return Val;
+  }
+
+  bool isNull() const {
+    return Val == nullptr;
+  }
 
   static StackContentKind kindof() {
     return StackContentKind::Value;
@@ -118,17 +153,29 @@ private:
 
   w2n::Function * Func;
 
+  std::vector<Value> Locals;
+
 public:
 
-  explicit Frame(w2n::Function * Func) : Func(Func) {
+  explicit Frame(w2n::Function * Func, std::vector<Value> Locals) :
+    Func(Func),
+    Locals(std::move(Locals)) {
   }
 
   // cannot copy, only can move.
   Frame(const Frame&) = delete;
   Frame& operator=(const Frame&) = delete;
 
-  Frame(Frame&&);
-  Frame& operator=(const Frame&&);
+  Frame(Frame&& X) {
+    *this = std::move(X);
+  }
+
+  Frame& operator=(Frame&& X) {
+    this->Func = X.Func;
+    this->Locals = std::move(X.Locals);
+    X.Func = nullptr;
+    return *this;
+  }
 
   static StackContentKind kindof() {
     return StackContentKind::Frame;
@@ -327,32 +374,22 @@ public:
     return &Popped->assertingGet<ContentTy>();
   }
 
+  /// Returns the top content's as \c ContentTy .
+  ///
+  /// There is an assertion inside the type casting process.
+  ///
   template <typename ContentTy>
   ContentTy& top() {
     return Top->assertingGet<ContentTy>();
   }
 
+  /// Returns the top content's as \c ContentTy .
+  ///
+  /// There is an assertion inside the type casting process.
+  ///
   template <typename ContentTy>
   const ContentTy& top() const {
     return Top->assertingGet<ContentTy>();
-  }
-
-  template <typename ContentTy>
-  std::vector<ContentTy *> pop(uint32_t K) {
-    bool ShouldStop = false;
-    std::vector<ContentTy *> PoppedContents;
-    while (ShouldStop) {
-      Node * Popped = Top;
-      Top = Top->getPrevious();
-      if (Popped->getKind() == ContentTy::kindof()) {
-        K -= 1;
-        PoppedContents.emplace_back(&Popped->get<ContentTy>());
-        if (K == 0) {
-          ShouldStop = true;
-        }
-      }
-    };
-    return PoppedContents;
   }
 
   template <typename ContentTy>
@@ -369,6 +406,37 @@ public:
         }
       }
     };
+  }
+
+  template <typename ContentTy>
+  std::vector<ContentTy *> pop(uint32_t K) {
+    std::vector<ContentTy *> PoppedContents;
+    pop(PoppedContents, K);
+    return PoppedContents;
+  }
+
+  template <typename ContentTy>
+  ContentTy * findTopmostNth(uint32_t N) const {
+    assert(N >= 1);
+    bool ShouldStop = false;
+    Node * CurrentNode = Top;
+    while (ShouldStop) {
+      Node * PreviousNode = CurrentNode;
+      CurrentNode = CurrentNode->getPrevious();
+      if (PreviousNode->getKind() == ContentTy::kindof()) {
+        N -= 1;
+        if (N == 0) {
+          ShouldStop = true;
+          return PreviousNode->get<ContentTy>();
+        }
+      }
+    };
+    return nullptr;
+  }
+
+  template <typename ContentTy>
+  ContentTy * findTopmost() const {
+    return findTopmostNth<ContentTy>(1);
   }
 
   /// Actions that triggered in \c Configuration destructor.
@@ -392,6 +460,8 @@ public:
     CleanUp = std::make_unique<decltype(C)>(C);
   }
 };
+
+} // namespace Lowering
 
 } // namespace w2n
 

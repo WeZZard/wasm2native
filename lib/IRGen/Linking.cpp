@@ -218,12 +218,28 @@ std::string LinkEntity::mangleAsString() const {
   case Kind::Function: w2n_unimplemented();
   case Kind::Table: w2n_unimplemented();
   case Kind::Memory: w2n_unimplemented();
-  case Kind::GlobalVariable: w2n_unimplemented();
+  case Kind::ReadonlyGlobalVariable:
+  case Kind::GlobalVariable: {
+    auto G = getGlobalVariable();
+    auto& M = G->getModule();
+    return (Twine(M.getName().str()) + Twine(".global$")
+            + Twine(G->getIndex()))
+      .str();
+  }
   }
   llvm_unreachable("bad entity kind!");
 }
 
 ASTLinkage LinkEntity::getLinkage(ForDefinition_t forDefinition) const {
+  switch (getKind()) {
+  case Kind::Function: w2n_unimplemented();
+  case Kind::Table: w2n_unimplemented();
+  case Kind::Memory: w2n_unimplemented();
+  case Kind::ReadonlyGlobalVariable:
+  case Kind::GlobalVariable:
+    // FIXME: Check if the global variable is exported.
+    return w2n_proto_implemented([&] { return ASTLinkage::Internal; });
+  }
   llvm_unreachable("bad link entity kind");
 }
 

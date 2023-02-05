@@ -122,7 +122,7 @@ FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   auto& Types = TypeSection->getTypes();
 
   auto FindFuncName = [&](uint32_t Index) -> Optional<Identifier> {
-    if (NameSection == nullptr) {
+    if (NameSection == nullptr || NameSection->getFuncNameSubsection() == nullptr) {
       return None;
     }
 
@@ -151,8 +151,10 @@ FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
       Exports.begin(),
       Exports.end(),
       [&](ExportDecl * D) -> bool {
-        auto * F = dyn_cast<ExportFuncDecl>(D);
-        return F->getFuncIndex() == Index;
+        if (auto * F = dyn_cast<ExportFuncDecl>(D)) {
+          return F->getFuncIndex() == Index;
+        }
+        return false;
       }
     );
 

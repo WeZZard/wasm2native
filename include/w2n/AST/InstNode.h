@@ -21,6 +21,7 @@
 
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/PointerUnion.h>
+#include <w2n/AST/ASTWalker.h>
 #include <w2n/AST/PointerLikeTraits.h>
 #include <w2n/Basic/Debug.h>
 #include <w2n/Basic/Unimplemented.h>
@@ -51,9 +52,11 @@ struct InstNode : public llvm::PointerUnion<Expr *, Stmt *> {
   /// Return the location of the end of the statement.
   SourceLoc getEndLoc() const;
 
-  // FIXME: void walk(ASTWalker& Walker);
+  InstNode walk(ASTWalker& Walker);
 
-  // FIXME: void walk(ASTWalker&& Walker);
+  InstNode walk(ASTWalker&& Walker) {
+    return walk(Walker);
+  }
 
   /// Provides some utilities to decide detailed node kind.
 #define W2N_IS_NODE(T) bool is##T(T##Kind Kind) const;

@@ -42,6 +42,8 @@ public:
     return Kind;
   }
 
+  StringRef getKindDescription() const;
+
   static Type *
   getBuiltinIntegerType(unsigned BitWidth, const ASTContext& C);
 

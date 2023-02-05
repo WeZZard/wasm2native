@@ -42,6 +42,18 @@ SourceLoc InstNode::getEndLoc() const {
   return getSourceRange().End;
 }
 
+InstNode InstNode::walk(ASTWalker& Walker) {
+  if (isNull()) {
+    return *this;
+  } else if (auto S = dyn_cast<Stmt *>()) {
+    return InstNode(S->walk(Walker));
+  } else if (auto E = dyn_cast<Expr *>()) {
+    return InstNode(E->walk(Walker));
+  } else {
+    llvm_unreachable("unsupported instruction node");
+  }
+}
+
 void InstNode::dump(raw_ostream& OS, unsigned Indent) const {
   if (isNull()) {
     OS << "(null)";
@@ -50,7 +62,7 @@ void InstNode::dump(raw_ostream& OS, unsigned Indent) const {
   } else if (auto E = dyn_cast<Expr *>()) {
     E->dump(OS, Indent);
   } else {
-    llvm_unreachable("unsupported AST node");
+    llvm_unreachable("unsupported instruction node");
   }
 }
 

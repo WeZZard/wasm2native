@@ -24,9 +24,9 @@
 namespace w2n {
 
 enum class BuiltinTypeKind : std::underlying_type<TypeKind>::type {
-#define TYPE(id, parent)
-#define BUILTIN_TYPE(id, parent)                                         \
-  id = std::underlying_type<TypeKind>::type(TypeKind::id),
+#define TYPE(Id, parent)
+#define BUILTIN_TYPE(Id, parent)                                         \
+  Id = std::underlying_type<TypeKind>::type(TypeKind::Id),
 #include <w2n/AST/TypeNodes.def>
 };
 

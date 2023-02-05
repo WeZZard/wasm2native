@@ -72,4 +72,4 @@ public:
 
 } // namespace w2n
 
-#endif
+#endif // W2N_AST_ASTALLOCATED_H

@@ -57,7 +57,9 @@
 #include <w2n/AST/ASTVisitor.h>
 #include <w2n/AST/ASTWalker.h>
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/Expr.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/Stmt.h>
 #include <w2n/Basic/Defer.h>
 #include <w2n/Basic/Unimplemented.h>
 
@@ -410,13 +412,119 @@ bool Traversal::visitExpressionDecl(ExpressionDecl * D) {
   return false;
 }
 
+bool Traversal::visitExportFuncDecl(ExportFuncDecl * D) {
+  return false;
+}
+
+bool Traversal::visitFuncNameSubsectionDecl(FuncNameSubsectionDecl * D) {
+  return false;
+}
+
+bool Traversal::visitLocalNameSubsectionDecl(LocalNameSubsectionDecl * D
+) {
+  return false;
+}
+
+bool Traversal::visitModuleNameSubsectionDecl(ModuleNameSubsectionDecl * D
+) {
+  return false;
+}
+
 //===----------------------------------------------------------------===//
 //                               Exprs
 //===----------------------------------------------------------------===//
 
+Expr * Traversal::visitCallExpr(CallExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitDropExpr(DropExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitLoadExpr(LoadExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitStoreExpr(StoreExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitLocalGetExpr(LocalGetExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitLocalSetExpr(LocalSetExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitGlobalGetExpr(GlobalGetExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitGlobalSetExpr(GlobalSetExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitFloatConstExpr(FloatConstExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitCallBuiltinExpr(CallBuiltinExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitCallIndirectExpr(CallIndirectExpr * E) {
+  return E;
+}
+
+Expr * Traversal::visitIntegerConstExpr(IntegerConstExpr * E) {
+  return E;
+}
+
 //===----------------------------------------------------------------===//
 //                               Stmts
 //===----------------------------------------------------------------===//
+
+Stmt * Traversal::visitBrStmt(BrStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitIfStmt(IfStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitEndStmt(EndStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitBrIfStmt(BrIfStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitElseStmt(ElseStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitLoopStmt(LoopStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitBlockStmt(BlockStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitReturnStmt(ReturnStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitBrTableStmt(BrTableStmt * S) {
+  return S;
+}
+
+Stmt * Traversal::visitUnreachableStmt(UnreachableStmt * S) {
+  return S;
+}
 
 } // end anonymous namespace
 

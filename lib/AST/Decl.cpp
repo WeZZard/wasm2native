@@ -3,6 +3,7 @@
 #include <w2n/AST/FileUnit.h>
 #include <w2n/AST/Module.h>
 #include <w2n/Basic/SourceLoc.h>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 
@@ -124,13 +125,23 @@ SourceLoc Decl::getLocFromSource() const {
   llvm_unreachable("Unknown decl kind");
 }
 
+void Decl::dump(raw_ostream& OS, unsigned Indent) const {
+  w2n_proto_implemented([&] {
+    simple_display(OS, this);
+    OS << "\n";
+  });
+}
+
 void w2n::simple_display(llvm::raw_ostream& Out, const Decl * Decl) {
   if (Decl == nullptr) {
     Out << "(null)";
     return;
   }
-
-  Out << "(unknown decl)";
+  if (auto ValueD = dyn_cast<ValueDecl>(Decl)) {
+    simple_display(Out, ValueD);
+  } else {
+    Out << "(unknown decl)";
+  }
 }
 
 SourceLoc w2n::extractNearestSourceLoc(const Decl * D) {
@@ -140,6 +151,28 @@ SourceLoc w2n::extractNearestSourceLoc(const Decl * D) {
   }
 
   return extractNearestSourceLoc(D->getDeclContext());
+}
+
+#pragma mark - ValueDecl
+
+void ValueDecl::dumpRef(raw_ostream& os) const {
+  if (!isa<ModuleDecl>(this)) {
+    // TODO: Print the context.
+    // TODO: Print name.
+  } else {
+    auto ModuleName = cast<ModuleDecl>(this)->getName();
+    os << ModuleName;
+  }
+
+  // TODO: Print location.
+}
+
+void w2n::simple_display(llvm::raw_ostream& Out, const ValueDecl * Decl) {
+  if (Decl) {
+    Decl->dumpRef(Out);
+  } else {
+    Out << "(null)";
+  }
 }
 
 #pragma mark - SectionDecl

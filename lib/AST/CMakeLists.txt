@@ -8,6 +8,7 @@ add_w2n_host_library(w2nAST STATIC
   DiagnosticEngine.cpp
   DiagnosticList.cpp
   Evaluator.cpp
+  Function.cpp
   GlobalVariable.cpp
   Identifier.cpp
   InstNode.cpp

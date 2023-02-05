@@ -142,6 +142,10 @@ public:
   bool walk(ASTWalker&& Walker) {
     return walk(Walker);
   }
+
+  W2N_DEBUG_DUMP;
+
+  void dump(raw_ostream& OS, unsigned Indent = 0) const;
 };
 
 SourceLoc extractNearestSourceLoc(const Decl * Decl);
@@ -155,6 +159,12 @@ protected:
   }
 
 public:
+
+  /// Dump a reference to the given declaration.
+  void dumpRef(raw_ostream& os) const;
+
+  /// Dump a reference to the given declaration.
+  W2N_DEBUG_DUMPER(dumpRef());
 
   SourceLoc getLocFromSource() const {
     return w2n_proto_implemented([] { return SourceLoc(); });
@@ -173,6 +183,8 @@ public:
 
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, TypeDecl);
 };
+
+void simple_display(llvm::raw_ostream& Out, const ValueDecl * Decl);
 
 enum class SectionKind : uint8_t {
 #define DECL(Id, Parent)

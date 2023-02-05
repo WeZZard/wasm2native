@@ -58,6 +58,8 @@ private:
     ExpressionDecl * Expression,
     bool IsExported
   ) :
+    Kind(Kind),
+    Index(Index),
     Name(Name),
     Type(Type),
     Locals(Locals),
@@ -177,20 +179,24 @@ public:
     }
   }
 
-  StringRef getUniqueName() const {
+  std::string getUniqueName() const {
     return (llvm::Twine(getDescriptiveKindName()) + llvm::Twine("$")
             + llvm::Twine(Index))
-      .getSingleStringRef();
+      .str();
   }
 
-  StringRef getUnmangledName() const {
+  std::string getUnmangledName() const {
     if (hasName()) {
       return (llvm::Twine(getUniqueName()) + llvm::Twine(" : ")
               + llvm::Twine(getName().value().get()))
-        .getSingleStringRef();
+        .str();
     }
     return getUniqueName();
   }
+
+  W2N_DEBUG_DUMP;
+
+  void dump(raw_ostream& OS, unsigned Indent = 0) const;
 };
 
 } // namespace w2n

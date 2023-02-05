@@ -351,4 +351,4 @@ struct DenseMapInfo<w2n::irgen::LinkEntity> {
 };
 } // namespace llvm
 
-#endif
+#endif // W2N_IRGEN_LINKING_H

@@ -58,6 +58,7 @@
 #include <w2n/AST/ASTWalker.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/Expr.h>
+#include <w2n/AST/InstNode.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/Stmt.h>
 #include <w2n/Basic/Defer.h>
@@ -409,7 +410,16 @@ bool Traversal::visitDataSegmentPassiveDecl(DataSegmentPassiveDecl * D) {
 }
 
 bool Traversal::visitExpressionDecl(ExpressionDecl * D) {
-  return false;
+  bool Result = false;
+  llvm::any_of(D->getInstructions(), [&](InstNode Inst) {
+    if (Expr * E = Inst.dyn_cast<Expr *>()) {
+      Result = Result || doIt(E) == nullptr;
+    } else if (Stmt * S = Inst.dyn_cast<Stmt *>()) {
+      Result = Result || doIt(S) == nullptr;
+    }
+    return Result;
+  });
+  return Result;
 }
 
 bool Traversal::visitExportFuncDecl(ExportFuncDecl * D) {

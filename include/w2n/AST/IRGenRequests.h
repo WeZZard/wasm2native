@@ -163,7 +163,7 @@ struct IRGenDescriptor {
   const IRGenOptions& Opts;
   const TBDGenOptions& TBDOpts;
 
-  ModuleDecl * Mod;
+  ModuleDecl& Mod;
 
   StringRef ModuleName;
   const PrimarySpecificPaths& PSPs;
@@ -188,47 +188,47 @@ struct IRGenDescriptor {
 public:
 
   static IRGenDescriptor forFile(
-    FileUnit * file,
+    FileUnit * File,
     const IRGenOptions& Opts,
     const TBDGenOptions& TBDOpts,
-    ModuleDecl * Mod,
+    ModuleDecl& Mod,
     StringRef ModuleName,
     const PrimarySpecificPaths& PSPs,
-    SymsToEmit symsToEmit = None,
-    llvm::GlobalVariable ** outModuleHash = nullptr
+    SymsToEmit SymbolsToEmit = None,
+    llvm::GlobalVariable ** OutModuleHash = nullptr
   ) {
     return IRGenDescriptor{
-      file,
-      symsToEmit,
+      File,
+      SymbolsToEmit,
       Opts,
       TBDOpts,
       Mod,
       ModuleName,
       PSPs,
       {},
-      outModuleHash};
+      OutModuleHash};
   }
 
   static IRGenDescriptor forWholeModule(
-    ModuleDecl * M,
+    ModuleDecl& WholeModule,
     const IRGenOptions& Opts,
     const TBDGenOptions& TBDOpts,
     StringRef ModuleName,
     const PrimarySpecificPaths& PSPs,
-    SymsToEmit symsToEmit = None,
-    ArrayRef<std::string> parallelOutputFilenames = {},
-    llvm::GlobalVariable ** outModuleHash = nullptr
+    SymsToEmit SymbolsToEmit = None,
+    ArrayRef<std::string> ParallelOutputFilenames = {},
+    llvm::GlobalVariable ** OutModuleHash = nullptr
   ) {
     return IRGenDescriptor{
-      M,
-      symsToEmit,
+      &WholeModule,
+      SymbolsToEmit,
       Opts,
       TBDOpts,
-      M, // FIXME: verify this usage
+      WholeModule, // FIXME: verify this usage
       ModuleName,
       PSPs,
-      parallelOutputFilenames,
-      outModuleHash};
+      ParallelOutputFilenames,
+      OutModuleHash};
   }
 
   /// Retrieves the files to perform IR generation for. If the descriptor
@@ -269,8 +269,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  GeneratedModule
-  evaluate(Evaluator& evaluator, IRGenDescriptor desc) const;
+  GeneratedModule evaluate(Evaluator& Eval, IRGenDescriptor Desc) const;
 
 public:
 

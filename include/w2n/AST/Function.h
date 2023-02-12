@@ -6,12 +6,14 @@
 #include "llvm/ADT/Twine.h"
 #include <llvm/ADT/ilist.h>
 #include <w2n/AST/ASTAllocated.h>
+#include <w2n/AST/ASTWalker.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/DeclContext.h>
 #include <w2n/AST/Linkage.h>
 #include <w2n/AST/Type.h>
 
 namespace w2n {
+class ASTContext;
 
 /**
  * @brief Represents a function or the init procedure of a global in
@@ -34,6 +36,8 @@ public:
 
 private:
 
+  ModuleDecl * Module;
+
   FunctionKind Kind;
 
   uint32_t Index;
@@ -50,6 +54,7 @@ private:
   bool Exported;
 
   Function(
+    ModuleDecl * Module,
     FunctionKind Kind,
     uint32_t Index,
     llvm::Optional<Identifier> Name,
@@ -58,6 +63,7 @@ private:
     ExpressionDecl * Expression,
     bool IsExported
   ) :
+    Module(Module),
     Kind(Kind),
     Index(Index),
     Name(Name),
@@ -73,6 +79,7 @@ public:
   }
 
   static Function * createFunction(
+    ModuleDecl * Module,
     uint32_t Index,
     llvm::Optional<Identifier> Name,
     FuncTypeDecl * Type,
@@ -81,6 +88,7 @@ public:
     bool IsExported
   ) {
     return new (Expression->getASTContext()) Function(
+      Module,
       FunctionKind::Function,
       Index,
       Name,
@@ -92,13 +100,21 @@ public:
   }
 
   static Function * createInit(
+    ModuleDecl * Module,
     uint32_t Index,
     FuncTypeDecl * Type,
     ExpressionDecl * Expression,
     llvm::Optional<Identifier> Name
   ) {
     return new (Expression->getASTContext()) Function(
-      FunctionKind::GlobalInit, Index, Name, Type, {}, Expression, false
+      Module,
+      FunctionKind::GlobalInit,
+      Index,
+      Name,
+      Type,
+      {},
+      Expression,
+      false
     );
   }
 
@@ -170,6 +186,18 @@ public:
 
   DeclContext * getDeclContext() const {
     return getExpression()->getDeclContext();
+  }
+
+  ASTContext& getASTContext() const {
+    return getExpression()->getASTContext();
+  }
+
+  ModuleDecl * getModule() {
+    return Module;
+  }
+
+  const ModuleDecl * getModule() const {
+    return Module;
   }
 
   StringRef getDescriptiveKindName() const {

@@ -440,6 +440,11 @@ bool Traversal::visitModuleNameSubsectionDecl(ModuleNameSubsectionDecl * D
   return false;
 }
 
+bool Traversal::visitGlobalNameSubsectionDecl(GlobalNameSubsectionDecl * D
+) {
+  return false;
+}
+
 //===----------------------------------------------------------------===//
 //                               Exprs
 //===----------------------------------------------------------------===//

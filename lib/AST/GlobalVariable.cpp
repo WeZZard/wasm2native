@@ -1,3 +1,4 @@
+#include <llvm/ADT/Twine.h>
 #include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/Module.h>
 #include <w2n/AST/Type.h>
@@ -35,4 +36,14 @@ GlobalVariable * GlobalVariable::create(
 ) {
   return new (Module.getASTContext())
     GlobalVariable(Module, Linkage, Index, Name, Ty, IsMutable, Decl);
+}
+
+std::string GlobalVariable::getDescriptiveName() const {
+  return (llvm::Twine("global$") + llvm::Twine(getIndex())).str();
+}
+
+std::string GlobalVariable::getFullQualifiedDescriptiveName() const {
+  return (llvm::Twine(Module.getName().str()) + llvm::Twine(".")
+          + llvm::Twine(getDescriptiveName()))
+    .str();
 }

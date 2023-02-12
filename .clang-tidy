@@ -155,6 +155,8 @@ proto_implemented\
   # defined public/private method's case separately
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
+  - key: readability-identifier-naming.NamespaceIgnoredRegexp
+    value: 'Lowering'
   - key: readability-identifier-naming.ParameterCase
     value: CamelCase
   - key: readability-identifier-naming.ParameterPackCase

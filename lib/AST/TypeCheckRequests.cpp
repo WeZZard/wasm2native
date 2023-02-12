@@ -1,5 +1,6 @@
 #include <_types/_uint32_t.h>
 #include <cassert>
+#include <cstdio>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/FileUnit.h>
@@ -27,6 +28,8 @@ GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
     return ASTLinkage::Internal;
   };
 
+  uint32_t GlobalCount = 0;
+
   for (GlobalDecl * D : G->getGlobals()) {
     GlobalVariable * V = GlobalVariable::create(
       *Mod,
@@ -38,7 +41,11 @@ GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
       D
     );
     Globals->push_back(V);
+    GlobalCount += 1;
   }
+
+  llvm::outs() << "[GlobalVariableRequest] [evaluate] global count = "
+               << GlobalCount << "\n";
 
   return Globals;
 }
@@ -171,6 +178,7 @@ FunctionRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
 
   for (const auto& WorkItem : WorkItems) {
     Function * F = Function::createFunction(
+      Mod,
       WorkItem.Index,
       WorkItem.Name,
       WorkItem.Type,

@@ -99,6 +99,13 @@ public:
   const GlobalDecl * getDecl() const {
     return Decl;
   }
+
+  /// A name used for debugging the compiler like: global$0, global$1 ...
+  std::string getDescriptiveName() const;
+
+  /// A full qualified name used for debugging the compiler like:
+  /// module.global$0, module.global$1 ...
+  std::string getFullQualifiedDescriptiveName() const;
 };
 
 } // namespace w2n

@@ -74,6 +74,10 @@ public:
     return &IRGen.Module;
   }
 
+  SourceFile * getSourceFile() const {
+    return IRGen.getSourceFile(this);
+  }
+
   const IRGenOptions& getOptions() const {
     return IRGen.Opts;
   }
@@ -136,7 +140,7 @@ public:
 
   W2N_NO_RETURN void fatal_unimplemented(SourceLoc, StringRef Message);
 
-  void error(SourceLoc loc, const Twine& message);
+  void error(SourceLoc Loc, const Twine& Message);
 
 #pragma mark Accessing Module Contents
 
@@ -151,9 +155,8 @@ public:
 
 #pragma mark Types
 
-private:
-
   llvm::Type * VoidTy;
+  llvm::IntegerType * I1Ty;  /// i1, ported from Swift
   llvm::IntegerType * I8Ty;  /// i8
   llvm::IntegerType * I16Ty; /// i16
   llvm::IntegerType * I32Ty; /// i32
@@ -164,6 +167,8 @@ private:
   llvm::IntegerType * U64Ty; /// u64
   llvm::Type * F32Ty;        /// f32, float
   llvm::Type * F64Ty;        /// f64, double
+
+private:
 
   mutable llvm::DenseMap<VectorTyKey, llvm::ArrayType *> VectorTys;
 
@@ -234,9 +239,9 @@ public:
       return Iter->second;
     }
 
-    auto ResultTy = getResultType(Ty->getReturns());
+    auto * ResultTy = getResultType(Ty->getReturns());
 
-    auto FuncTy = llvm::FunctionType::get(
+    auto * FuncTy = llvm::FunctionType::get(
       ResultTy, LoweredParamTypes, /*variadic*/ false
     );
 
@@ -264,7 +269,7 @@ public:
       return Iter->second;
     }
 
-    auto StructTy = llvm::StructType::create(*LLVMContext, Subtypes);
+    auto * StructTy = llvm::StructType::create(*LLVMContext, Subtypes);
 
     StructTys.insert({Key, StructTy});
 

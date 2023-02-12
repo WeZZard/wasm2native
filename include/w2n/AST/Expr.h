@@ -422,6 +422,14 @@ public:
     return new (Ctx) IntegerConstExpr(Value, Ty);
   }
 
+  llvm::APInt& getValue() {
+    return Value;
+  }
+
+  const llvm::APInt& getValue() const {
+    return Value;
+  }
+
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, IntegerConst);
 };
 

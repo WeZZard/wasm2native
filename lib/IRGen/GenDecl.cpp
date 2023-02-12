@@ -34,6 +34,7 @@
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/Module.h>
+#include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
 
 #include "GenDecl.h"
@@ -138,6 +139,7 @@ llvm::Function * irgen::createFunction(
   OptimizationMode FuncOptMode,
   StackProtectorMode StackProtect
 ) {
+  w2n_unimplemented();
 }
 
 static void markGlobalAsUsedBasedOnLinkage(

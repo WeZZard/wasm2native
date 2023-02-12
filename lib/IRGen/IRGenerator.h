@@ -1,5 +1,5 @@
-#ifndef W2N_IRGEN_IRGENERATOR_H
-#define W2N_IRGEN_IRGENERATOR_H
+#ifndef IRGEN_IRGENERATOR_H
+#define IRGEN_IRGENERATOR_H
 
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/Target/TargetMachine.h>
@@ -83,6 +83,14 @@ public:
     return Opts;
   }
 
+  ModuleDecl& getModuleDecl() {
+    return Module;
+  }
+
+  const ModuleDecl& getModuleDecl() const {
+    return Module;
+  }
+
   /// Add an IRGenModule for a source file.
   /// Should only be called from IRGenModule's constructor.
   void addGenModule(SourceFile * SF, IRGenModule * IGM);
@@ -94,7 +102,7 @@ public:
     return IGM;
   }
 
-  SourceFile * getSourceFile(IRGenModule * Module) {
+  SourceFile * getSourceFile(const IRGenModule * Module) {
     for (auto Pair : GenModules) {
       if (Pair.second == Module) {
         return Pair.first;
@@ -178,4 +186,4 @@ public:
 
 } // namespace w2n
 
-#endif // W2N_IRGEN_IRGENERATOR_H
+#endif // IRGEN_IRGENERATOR_H

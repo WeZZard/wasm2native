@@ -28,6 +28,8 @@ class SourceFile;
 class ASTContext;
 class GlobalVariable;
 
+/// A \c ModuleDecl may be a main module that the being compiled by the
+/// \c CompilerInstance or a module represents a source file.
 class ModuleDecl :
   public DeclContext,
   public TypeDecl,
@@ -197,10 +199,7 @@ public:
 
   template <typename Ty>
   const Ty * getSection() const {
-    for (auto * Sect : SectionDecls) {
-      if (Sect->getSectionKind() == SectionKind::GlobalSection) {
-        printf("");
-      }
+    for (auto * Sect : getSectionDecls()) {
       if (Ty * TySect = dyn_cast<Ty>(Sect)) {
         return TySect;
       }

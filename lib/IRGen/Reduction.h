@@ -17,10 +17,10 @@
 //
 //===----------------------------------------------------------------===//
 
-#ifndef W2N_AST_REDUCTION_H
-#define W2N_AST_REDUCTION_H
+#ifndef IRGEN_REDUCTION_H
+#define IRGEN_REDUCTION_H
 
-#include <_types/_uint32_t.h>
+#include "Address.h"
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/ErrorHandling.h>
@@ -35,11 +35,11 @@
 
 namespace w2n {
 
-namespace Lowering {
+namespace irgen {
 
 enum class StackContentKind {
   Unspecified,
-  Value,
+  Operand,
   Frame,
   Label,
 };
@@ -104,26 +104,26 @@ public:
   }
 };
 
-/// Represents an instruction operands.
-class Value {
+/// Represents an instruction operands aka r-value.
+class Operand {
 private:
 
   llvm::Value * Val;
 
 public:
 
-  explicit Value(llvm::Value * Val) : Val(Val) {
+  explicit Operand(llvm::Value * Val) : Val(Val) {
   }
 
   // cannot copy, only can move.
-  Value(const Value&) = delete;
-  Value& operator=(const Value&) = delete;
+  Operand(const Operand&) = delete;
+  Operand& operator=(const Operand&) = delete;
 
-  Value(Value&& X) {
+  Operand(Operand&& X) {
     *this = std::move(X);
   }
 
-  Value& operator=(Value&& X) {
+  Operand& operator=(Operand&& X) {
     this->Val = X.Val;
     X.Val = nullptr;
     return *this;
@@ -142,7 +142,7 @@ public:
   }
 
   static StackContentKind kindof() {
-    return StackContentKind::Value;
+    return StackContentKind::Operand;
   }
 };
 
@@ -153,28 +153,61 @@ private:
 
   w2n::Function * Func;
 
-  std::vector<Value> Locals;
+  std::vector<Address> Locals;
+
+  Address Return;
 
 public:
 
-  explicit Frame(w2n::Function * Func, std::vector<Value> Locals) :
+  explicit Frame(
+    w2n::Function * Func, std::vector<Address>&& Locals, Address&& Returns
+  ) :
     Func(Func),
-    Locals(std::move(Locals)) {
+    Locals(std::move(Locals)),
+    Return(std::move(Returns)) {
   }
 
   // cannot copy, only can move.
   Frame(const Frame&) = delete;
   Frame& operator=(const Frame&) = delete;
 
-  Frame(Frame&& X) {
-    *this = std::move(X);
+  Frame(Frame&& X) :
+    Func(std::move(X.Func)),
+    Locals(std::move(X.Locals)),
+    Return(std::move(X.Return)) {
+    X.Func = nullptr;
   }
 
   Frame& operator=(Frame&& X) {
     this->Func = X.Func;
-    this->Locals = std::move(X.Locals);
     X.Func = nullptr;
+    this->Locals = std::move(X.Locals);
+    this->Return = std::move(X.Return);
     return *this;
+  }
+
+  w2n::Function * getFunc() {
+    return Func;
+  }
+
+  const w2n::Function * getFunc() const {
+    return Func;
+  }
+
+  std::vector<Address>& getLocals() {
+    return Locals;
+  }
+
+  const std::vector<Address>& getLocals() const {
+    return Locals;
+  }
+
+  Address& getReturn() {
+    return Return;
+  }
+
+  const Address& getReturn() const {
+    return Return;
   }
 
   static StackContentKind kindof() {
@@ -202,16 +235,16 @@ private:
 
     union {
       Frame F;
-      Value V;
+      Operand V;
       Label L;
     };
 
     StackContentKind Kind;
 
-    Node(Value&& V, Node * Prev) :
+    Node(Operand&& V, Node * Prev) :
       Prev(Prev),
       V(std::move(V)),
-      Kind(Value::kindof()) {
+      Kind(Operand::kindof()) {
     }
 
     Node(Frame&& F, Node * Prev) :
@@ -229,7 +262,7 @@ private:
   public:
 
     static Node *
-    create(ASTContext& Ctx, Value&& V, Node * Prev = nullptr) {
+    create(ASTContext& Ctx, Operand&& V, Node * Prev = nullptr) {
       return new (Ctx) Node(std::move(V), Prev);
     }
 
@@ -252,7 +285,7 @@ private:
 
     ~Node() {
       switch (Kind) {
-      case StackContentKind::Value: V.~Value(); break;
+      case StackContentKind::Operand: V.~Operand(); break;
       case StackContentKind::Frame: F.~Frame(); break;
       case StackContentKind::Label: L.~Label(); break;
       case StackContentKind::Unspecified:
@@ -287,7 +320,7 @@ private:
     }
 
     template <>
-    Value& get<Value>() {
+    Operand& get<Operand>() {
       return V;
     }
 
@@ -330,6 +363,17 @@ public:
     Top(Node::create(*Context, std::move(F))) {
   }
 
+  Configuration(
+    ASTContext * Context,
+    w2n::Function * Func,
+    std::vector<Address>&& Locals,
+    Address&& Return
+  ) :
+    Configuration(
+      Context, Frame(Func, std::move(Locals), std::move(Return))
+    ) {
+  }
+
   ~Configuration() {
     if (CleanUp) {
       (*CleanUp)();
@@ -361,9 +405,9 @@ public:
   }
 
   template <typename ContentTy, typename... Args>
-  void push(Args&&... args) {
+  void push(Args&&... AA) {
     Top = Node::create(
-      *Context, std::move(ContentTy(std::forward<Args>(args)...)), Top
+      *Context, std::move(ContentTy(std::forward<Args>(AA)...)), Top
     );
   }
 
@@ -372,6 +416,12 @@ public:
     Node * Popped = Top;
     Top = Top->getPrevious();
     return &Popped->assertingGet<ContentTy>();
+  }
+
+  StackContentKind pop() {
+    Node * Popped = Top;
+    Top = Top->getPrevious();
+    return Popped->getKind();
   }
 
   /// Returns the top content's as \c ContentTy .
@@ -390,6 +440,10 @@ public:
   template <typename ContentTy>
   const ContentTy& top() const {
     return Top->assertingGet<ContentTy>();
+  }
+
+  StackContentKind topKind() const {
+    return Top->getKind();
   }
 
   template <typename ContentTy>
@@ -419,15 +473,15 @@ public:
   ContentTy * findTopmostNth(uint32_t N) const {
     assert(N >= 1);
     bool ShouldStop = false;
-    Node * CurrentNode = Top;
-    while (ShouldStop) {
-      Node * PreviousNode = CurrentNode;
-      CurrentNode = CurrentNode->getPrevious();
+    Node * ExaminedNode = Top;
+    while (!ShouldStop) {
+      Node * PreviousNode = ExaminedNode;
+      ExaminedNode = ExaminedNode->getPrevious();
       if (PreviousNode->getKind() == ContentTy::kindof()) {
         N -= 1;
         if (N == 0) {
           ShouldStop = true;
-          return PreviousNode->get<ContentTy>();
+          return &PreviousNode->get<ContentTy>();
         }
       }
     };
@@ -461,8 +515,8 @@ public:
   }
 };
 
-} // namespace Lowering
+} // namespace irgen
 
 } // namespace w2n
 
-#endif // W2N_AST_REDUCTION_H
+#endif // IRGEN_REDUCTION_H

@@ -2,20 +2,33 @@
 #define IRGEN_IRGENFUNCTION_H
 
 #include "IRBuilder.h"
+#include "Reduction.h"
 #include <llvm/IR/Function.h>
+#include <memory>
 #include <w2n/AST/ASTContext.h>
 #include <w2n/AST/ASTVisitor.h>
 #include <w2n/AST/Decl.h>
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/AST/InstNode.h>
 #include <w2n/AST/Module.h>
-#include <w2n/AST/Reduction.h>
 #include <w2n/AST/Type.h>
 #include <w2n/Basic/OptimizationMode.h>
 #include <w2n/Basic/Unimplemented.h>
 
 namespace w2n {
 namespace irgen {
+
+class RValue {
+public:
+
+  Operand * LoweredValue;
+
+  explicit RValue(Operand& LoweredValue) : LoweredValue(&LoweredValue) {
+  }
+
+  explicit RValue() : LoweredValue(nullptr) {
+  }
+};
 
 class IRGenModule;
 
@@ -35,9 +48,11 @@ public:
 
   Function * Fn;
 
-  std::vector<Lowering::Value> FuncLocals;
+  /// The root config for WebAssembly VM stack reduction.
+  std::unique_ptr<Configuration> RootConfig;
 
-  Optional<Lowering::Value> FuncReturn;
+  /// Current top config for WebAssembly VM stack reduction.
+  Configuration * TopConfig;
 
   ModuleDecl * getWasmModule() const;
   const IRGenOptions& getOptions() const;
@@ -52,7 +67,7 @@ public:
   ~IRGenFunction();
 
   ASTContext& getASTContext() const {
-    return Fn->getDeclContext()->getASTContext();
+    return Fn->getASTContext();
   }
 
   void emitFunction();
@@ -63,7 +78,8 @@ public:
 
   /// Generates prolog code to allocate and clean up mutable storage for
   /// local arguments.
-  void emitProlog(
+  /// Prepares the root config for wasm VM stack reduction.
+  std::vector<Address> emitProlog(
     DeclContext * DC,
     const std::vector<LocalDecl *>& Locals,
     ResultType * ParamsTy,
@@ -73,7 +89,7 @@ public:
   /// Create (but do not emit) the epilog branch, and save the
   /// current cleanups depth as the destination for return statement
   /// branches.
-  void prepareEpilog(ResultType * ResultTy);
+  Address prepareEpilog(ResultType * ResultTy);
 
   /// Emit code to increment a counter for profiling.
   void emitProfilerIncrement(ExpressionDecl * Expr) {
@@ -86,18 +102,13 @@ public:
 
   void mergeCleanupBlocks();
 
-#pragma mark Local Emission
-
-  // FIXME: Do we need an explicit l-value emission infrastructure?
-  Lowering::Value emitLocal(LocalDecl * Local);
-
 #pragma mark Expression Emission
 
   using ASTVisitorType::visit;
 
   void visit(ExpressionDecl * E) = delete;
 
-  void emitExpression(ExpressionDecl * Expr);
+  void emitExpression(ExpressionDecl * D);
 
   void visit(Stmt * S) = delete;
 
@@ -105,8 +116,48 @@ public:
 
   void visit(Expr * E) = delete;
 
-  // FIXME: Do we need an R-value class to express explosion?
-  Lowering::Value emitLoweredValue(Expr * E);
+  // R-values are values put on WebAssembly evaluation stack at runtime.
+  //
+  RValue emitRValue(Expr * E);
+
+#pragma mark Control Flow
+
+  llvm::BasicBlock * createBasicBlock(const llvm::Twine& Name) const;
+
+#pragma mark Helper Methods
+
+  Address createAlloca(
+    llvm::Type * Ty, Alignment Alignment, const llvm::Twine& Name = ""
+  );
+
+  Address createAlloca(
+    llvm::Type * Ty,
+    llvm::Value * ArraySize,
+    Alignment Align,
+    const llvm::Twine& Name = ""
+  );
+
+private:
+
+  llvm::Instruction * AllocaIP;
+  // TODO: const SILDebugScope * DbgScope;
+  /// The insertion point where we should but instructions we would
+  /// normally put at the beginning of the function. LLVM's coroutine
+  /// lowering really does not like it if we put instructions with
+  /// side-effectrs before the coro.begin.
+  llvm::Instruction * EarliestIP;
+
+public:
+
+  void setEarliestInsertionPoint(llvm::Instruction * Inst) {
+    EarliestIP = Inst;
+  }
+
+  /// Returns the first insertion point before which we should insert
+  /// instructions which have side-effects.
+  llvm::Instruction * getEarliestInsertionPoint() const {
+    return EarliestIP;
+  }
 };
 
 } // namespace irgen

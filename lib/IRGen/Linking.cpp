@@ -298,6 +298,7 @@ LinkInfo LinkInfo::get(
   ASTLinkage linkage,
   ForDefinition_t isDefinition
 ) {
+  w2n_unimplemented();
 }
 
 bool LinkInfo::isUsed(IRLinkage IRL) {

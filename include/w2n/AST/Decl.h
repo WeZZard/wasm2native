@@ -86,7 +86,8 @@ protected:
     Context(Context) {
   }
 
-  DeclContext * getDeclContextForModule() const;
+  /// In Swift, this method named \c getDeclContextForModule
+  DeclContext * getDeclContextAsIfModule() const;
 
 public:
 
@@ -104,7 +105,7 @@ public:
       return DC;
     }
 
-    return getDeclContextForModule();
+    return getDeclContextAsIfModule();
   }
 
   void setDeclContext(DeclContext * DC);
@@ -485,6 +486,7 @@ public:
 class ModuleNameSubsectionDecl;
 class FuncNameSubsectionDecl;
 class LocalNameSubsectionDecl;
+class GlobalNameSubsectionDecl;
 
 class NameSectionDecl final : public CustomSectionDecl {
 private:
@@ -495,16 +497,20 @@ private:
 
   LocalNameSubsectionDecl * LocalNameSubsection;
 
+  GlobalNameSubsectionDecl * GlobalNameSubsection;
+
   NameSectionDecl(
     ASTContext * Context,
     ModuleNameSubsectionDecl * ModuleNameSubsection,
     FuncNameSubsectionDecl * FuncNameSubsection,
-    LocalNameSubsectionDecl * LocalNameSubsection
+    LocalNameSubsectionDecl * LocalNameSubsection,
+    GlobalNameSubsectionDecl * GlobalNameSubsection
   ) :
     CustomSectionDecl(DeclKind::NameSection, Context),
     ModuleNameSubsection(ModuleNameSubsection),
     FuncNameSubsection(FuncNameSubsection),
-    LocalNameSubsection(LocalNameSubsection) {
+    LocalNameSubsection(LocalNameSubsection),
+    GlobalNameSubsection(GlobalNameSubsection) {
   }
 
 public:
@@ -513,13 +519,15 @@ public:
     ASTContext& Context,
     ModuleNameSubsectionDecl * ModuleNameSubsection,
     FuncNameSubsectionDecl * FuncNameSubsection,
-    LocalNameSubsectionDecl * LocalNameSubsection
+    LocalNameSubsectionDecl * LocalNameSubsection,
+    GlobalNameSubsectionDecl * GlobalNameSubsection
   ) {
     return new (Context) NameSectionDecl(
       &Context,
       ModuleNameSubsection,
       FuncNameSubsection,
-      LocalNameSubsection
+      LocalNameSubsection,
+      GlobalNameSubsection
     );
   }
 
@@ -545,6 +553,14 @@ public:
 
   const LocalNameSubsectionDecl * getLocalNameSubsection() const {
     return LocalNameSubsection;
+  }
+
+  GlobalNameSubsectionDecl * getGlobalNameSubsection() {
+    return GlobalNameSubsection;
+  }
+
+  const GlobalNameSubsectionDecl * getGlobalNameSubsection() const {
+    return GlobalNameSubsection;
   }
 
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
@@ -671,7 +687,7 @@ private:
   FuncNameSubsectionDecl(
     ASTContext * Context, std::vector<NameAssociation> NameMap
   ) :
-    NameSubsectionDecl(DeclKind::ModuleNameSubsection, Context),
+    NameSubsectionDecl(DeclKind::FuncNameSubsection, Context),
     NameMap(NameMap) {
   }
 
@@ -702,10 +718,10 @@ private:
 
   LocalNameSubsectionDecl(
     ASTContext * Context,
-    std::vector<IndirectNameAssociation> IndirectNameMaps
+    std::vector<IndirectNameAssociation> IndirectNameMap
   ) :
-    NameSubsectionDecl(DeclKind::ModuleNameSubsection, Context),
-    IndirectNameMap(IndirectNameMaps) {
+    NameSubsectionDecl(DeclKind::LocalNameSubsection, Context),
+    IndirectNameMap(IndirectNameMap) {
   }
 
 public:
@@ -729,6 +745,38 @@ public:
   USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, LocalNameSubsection);
+};
+
+class GlobalNameSubsectionDecl final : public NameSubsectionDecl {
+private:
+
+  std::vector<NameAssociation> NameMap;
+
+  GlobalNameSubsectionDecl(
+    ASTContext * Context, std::vector<NameAssociation> NameMap
+  ) :
+    NameSubsectionDecl(DeclKind::GlobalNameSubsection, Context),
+    NameMap(NameMap) {
+  }
+
+public:
+
+  static GlobalNameSubsectionDecl *
+  create(ASTContext& Context, std::vector<NameAssociation> NameMap) {
+    return new (Context) GlobalNameSubsectionDecl(&Context, NameMap);
+  }
+
+  std::vector<NameAssociation>& getNameMap() {
+    return NameMap;
+  }
+
+  const std::vector<NameAssociation>& getNameMap() const {
+    return NameMap;
+  }
+
+  USE_DEFAULT_DECL_IMPL_FOR_PROTOTYPE;
+
+  LLVM_RTTI_CLASSOF_LEAF_CLASS(Decl, GlobalNameSubsection);
 };
 
 class FuncTypeDecl final : public TypeDecl {

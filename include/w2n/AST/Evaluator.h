@@ -259,14 +259,15 @@ public:
     typename Request,
     typename std::enable_if<Request::isEverCached>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
-  operator()(const Request& request) {
+  operator()(const Request& Req) {
     // The request can be cached, but check a predicate to determine
     // whether this particular instance is cached. This allows more
     // fine-grained control over which instances get cache.
-    if (request.isCached())
-      return getResultCached(request);
+    if (Req.isCached()) {
+      return getResultCached(Req);
+    }
 
-    return getResultUncached(request);
+    return getResultUncached(Req);
   }
 
   /// Retrieve the result produced by evaluating a request that
@@ -353,17 +354,17 @@ private:
   /// Produce the result of the request without caching.
   template <typename Request>
   llvm::Expected<typename Request::OutputType>
-  getResultUncached(const Request& request) {
-    auto activeReq = ActiveRequest(request);
+  getResultUncached(const Request& Req) {
+    auto ActiveReq = ActiveRequest(Req);
 
     // Check for a cycle.
-    if (checkDependency(activeReq)) {
+    if (checkDependency(ActiveReq)) {
       return llvm::Error(
-        std::make_unique<CyclicalRequestError<Request>>(request, *this)
+        std::make_unique<CyclicalRequestError<Request>>(Req, *this)
       );
     }
 
-    PrettyStackTraceRequest<Request> prettyStackTrace(request);
+    PrettyStackTraceRequest<Request> PrettyStackTrace(Req);
 
     // TODO: statistics
     // FrontendStatsTracer statsTracer = make_tracer(stats, request);
@@ -371,19 +372,19 @@ private:
 
     recorder.beginRequest<Request>();
 
-    auto&& result = getRequestFunction<Request>()(request, *this);
+    auto&& Result = getRequestFunction<Request>()(Req, *this);
 
-    recorder.endRequest<Request>(request);
+    recorder.endRequest<Request>(Req);
 
-    handleDependencySourceRequest<Request>(request);
-    handleDependencySinkRequest<Request>(request, result);
+    handleDependencySourceRequest<Request>(Req);
+    handleDependencySinkRequest<Request>(Req, Result);
 
     // Make sure we remove this from the set of active requests once we're
     // done.
-    assert(activeRequests.back() == activeReq);
+    assert(activeRequests.back() == ActiveReq);
     activeRequests.pop_back();
 
-    return std::move(result);
+    return std::move(Result);
   }
 
   /// Get the result of a request, consulting an external cache
@@ -393,25 +394,26 @@ private:
     typename Request,
     typename std::enable_if<Request::hasExternalCache>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
-  getResultCached(const Request& request) {
+  getResultCached(const Request& Req) {
     // If there is a cached result, return it.
-    if (auto cached = request.getCachedResult()) {
-      recorder.replayCachedRequest(request);
-      handleDependencySinkRequest<Request>(request, *cached);
-      return *cached;
+    if (auto Cached = Req.getCachedResult()) {
+      recorder.replayCachedRequest(Req);
+      handleDependencySinkRequest<Request>(Req, *Cached);
+      return *Cached;
     }
 
     // Compute the result.
-    auto result = getResultUncached(request);
+    auto Result = getResultUncached(Req);
 
     // Cache the result if applicable.
-    if (!result)
-      return result;
+    if (!Result) {
+      return Result;
+    }
 
-    request.cacheResult(*result);
+    Req.cacheResult(*Result);
 
     // Return it.
-    return result;
+    return Result;
   }
 
   /// Get the result of a request, consulting the general cache to

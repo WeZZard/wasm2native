@@ -55,7 +55,7 @@ void IRGenerator::emitGlobalTopLevel(
 
   assert(PrimaryIGM);
 
-  for (GlobalVariable& V : PrimaryIGM->getWasmModule()->getGlobals()) {
+  for (GlobalVariable& V : getModuleDecl().getGlobals()) {
     Decl * D = V.getDecl();
     CurrentIGMPtr IGM =
       getGenModule(D != nullptr ? D->getDeclContext() : nullptr);

@@ -27,12 +27,13 @@ ASTContext& DeclContext::getASTContext() const {
 
 ModuleDecl * DeclContext::getParentModule() const {
   const DeclContext * DC = this;
-  while (!DC->isModuleContext())
+  while (!DC->isModuleContext()) {
     DC = DC->getParent();
+  }
   return const_cast<ModuleDecl *>(cast<ModuleDecl>(DC));
 }
 
-DeclContext * Decl::getDeclContextForModule() const {
+DeclContext * Decl::getDeclContextAsIfModule() const {
   if (const auto * module = dyn_cast<ModuleDecl>(this))
     return const_cast<ModuleDecl *>(module);
 

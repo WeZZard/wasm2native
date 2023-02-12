@@ -151,11 +151,11 @@ GeneratedModule generateIR(
   StringRef OutputFilename,
   ModuleOrSourceFile MSF,
   llvm::GlobalVariable *& HashGlobal,
-  ArrayRef<std::string> parallelOutputFilenames
+  ArrayRef<std::string> ParallelOutputFilenames
 ) {
-  if (auto * SF = MSF.dyn_cast<SourceFile *>()) {
+  if (auto * File = MSF.dyn_cast<SourceFile *>()) {
     return performIRGeneration(
-      SF, IRGenOpts, TBDOpts, Mod, OutputFilename, PSPs, &HashGlobal
+      File, IRGenOpts, TBDOpts, Mod, OutputFilename, PSPs, &HashGlobal
     );
   }
 
@@ -166,7 +166,7 @@ GeneratedModule generateIR(
     Mod,
     OutputFilename,
     PSPs,
-    parallelOutputFilenames,
+    ParallelOutputFilenames,
     &HashGlobal
   );
 }
@@ -175,16 +175,16 @@ bool performCompileStepsPostSema(
   CompilerInstance& Instance, int& ReturnValue
 ) {
   const auto& Invocation = Instance.getInvocation();
-  const auto& opts = Invocation.getFrontendOptions();
+  const auto& Opts = Invocation.getFrontendOptions();
   if (!Instance.getPrimarySourceFiles().empty()) {
-    bool result = false;
+    bool Result = false;
     for (auto * PrimaryFile : Instance.getPrimarySourceFiles()) {
       const PrimarySpecificPaths& PSPs =
         Instance.getPrimarySpecificPathsForSourceFile(*PrimaryFile);
       IRGenOptions IRGenOpts = Invocation.getIRGenOptions();
       StringRef OutputFilename = PSPs.OutputFilename;
       std::vector<std::string> ParallelOutputFilenames =
-        opts.InputsAndOutputs.copyOutputFilenames();
+        Opts.InputsAndOutputs.copyOutputFilenames();
       llvm::GlobalVariable * HashGlobal;
       auto * Mod = PrimaryFile->getModule();
       auto IRModule = generateIR(
@@ -197,11 +197,11 @@ bool performCompileStepsPostSema(
         HashGlobal,
         ParallelOutputFilenames
       );
-      result |= generateCode(
+      Result |= generateCode(
         Instance, OutputFilename, IRModule.getModule(), HashGlobal
       );
     }
-    return result;
+    return Result;
   }
 
   return false;

@@ -53,7 +53,7 @@ class NativeConventionSchema;
 enum OnHeap_t : unsigned char;
 class OutliningMetadataCollector;
 class OwnedAddress;
-class RValue;
+class Operand;
 class RValueSchema;
 class TypeLayoutEntry;
 

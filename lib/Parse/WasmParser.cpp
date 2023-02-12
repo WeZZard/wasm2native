@@ -102,6 +102,13 @@ enum class SubSectionKindImmediate : uint8_t {
   ModuleNames = 0,
   FuncNames = 1,
   LocalNames = 2,
+  LabelNames = 3,          //	Assigns names to labels in functions
+  TypeNames = 4,           //	Assigns names to types
+  TableNames = 5,          //	Assigns names to tables
+  MemoryNames = 6,         //	Assigns names to memories
+  GlobalNames = 7,         //	Assigns names to globals
+  ElementSegmentNames = 8, //	Assigns names to element segments
+  DataSegmentNames = 9,    //	Assigns names to data segments
 };
 
 enum class DataKindImmediate : uint32_t {
@@ -525,13 +532,7 @@ public:
 
   template <>
   FuncDecl * parse<FuncDecl *>(ReadContext& Ctx) {
-    uint32_t NumLocalDecls = readVaruint32(Ctx);
-    std::vector<LocalDecl *> Locals;
-    Locals.reserve(NumLocalDecls);
-    while ((NumLocalDecls--) != 0) {
-      LocalDecl * Local = parse<LocalDecl *>(Ctx);
-      Locals.push_back(Local);
-    }
+    std::vector<LocalDecl *> Locals = parseVector<LocalDecl *>(Ctx);
     ExpressionDecl * Expression = parse<ExpressionDecl *>(Ctx);
     // FIXME: validation
     return FuncDecl::create(getContext(), Locals, Expression);
@@ -581,10 +582,9 @@ public:
   template <>
   SubSectionKindImmediate parse<SubSectionKindImmediate>(ReadContext& Ctx
   ) {
-    uint8_t RawSubSectionId = parse<uint8_t>(Ctx);
-    assert(RawSubSectionId >= 0 && RawSubSectionId <= 2);
-    SubSectionKindImmediate SubSectionId =
-      (SubSectionKindImmediate)RawSubSectionId;
+    uint8_t Raw = parse<uint8_t>(Ctx);
+    assert(Raw >= 0 && Raw <= 0x9 && "unsupported name subsection.");
+    SubSectionKindImmediate SubSectionId = (SubSectionKindImmediate)Raw;
     return SubSectionId;
   }
 
@@ -598,6 +598,9 @@ public:
       return parse<FuncNameSubsectionDecl *>(Ctx);
     case SubSectionKindImmediate::LocalNames:
       return parse<LocalNameSubsectionDecl *>(Ctx);
+    case SubSectionKindImmediate::GlobalNames:
+      return parse<GlobalNameSubsectionDecl *>(Ctx);
+    default: llvm_unreachable("unsupported custom name subsection");
     }
   }
 
@@ -628,6 +631,16 @@ public:
     std::vector<IndirectNameAssociation> IndirectNameMap =
       parseVector<IndirectNameAssociation>(Ctx);
     return LocalNameSubsectionDecl::create(getContext(), IndirectNameMap);
+  }
+
+  template <>
+  GlobalNameSubsectionDecl *
+  parse<GlobalNameSubsectionDecl *>(ReadContext& Ctx) {
+    W2N_UNUSED
+    uint32_t Size = parse<uint32_t>(Ctx);
+    std::vector<NameAssociation> NameMap =
+      parseVector<NameAssociation>(Ctx);
+    return GlobalNameSubsectionDecl::create(getContext(), NameMap);
   }
 
 #pragma mark Parsing Instructions
@@ -962,7 +975,7 @@ public:
   ) {
     if (Ctx.Ptr == Ctx.End) {
       return NameSectionDecl::create(
-        getContext(), nullptr, nullptr, nullptr
+        getContext(), nullptr, nullptr, nullptr, nullptr
       );
     }
 
@@ -970,6 +983,7 @@ public:
       ModuleNameSubsectionDecl * ModuleNames;
       FuncNameSubsectionDecl * FuncNames;
       LocalNameSubsectionDecl * LocalNames;
+      GlobalNameSubsectionDecl * GlobalNames;
 
       void add(NameSubsectionDecl * NameSubsection) {
         ModuleNameSubsectionDecl * ModuleNames =
@@ -992,6 +1006,13 @@ public:
           this->LocalNames = LocalNames;
           return;
         }
+
+        GlobalNameSubsectionDecl * GlobalNames =
+          dyn_cast<GlobalNameSubsectionDecl>(NameSubsection);
+        if (GlobalNames != nullptr) {
+          this->GlobalNames = GlobalNames;
+          return;
+        }
       }
     };
 
@@ -1003,7 +1024,11 @@ public:
 
     if (Ctx.Ptr == Ctx.End) {
       return NameSectionDecl::create(
-        getContext(), Store.ModuleNames, Store.FuncNames, Store.LocalNames
+        getContext(),
+        Store.ModuleNames,
+        Store.FuncNames,
+        Store.LocalNames,
+        Store.GlobalNames
       );
     }
 
@@ -1013,7 +1038,11 @@ public:
 
     if (Ctx.Ptr == Ctx.End) {
       return NameSectionDecl::create(
-        getContext(), Store.ModuleNames, Store.FuncNames, Store.LocalNames
+        getContext(),
+        Store.ModuleNames,
+        Store.FuncNames,
+        Store.LocalNames,
+        Store.GlobalNames
       );
     }
 
@@ -1026,7 +1055,11 @@ public:
     }
 
     return NameSectionDecl::create(
-      getContext(), Store.ModuleNames, Store.FuncNames, Store.LocalNames
+      getContext(),
+      Store.ModuleNames,
+      Store.FuncNames,
+      Store.LocalNames,
+      Store.GlobalNames
     );
   }
 
@@ -1255,7 +1288,8 @@ WasmParser::~WasmParser() {
  */
 void WasmParser::parseTopLevel(llvm::SmallVectorImpl<Decl *>& Decls) {
   auto * Mod = getImpl().parseModuleDecl();
-  if (Mod != nullptr) {
-    Decls.push_back(Mod);
+  if (Mod == nullptr) {
+    return;
   }
+  Decls.push_back(Mod);
 }

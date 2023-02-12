@@ -328,7 +328,7 @@ GeneratedModule w2n::performIRGeneration(
     File,
     Opts,
     TBDOpts,
-    File->getModule(),
+    *File->getModule(),
     ModuleName,
     PSPs,
     /*symsToEmit*/ None,
@@ -407,15 +407,13 @@ IRGenRequest::evaluate(Evaluator& Eval, IRGenDescriptor Desc) const {
 
   // FIXME: getSymbolSourcesToEmit()
 
-  // If we've been provided a SILModule, use it. Otherwise request the
-  // lowered SIL for the file or module.
-  auto * SILMod = Desc.Mod;
+  auto& WasmModule = Desc.Mod;
 
   auto FilesToEmit = Desc.getFilesToEmit();
   auto * PrimaryFile =
     dyn_cast_or_null<SourceFile>(Desc.Ctx.dyn_cast<FileUnit *>());
 
-  IRGenerator IRGen(Opts, *SILMod);
+  IRGenerator IRGen(Opts, WasmModule);
 
   auto TargetMachine = IRGen.createTargetMachine();
   if (!TargetMachine) {
@@ -432,10 +430,10 @@ IRGenRequest::evaluate(Evaluator& Eval, IRGenDescriptor Desc) const {
     PSPs.MainInputFilenameForDebugInfo
   );
 
-  initLLVMModule(IGM, *SILMod);
+  initLLVMModule(IGM, WasmModule);
 
   // Run SIL level IRGen preparation passes.
-  runIRGenPreparePasses(*SILMod, IGM);
+  runIRGenPreparePasses(WasmModule, IGM);
 
   {
     FrontendStatsTracer Tracer(Ctx.Stats, "IRGen");

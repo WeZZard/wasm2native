@@ -1,16 +1,15 @@
 #include "IRGenModule.h"
 #include "Address.h"
 #include "GenDecl.h"
-#include "IRBuilder.h"
 #include "IRGenFunction.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/Type.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Type.h>
 #include <llvm/Support/Alignment.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/ErrorHandling.h>
@@ -59,6 +58,7 @@ IRGenModule::IRGenModule(
   TargetInfo(WasmTargetInfo::get(*this)),
   ModuleHash(nullptr),
   VoidTy(llvm::Type::getVoidTy(getLLVMContext())),
+  I1Ty(llvm::Type::getInt1Ty(getLLVMContext())),
   I8Ty(llvm::Type::getInt8Ty(getLLVMContext())),
   I16Ty(llvm::Type::getInt16Ty(getLLVMContext())),
   I32Ty(llvm::Type::getInt32Ty(getLLVMContext())),
@@ -86,8 +86,10 @@ void IRGenModule::emitGlobalVariable(GlobalVariable * V) {
 }
 
 void IRGenModule::emitFunction(Function * F) {
-  if (F->isExternalDeclaration())
+  llvm::outs() << "[IRGenModule] " << __FUNCTION__ << "\n";
+  if (F->isExternalDeclaration()) {
     return;
+  }
 
   // TODO: PrettyStackTraceFunction stackTrace("emitting IR", f);
   IRGenFunction(*this, F).emitFunction();
@@ -133,14 +135,14 @@ void IRGenModule::emitSourceFile(SourceFile& SF) {
   w2n_proto_implemented();
 }
 
-void IRGenModule::unimplemented(SourceLoc loc, StringRef message) {
-  Context.Diags.diagnose(loc, diag::irgen_unimplemented, message);
+void IRGenModule::unimplemented(SourceLoc Loc, StringRef Message) {
+  Context.Diags.diagnose(Loc, diag::irgen_unimplemented, Message);
 }
 
-void IRGenModule::fatal_unimplemented(SourceLoc loc, StringRef message) {
-  Context.Diags.diagnose(loc, diag::irgen_unimplemented, message);
+void IRGenModule::fatal_unimplemented(SourceLoc Loc, StringRef Message) {
+  Context.Diags.diagnose(Loc, diag::irgen_unimplemented, Message);
   llvm::report_fatal_error(
-    llvm::Twine("unimplemented IRGen feature! ") + message
+    llvm::Twine("unimplemented IRGen feature! ") + Message
   );
 }
 
@@ -158,20 +160,19 @@ llvm::Module * IRGenModule::getModule() const {
 Address IRGenModule::getAddrOfGlobalVariable(
   GlobalVariable * Global, ForDefinition_t ForDefinition
 ) {
-  LinkEntity entity = LinkEntity::forGlobalVariable(Global);
-  LinkInfo link = LinkInfo::get(*this, entity, ForDefinition);
+  std::string GName = Global->getFullQualifiedDescriptiveName();
 
-  std::string UniqueName = (Twine("$") + Twine(0)).str();
-
-  auto * GVar =
-    Module->getGlobalVariable(UniqueName, /*allowInternal*/ true);
+  auto * GVar = Module->getGlobalVariable(GName, /*allowInternal*/ true);
 
   llvm::Type * StorageType = getType(Global->getType());
 
+  LinkEntity Entity = LinkEntity::forGlobalVariable(Global);
+  LinkInfo Info = LinkInfo::get(*this, Entity, ForDefinition);
+
   if (GVar == nullptr) {
-    // FIXME: Temporary workaround
+    // FIXME: Alignment
     Alignment FixedAlignment = Alignment(4);
-    GVar = createGlobalVariable(*this, link, StorageType, FixedAlignment);
+    GVar = createGlobalVariable(*this, Info, StorageType, FixedAlignment);
 
     /// Add a zero initializer.
     if (ForDefinition != 0) {

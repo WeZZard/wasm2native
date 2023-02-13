@@ -14,14 +14,14 @@
 
 namespace w2n {
 
-inline void * AlignedAlloc(size_t size, size_t align) {
-  void * r = aligned_alloc(align, size);
-  assert(r != nullptr && "aligned_alloc failed");
-  return r;
+inline void * alignedAlloc(size_t Size, size_t Align) {
+  void * Resource = aligned_alloc(Align, Size);
+  assert(Resource != nullptr && "aligned_alloc failed");
+  return Resource;
 }
 
-inline void AlignedFree(void * p) {
-  free(p);
+inline void alignedFree(void * P) {
+  free(P);
 }
 
 } // end namespace w2n

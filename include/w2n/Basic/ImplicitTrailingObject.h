@@ -16,7 +16,7 @@ alignedAllocWithImplicitTrailingObject() {
   uint64_t AlignedSize =
     llvm::alignTo(sizeof(BodyTy) + sizeof(TrailingObjectTy), Align);
   BodyTy * Body =
-    reinterpret_cast<BodyTy *>(AlignedAlloc(AlignedSize, Align));
+    reinterpret_cast<BodyTy *>(alignedAlloc(AlignedSize, Align));
   TrailingObjectTy * TrailingObject =
     reinterpret_cast<TrailingObjectTy *>((char *)Body + sizeof(BodyTy));
   TrailingObject = reinterpret_cast<TrailingObjectTy *>(llvm::alignAddr(

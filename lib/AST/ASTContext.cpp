@@ -189,7 +189,7 @@ ASTContext::Implementation& ASTContext::getImpl() const {
 }
 
 void ASTContext::operator delete(void * Data) throw() {
-  AlignedFree(Data);
+  alignedFree(Data);
 }
 
 ASTContext * ASTContext::get(
@@ -203,7 +203,7 @@ ASTContext * ASTContext::get(
   auto Align = std::max(alignof(ASTContext), alignof(Implementation));
   auto Size =
     llvm::alignTo(sizeof(ASTContext) + sizeof(Implementation), Align);
-  auto * RetAddr = AlignedAlloc(Size, Align);
+  auto * RetAddr = alignedAlloc(Size, Align);
   auto * ImplAddr =
     reinterpret_cast<void *>((char *)RetAddr + sizeof(ASTContext));
   ImplAddr = reinterpret_cast<void *>(

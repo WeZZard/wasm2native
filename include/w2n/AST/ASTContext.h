@@ -110,7 +110,7 @@ public:
       return nullptr;
     }
     if (LangOpts.UsesMalloc) {
-      return AlignedAlloc(Bytes, Alignment);
+      return alignedAlloc(Bytes, Alignment);
     }
     // FIXME: statistics
 

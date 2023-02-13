@@ -53,7 +53,7 @@ ParseWasmFileRequest::evaluate(Evaluator& Eval, WasmFile * SF) const {
   SmallVector<Decl *, W2N_STACK_DECLS_COUNT> Decls;
   Parser->parseTopLevel(Decls);
 
-  return WasmFileParsingResult{Ctx.AllocateCopy(Decls), None, None};
+  return WasmFileParsingResult{Ctx.allocateCopy(Decls), None, None};
 }
 
 evaluator::DependencySource ParseWasmFileRequest::readDependencySource(

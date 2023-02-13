@@ -17,7 +17,7 @@ void * detail::allocateInASTContext(
   AllocationArena Arena,
   unsigned Alignment
 ) {
-  return Ctx.Allocate(Bytes, Alignment, Arena);
+  return Ctx.allocate(Bytes, Alignment, Arena);
 }
 
 namespace w2n {

@@ -103,5 +103,5 @@ PrimarySourceFilesRequest::OutputType PrimarySourceFilesRequest::evaluate(
       Primaries.push_back(SF);
     }
   }
-  return Mod->getASTContext().AllocateCopy(Primaries);
+  return Mod->getASTContext().allocateCopy(Primaries);
 }

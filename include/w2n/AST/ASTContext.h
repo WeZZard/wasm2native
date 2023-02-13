@@ -84,8 +84,6 @@ public:
 
 #pragma mark Error Handling
 
-public:
-
   bool hadError() const {
     return false;
   }
@@ -103,7 +101,7 @@ private:
 public:
 
   /// Allocate - Allocate memory from the ASTContext bump pointer.
-  void * Allocate(
+  void * allocate(
     unsigned long Bytes,
     unsigned Alignment,
     AllocationArena Arena = AllocationArena::Permanent
@@ -120,27 +118,28 @@ public:
   }
 
   template <typename T>
-  T * Allocate(AllocationArena Arena = AllocationArena::Permanent) const {
-    T * Res = (T *)Allocate(sizeof(T), alignof(T), Arena);
+  T * allocate(AllocationArena Arena = AllocationArena::Permanent) const {
+    T * Res = (T *)allocate(sizeof(T), alignof(T), Arena);
     new (Res) T();
     return Res;
   }
 
   template <typename T>
-  MutableArrayRef<T> AllocateUninitialized(
+  MutableArrayRef<T> allocateUninitialized(
     unsigned NumElts, AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    T * Data = (T *)Allocate(sizeof(T) * NumElts, alignof(T), Arena);
+    T * Data = (T *)allocate(sizeof(T) * NumElts, alignof(T), Arena);
     return {Data, NumElts};
   }
 
   template <typename T>
-  MutableArrayRef<T> Allocate(
+  MutableArrayRef<T> allocate(
     unsigned NumElts, AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    T * Res = (T *)Allocate(sizeof(T) * NumElts, alignof(T), Arena);
-    for (unsigned i = 0; i != NumElts; ++i)
-      new (Res + i) T();
+    T * Res = (T *)allocate(sizeof(T) * NumElts, alignof(T), Arena);
+    for (unsigned I = 0; I != NumElts; ++I) {
+      new (Res + I) T();
+    }
     return {Res, NumElts};
   }
 
@@ -148,23 +147,23 @@ public:
    * @brief Allocate a copy of the specified object.
    */
   template <typename T>
-  typename std::remove_reference<T>::type * AllocateObjectCopy(
+  typename std::remove_reference<T>::type * allocateObjectCopy(
     T&& O, AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    // This function cannot be named AllocateCopy because it would always
-    // win overload resolution over the AllocateCopy(ArrayRef<T>).
+    // This function cannot be named allocateCopy because it would always
+    // win overload resolution over the allocateCopy(ArrayRef<T>).
     using TNoRef = typename std::remove_reference<T>::type;
     TNoRef * Res =
-      (TNoRef *)Allocate(sizeof(TNoRef), alignof(TNoRef), Arena);
+      (TNoRef *)allocate(sizeof(TNoRef), alignof(TNoRef), Arena);
     new (Res) TNoRef(std::forward<T>(O));
     return Res;
   }
 
   template <typename T, typename It>
-  T * AllocateCopy(
+  T * allocateCopy(
     It Start, It End, AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    T * Res = (T *)Allocate(sizeof(T) * (End - Start), alignof(T), Arena);
+    T * Res = (T *)allocate(sizeof(T) * (End - Start), alignof(T), Arena);
     for (unsigned I = 0; Start != End; ++Start, ++I) {
       new (Res + I) T(*Start);
     }
@@ -172,7 +171,7 @@ public:
   }
 
   template <typename T, size_t N>
-  MutableArrayRef<T> AllocateCopy(
+  MutableArrayRef<T> allocateCopy(
     T (&Array)[N], AllocationArena Arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
@@ -181,16 +180,16 @@ public:
   }
 
   template <typename T>
-  MutableArrayRef<T> AllocateCopy(
+  MutableArrayRef<T> allocateCopy(
     ArrayRef<T> Array, AllocationArena Arena = AllocationArena::Permanent
   ) const {
     return MutableArrayRef<T>(
-      AllocateCopy<T>(Array.begin(), Array.end(), Arena), Array.size()
+      allocateCopy<T>(Array.begin(), Array.end(), Arena), Array.size()
     );
   }
 
   template <typename T>
-  MutableArrayRef<T> AllocateCopy(
+  MutableArrayRef<T> allocateCopy(
     const std::vector<T>& Vec,
     AllocationArena Arena = AllocationArena::Permanent
   ) const {
@@ -198,31 +197,31 @@ public:
   }
 
   template <typename T>
-  ArrayRef<T> AllocateCopy(
-    const SmallVectorImpl<T>& vec,
+  ArrayRef<T> allocateCopy(
+    const SmallVectorImpl<T>& Vec,
     AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    return AllocateCopy(ArrayRef<T>(vec), Arena);
+    return AllocateCopy(ArrayRef<T>(Vec), Arena);
   }
 
   template <typename T>
-  MutableArrayRef<T> AllocateCopy(
+  MutableArrayRef<T> allocateCopy(
     SmallVectorImpl<T>& Vec,
     AllocationArena Arena = AllocationArena::Permanent
   ) const {
-    return AllocateCopy(MutableArrayRef<T>(Vec), Arena);
+    return allocateCopy(MutableArrayRef<T>(Vec), Arena);
   }
 
-  StringRef AllocateCopy(
+  StringRef allocateCopy(
     StringRef Str, AllocationArena Arena = AllocationArena::Permanent
   ) const {
     ArrayRef<char> Result =
-      AllocateCopy(llvm::makeArrayRef(Str.data(), Str.size()), Arena);
+      allocateCopy(llvm::makeArrayRef(Str.data(), Str.size()), Arena);
     return StringRef(Result.data(), Result.size());
   }
 
   template <typename T, typename Vector, typename Set>
-  MutableArrayRef<T> AllocateCopy(
+  MutableArrayRef<T> allocateCopy(
     llvm::SetVector<T, Vector, Set> SetVector,
     AllocationArena Arena = AllocationArena::Permanent
   ) const {
@@ -251,8 +250,6 @@ public:
   }
 
 #pragma mark Getting ASTContext Managed Resources
-
-public:
 
   /**
    * @brief Return the uniqued and AST-Context-owned version of the

@@ -520,5 +520,5 @@ StringRef SymbolObjectCodeRequest::evaluate(
   );
   EmitPasses.run(*Mod.getModule());
   OS << '\0';
-  return Ctx.AllocateCopy(Output.str());
+  return Ctx.allocateCopy(Output.str());
 }

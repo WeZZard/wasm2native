@@ -159,6 +159,10 @@ proto_implemented\
     value: 'Lowering'
   - key: readability-identifier-naming.ParameterCase
     value: CamelCase
+  - key: readability-identifier-naming.ParameterIgnoredRegexp
+  # out: simple_display(llvm::raw_ostream& out, const T& subject)
+  # subject: simple_display(llvm::raw_ostream& out, const T& subject)
+    value: 'out|subject'
   - key: readability-identifier-naming.ParameterPackCase
     value: CamelCase
   - key: readability-identifier-naming.PointerParameterCase

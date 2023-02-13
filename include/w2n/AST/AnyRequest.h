@@ -13,7 +13,7 @@
 
 namespace llvm {
 class raw_ostream;
-}
+} // namespace llvm
 
 namespace w2n {
 
@@ -28,48 +28,48 @@ class DiagnosticEngine;
 struct AnyRequestVTable {
   template <typename Request>
   struct Impl {
-    static hash_code getHash(const void * ptr) {
-      return hash_value(*static_cast<const Request *>(ptr));
+    static hash_code getHash(const void * Ptr) {
+      return hash_value(*static_cast<const Request *>(Ptr));
     }
 
-    static bool isEqual(const void * lhs, const void * rhs) {
-      return *static_cast<const Request *>(lhs)
-          == *static_cast<const Request *>(rhs);
+    static bool isEqual(const void * Lhs, const void * Rhs) {
+      return *static_cast<const Request *>(Lhs)
+          == *static_cast<const Request *>(Rhs);
     }
 
-    static void simpleDisplay(const void * ptr, llvm::raw_ostream& out) {
-      simple_display(out, *static_cast<const Request *>(ptr));
+    static void simpleDisplay(const void * Ptr, llvm::raw_ostream& Out) {
+      simple_display(Out, *static_cast<const Request *>(Ptr));
     }
 
-    static void diagnoseCycle(const void * ptr, DiagnosticEngine& diags) {
-      static_cast<const Request *>(ptr)->diagnoseCycle(diags);
+    static void diagnoseCycle(const void * Ptr, DiagnosticEngine& Diags) {
+      static_cast<const Request *>(Ptr)->diagnoseCycle(Diags);
     }
 
-    static void noteCycleStep(const void * ptr, DiagnosticEngine& diags) {
-      static_cast<const Request *>(ptr)->noteCycleStep(diags);
+    static void noteCycleStep(const void * Ptr, DiagnosticEngine& Diags) {
+      static_cast<const Request *>(Ptr)->noteCycleStep(Diags);
     }
   };
 
-  const uint64_t typeID;
-  const std::function<hash_code(const void *)> getHash;
-  const std::function<bool(const void *, const void *)> isEqual;
+  const uint64_t RequestTypeID;
+  const std::function<hash_code(const void *)> GetHash;
+  const std::function<bool(const void *, const void *)> IsEqual;
   const std::function<void(const void *, llvm::raw_ostream&)>
-    simpleDisplay;
+    SimpleDisplay;
   const std::function<void(const void *, DiagnosticEngine&)>
-    diagnoseCycle;
+    DiagnoseCycle;
   const std::function<void(const void *, DiagnosticEngine&)>
-    noteCycleStep;
+    NoteCycleStep;
 
   template <typename Request>
   static const AnyRequestVTable * get() {
-    static const AnyRequestVTable vtable = {
+    static const AnyRequestVTable VTable = {
       TypeID<Request>::value,
       &Impl<Request>::getHash,
       &Impl<Request>::isEqual,
       &Impl<Request>::simpleDisplay,
       &Impl<Request>::diagnoseCycle,
       &Impl<Request>::noteCycleStep};
-    return &vtable;
+    return &VTable;
   }
 };
 
@@ -80,8 +80,8 @@ class AnyRequestBase {
 
 protected:
 
-  static hash_code hashForHolder(uint64_t typeID, hash_code requestHash) {
-    return hash_combine(typeID, requestHash);
+  static hash_code hashForHolder(uint64_t TypeId, hash_code RequestHash) {
+    return hash_combine(TypeId, RequestHash);
   }
 
   enum class StorageKind : uint8_t {
@@ -92,10 +92,10 @@ protected:
 
   /// The vtable and storage kind.
   llvm::PointerIntPair<const AnyRequestVTable *, 2, StorageKind>
-    vtableAndKind;
+    VTableAndKind;
 
   StorageKind getStorageKind() const {
-    return vtableAndKind.getInt();
+    return VTableAndKind.getInt();
   }
 
   /// Whether this object is storing a value, and is not empty or a
@@ -113,25 +113,23 @@ protected:
   /// request.
   const AnyRequestVTable * getVTable() const {
     assert(hasStorage() && "Shouldn't be querying empty or tombstone");
-    return vtableAndKind.getPointer();
+    return VTableAndKind.getPointer();
   }
 
-  AnyRequestBase(
-    const AnyRequestVTable * vtable, StorageKind storageKind
-  ) {
-    vtableAndKind.setPointer(vtable);
-    vtableAndKind.setInt(storageKind);
+  AnyRequestBase(const AnyRequestVTable * VTable, StorageKind Kind) {
+    VTableAndKind.setPointer(VTable);
+    VTableAndKind.setInt(Kind);
     assert(
-      (bool)vtable == hasStorage() && "Must have a vtable with storage"
+      (bool)VTable == hasStorage() && "Must have a vtable with storage"
     );
   }
 
-  AnyRequestBase(const AnyRequestBase& other) {
-    vtableAndKind = other.vtableAndKind;
+  AnyRequestBase(const AnyRequestBase& X) {
+    VTableAndKind = X.VTableAndKind;
   }
 
-  AnyRequestBase& operator=(const AnyRequestBase& other) {
-    vtableAndKind = other.vtableAndKind;
+  AnyRequestBase& operator=(const AnyRequestBase& X) {
+    VTableAndKind = X.VTableAndKind;
     return *this;
   }
 
@@ -165,61 +163,66 @@ public:
   /// failure.
   template <typename Request>
   const Request * getAs() const {
-    if (getVTable()->typeID != TypeID<Request>::value)
+    if (getVTable()->typeID != TypeID<Request>::value) {
       return nullptr;
+    }
 
     return static_cast<const Request *>(getRawStorage());
   }
 
   /// Diagnose a cycle detected for this request.
-  void diagnoseCycle(DiagnosticEngine& diags) const {
-    getVTable()->diagnoseCycle(getRawStorage(), diags);
+  void diagnoseCycle(DiagnosticEngine& Diags) const {
+    getVTable()->DiagnoseCycle(getRawStorage(), Diags);
   }
 
   /// Note that this request is part of a cycle.
-  void noteCycleStep(DiagnosticEngine& diags) const {
-    getVTable()->noteCycleStep(getRawStorage(), diags);
+  void noteCycleStep(DiagnosticEngine& Diags) const {
+    getVTable()->NoteCycleStep(getRawStorage(), Diags);
   }
 
   /// Compare two instances for equality.
   friend bool operator==(
-    const AnyRequestBase<Derived>& lhs, const AnyRequestBase<Derived>& rhs
+    const AnyRequestBase<Derived>& Lhs, const AnyRequestBase<Derived>& Rhs
   ) {
     // If the storage kinds don't match, we're done.
-    if (lhs.getStorageKind() != rhs.getStorageKind())
+    if (Lhs.getStorageKind() != Rhs.getStorageKind()) {
       return false;
+    }
 
     // If the storage kinds do match, but there's no storage, they're
     // trivially equal.
-    if (!lhs.hasStorage())
+    if (!Lhs.hasStorage()) {
       return true;
+    }
 
     // Must be storing the same kind of request.
-    if (lhs.getVTable()->typeID != rhs.getVTable()->typeID)
+    if (Lhs.getVTable()->RequestTypeID != Rhs.getVTable()->RequestTypeID) {
       return false;
+    }
 
-    return lhs.getVTable()->isEqual(
-      lhs.getRawStorage(), rhs.getRawStorage()
+    return Lhs.getVTable()->IsEqual(
+      Lhs.getRawStorage(), Rhs.getRawStorage()
     );
   }
 
-  friend bool operator!=(const Derived& lhs, const Derived& rhs) {
-    return !(lhs == rhs);
+  friend bool operator!=(const Derived& Lhs, const Derived& Rhs) {
+    return !(Lhs == Rhs);
   }
 
-  friend hash_code hash_value(const AnyRequestBase<Derived>& req) {
+  friend hash_code hash_value(const AnyRequestBase<Derived>& Req) {
     // If there's no storage, return a trivial hash value.
-    if (!req.hasStorage())
+    if (!Req.hasStorage()) {
       return 1;
+    }
 
-    auto reqHash = req.getVTable()->getHash(req.getRawStorage());
-    return hashForHolder(req.getVTable()->typeID, reqHash);
+    auto ReqHash = Req.getVTable()->GetHash(Req.getRawStorage());
+    return hashForHolder(Req.getVTable()->RequestTypeID, ReqHash);
   }
 
   friend void simple_display(
-    llvm::raw_ostream& out, const AnyRequestBase<Derived>& req
+    llvm::raw_ostream& out, const AnyRequestBase<Derived>& subject
   ) {
-    req.getVTable()->simpleDisplay(req.getRawStorage(), out);
+    subject.getVTable()->SimpleDisplay(subject.getRawStorage(), out);
   }
 };
 
@@ -244,15 +247,15 @@ class ActiveRequest final : public AnyRequestBase<ActiveRequest> {
   friend llvm::DenseMapInfo<ActiveRequest>;
 
   /// Pointer to the request stored on the stack.
-  const void * storage;
+  const void * Storage;
 
   /// Creates an \c ActiveRequest without storage.
-  explicit ActiveRequest(StorageKind storageKind) :
-    AnyRequestBase(/*vtable*/ nullptr, storageKind) {
+  explicit ActiveRequest(StorageKind Kind) :
+    AnyRequestBase(/*vtable*/ nullptr, Kind) {
   }
 
   const void * getRawStorage() const {
-    return storage;
+    return Storage;
   }
 
 public:
@@ -260,11 +263,11 @@ public:
   /// Creates a new \c ActiveRequest referencing a concrete request on the
   /// stack.
   template <typename Request>
-  explicit ActiveRequest(const Request& request) :
+  explicit ActiveRequest(const Request& Req) :
     AnyRequestBase(
       AnyRequestVTable::get<Request>(), StorageKind::Normal
     ) {
-    storage = &request;
+    Storage = &Req;
   }
 };
 
@@ -283,13 +286,13 @@ struct DenseMapInfo<w2n::ActiveRequest> {
     return ActiveRequest(ActiveRequest::StorageKind::Tombstone);
   }
 
-  static unsigned getHashValue(const ActiveRequest& request) {
-    return hash_value(request);
+  static unsigned getHashValue(const ActiveRequest& Req) {
+    return hash_value(Req);
   }
 
   static bool
-  isEqual(const ActiveRequest& lhs, const ActiveRequest& rhs) {
-    return lhs == rhs;
+  isEqual(const ActiveRequest& Lhs, const ActiveRequest& Rhs) {
+    return Lhs == Rhs;
   }
 };
 

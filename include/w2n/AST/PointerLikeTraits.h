@@ -50,12 +50,12 @@ struct MoreAlignedPointerTraits {
     NumLowBitsAvailable = AlignInBits
   };
 
-  static inline void * getAsVoidPointer(T * ptr) {
-    return ptr;
+  static inline void * getAsVoidPointer(T * Ptr) {
+    return Ptr;
   }
 
-  static inline T * getFromVoidPointer(void * ptr) {
-    return static_cast<T *>(ptr);
+  static inline T * getFromVoidPointer(void * Ptr) {
+    return static_cast<T *>(Ptr);
   }
 };
 

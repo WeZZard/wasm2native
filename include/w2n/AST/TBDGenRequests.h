@@ -15,8 +15,8 @@
 //
 //===----------------------------------------------------------------===//
 
-#ifndef W2N_AST_TBDGEN_REQUESTS_H
-#define W2N_AST_TBDGEN_REQUESTS_H
+#ifndef W2N_AST_TBDGENREQUESTS_H
+#define W2N_AST_TBDGENREQUESTS_H
 
 #include <w2n/AST/ASTTypeIDs.h>
 #include <w2n/AST/SimpleRequest.h>
@@ -50,10 +50,10 @@ class TBDGenDescriptor final {
   FileOrModule Input;
   TBDGenOptions Opts;
 
-  TBDGenDescriptor(FileOrModule input, const TBDGenOptions& opts) :
-    Input(input),
-    Opts(opts) {
-    assert(input);
+  TBDGenDescriptor(FileOrModule Input, const TBDGenOptions& Opts) :
+    Input(Input),
+    Opts(Opts) {
+    assert(Input);
   }
 
 public:
@@ -82,26 +82,26 @@ public:
   const StringRef getDataLayoutString() const;
   const llvm::Triple& getTarget() const;
 
-  bool operator==(const TBDGenDescriptor& other) const;
+  bool operator==(const TBDGenDescriptor& Other) const;
 
-  bool operator!=(const TBDGenDescriptor& other) const {
-    return !(*this == other);
+  bool operator!=(const TBDGenDescriptor& Other) const {
+    return !(*this == Other);
   }
 
   static TBDGenDescriptor
-  forFile(FileUnit * file, const TBDGenOptions& opts) {
-    return TBDGenDescriptor(file, opts);
+  forFile(FileUnit * File, const TBDGenOptions& Opts) {
+    return TBDGenDescriptor(File, Opts);
   }
 
   static TBDGenDescriptor
-  forModule(ModuleDecl * M, const TBDGenOptions& opts) {
-    return TBDGenDescriptor(M, opts);
+  forModule(ModuleDecl * M, const TBDGenOptions& Opts) {
+    return TBDGenDescriptor(M, Opts);
   }
 };
 
-llvm::hash_code hash_value(const TBDGenDescriptor& desc);
+llvm::hash_code hash_value(const TBDGenDescriptor& hs);
 void simple_display(llvm::raw_ostream& os, const TBDGenDescriptor& ss);
-SourceLoc extractNearestSourceLoc(const TBDGenDescriptor& desc);
+SourceLoc extractNearestSourceLoc(const TBDGenDescriptor& Desc);
 
 using TBDFile = llvm::MachO::InterfaceFile;
 
@@ -120,7 +120,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  TBDFile evaluate(Evaluator& evaluator, TBDGenDescriptor desc) const;
+  TBDFile evaluate(Evaluator& Eval, TBDGenDescriptor Desc) const;
 };
 
 /// Retrieve the public symbols for a file or module.
@@ -139,7 +139,7 @@ private:
 
   // Evaluation.
   std::vector<std::string>
-  evaluate(Evaluator& evaluator, TBDGenDescriptor desc) const;
+  evaluate(Evaluator& Eval, TBDGenDescriptor Desc) const;
 };
 
 /// Retrieve API information for a file or module.
@@ -157,7 +157,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  apigen::API evaluate(Evaluator& evaluator, TBDGenDescriptor desc) const;
+  apigen::API evaluate(Evaluator& Eval, TBDGenDescriptor Desc) const;
 };
 
 /// Describes the origin of a particular symbol, including the stage of
@@ -177,26 +177,26 @@ public:
     // FIXME: This should be eliminated.
     Unknown
   };
-  Kind kind;
+  Kind SSKind;
 
 private:
 
   union {
-    irgen::LinkEntity irEntity;
+    irgen::LinkEntity IREntity;
   };
 
-  explicit SymbolSource(irgen::LinkEntity entity) : kind(Kind::IR) {
-    irEntity = entity;
+  explicit SymbolSource(irgen::LinkEntity Entity) : SSKind(Kind::IR) {
+    IREntity = Entity;
   }
 
-  explicit SymbolSource(Kind kind) : kind(kind) {
-    assert(kind == Kind::LinkerDirective || kind == Kind::Unknown);
+  explicit SymbolSource(Kind Kind) : SSKind(Kind) {
+    assert(Kind == Kind::LinkerDirective || Kind == Kind::Unknown);
   }
 
 public:
 
-  static SymbolSource forIRLinkEntity(irgen::LinkEntity entity) {
-    return SymbolSource{entity};
+  static SymbolSource forIRLinkEntity(irgen::LinkEntity Entity) {
+    return SymbolSource{Entity};
   }
 
   static SymbolSource forLinkerDirective() {
@@ -208,12 +208,12 @@ public:
   }
 
   bool isLinkerDirective() const {
-    return kind == Kind::LinkerDirective;
+    return SSKind == Kind::LinkerDirective;
   }
 
   irgen::LinkEntity getIRLinkEntity() const {
-    assert(kind == Kind::IR);
-    return irEntity;
+    assert(SSKind == Kind::IR);
+    return IREntity;
   }
 };
 
@@ -222,29 +222,30 @@ class SymbolSourceMap {
   friend class SymbolSourceMapRequest;
 
   using Storage = llvm::StringMap<SymbolSource>;
-  const Storage * storage;
+  const Storage * SSStorage;
 
-  explicit SymbolSourceMap(const Storage * storage) : storage(storage) {
-    assert(storage);
+  explicit SymbolSourceMap(const Storage * Storage) : SSStorage(Storage) {
+    assert(Storage);
   }
 
 public:
 
-  Optional<SymbolSource> find(StringRef symbol) const {
-    auto result = storage->find(symbol);
-    if (result == storage->end())
+  Optional<SymbolSource> find(StringRef Symbol) const {
+    auto Result = SSStorage->find(Symbol);
+    if (Result == SSStorage->end()) {
       return None;
-    return result->second;
+    }
+    return Result->second;
   }
 
   friend bool
-  operator==(const SymbolSourceMap& lhs, const SymbolSourceMap& rhs) {
-    return lhs.storage == rhs.storage;
+  operator==(const SymbolSourceMap& Lhs, const SymbolSourceMap& Rhs) {
+    return Lhs.SSStorage == Rhs.SSStorage;
   }
 
   friend bool
-  operator!=(const SymbolSourceMap& lhs, const SymbolSourceMap& rhs) {
-    return !(lhs == rhs);
+  operator!=(const SymbolSourceMap& Lhs, const SymbolSourceMap& Rhs) {
+    return !(Lhs == Rhs);
   }
 
   friend void
@@ -268,8 +269,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  SymbolSourceMap
-  evaluate(Evaluator& evaluator, TBDGenDescriptor desc) const;
+  SymbolSourceMap evaluate(Evaluator& Eval, TBDGenDescriptor Desc) const;
 
 public:
 
@@ -283,7 +283,7 @@ public:
 /// can be recorded by the stats reporter.
 template <typename Request>
 void reportEvaluatedRequest(
-  UnifiedStatsReporter& stats, const Request& request
+  UnifiedStatsReporter& Stats, const Request& Req
 );
 
 /// The zone number for TBDGen.
@@ -306,4 +306,4 @@ void reportEvaluatedRequest(
 
 } // end namespace w2n
 
-#endif // W2N_AST_TBDGEN_REQUESTS_H
+#endif // W2N_AST_TBDGENREQUESTS_H

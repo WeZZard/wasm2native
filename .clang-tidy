@@ -159,7 +159,7 @@ proto_implemented\
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
   - key: readability-identifier-naming.NamespaceIgnoredRegexp
-    value: 'Lowering'
+    value: 'Lowering|MachO'
   - key: readability-identifier-naming.ParameterCase
     value: CamelCase
   - key: readability-identifier-naming.ParameterIgnoredRegexp

@@ -97,7 +97,7 @@ public:
     return reinterpret_cast<uintptr_t>(loc.getOpaquePointerValue());
   }
 
-  friend void simple_display(raw_ostream& OS, const SourceLoc& loc) {
+  friend void simple_display(raw_ostream& os, const SourceLoc& ss) {
     // Nothing meaningful to print.
   }
 };

@@ -497,7 +497,7 @@ static void formatSelectionArgument(
   ArrayRef<DiagnosticArgument> Args,
   unsigned SelectedIndex,
   DiagnosticFormatOptions FormatOpts,
-  llvm::raw_ostream& Out
+  llvm::raw_ostream& os
 ) {
   bool FoundPipe = false;
   do {
@@ -507,7 +507,7 @@ static void formatSelectionArgument(
     );
     StringRef Text = skipToDelimiter(ModifierArguments, '|', &FoundPipe);
     if (SelectedIndex == 0) {
-      DiagnosticEngine::formatDiagnosticText(Out, Text, Args, FormatOpts);
+      DiagnosticEngine::formatDiagnosticText(os, Text, Args, FormatOpts);
       break;
     }
     --SelectedIndex;
@@ -522,7 +522,7 @@ static void formatDiagnosticArgument(
   ArrayRef<DiagnosticArgument> Args,
   unsigned ArgIndex,
   DiagnosticFormatOptions FormatOpts,
-  llvm::raw_ostream& Out
+  llvm::raw_ostream& os
 ) {
   const DiagnosticArgument& Arg = Args[ArgIndex];
   switch (Arg.getKind()) {
@@ -530,34 +530,34 @@ static void formatDiagnosticArgument(
     if (Modifier == "select") {
       assert(Arg.getAsInteger() >= 0 && "Negative selection index");
       formatSelectionArgument(
-        ModifierArguments, Args, Arg.getAsInteger(), FormatOpts, Out
+        ModifierArguments, Args, Arg.getAsInteger(), FormatOpts, os
       );
     } else if (Modifier == "s") {
       if (Arg.getAsInteger() != 1) {
-        Out << 's';
+        os << 's';
       }
     } else {
       assert(
         Modifier.empty() && "Improper modifier for integer argument"
       );
-      Out << Arg.getAsInteger();
+      os << Arg.getAsInteger();
     }
     break;
 
   case DiagnosticArgumentKind::Unsigned:
     if (Modifier == "select") {
       formatSelectionArgument(
-        ModifierArguments, Args, Arg.getAsUnsigned(), FormatOpts, Out
+        ModifierArguments, Args, Arg.getAsUnsigned(), FormatOpts, os
       );
     } else if (Modifier == "s") {
       if (Arg.getAsUnsigned() != 1) {
-        Out << 's';
+        os << 's';
       }
     } else {
       assert(
         Modifier.empty() && "Improper modifier for unsigned argument"
       );
-      Out << Arg.getAsUnsigned();
+      os << Arg.getAsUnsigned();
     }
     break;
 
@@ -568,11 +568,11 @@ static void formatDiagnosticArgument(
         Args,
         Arg.getAsString().empty() ? 0 : 1,
         FormatOpts,
-        Out
+        os
       );
     } else {
       assert(Modifier.empty() && "Improper modifier for string argument");
-      Out << Arg.getAsString();
+      os << Arg.getAsString();
     }
     break;
 
@@ -582,7 +582,7 @@ static void formatDiagnosticArgument(
     );
     auto * DiagArg = Arg.getAsDiagnostic();
     DiagnosticEngine::formatDiagnosticText(
-      Out, DiagArg->FormatString, DiagArg->FormatArgs
+      os, DiagArg->FormatString, DiagArg->FormatArgs
     );
     break;
   }
@@ -592,7 +592,7 @@ static void formatDiagnosticArgument(
 /// Format the given diagnostic text and place the result in the given
 /// buffer.
 void DiagnosticEngine::formatDiagnosticText(
-  llvm::raw_ostream& Out,
+  llvm::raw_ostream& os,
   StringRef InText,
   ArrayRef<DiagnosticArgument> Args,
   DiagnosticFormatOptions FormatOpts
@@ -601,18 +601,18 @@ void DiagnosticEngine::formatDiagnosticText(
     size_t Percent = InText.find('%');
     if (Percent == StringRef::npos) {
       // Write the rest of the string; we're done.
-      Out.write(InText.data(), InText.size());
+      os.write(InText.data(), InText.size());
       break;
     }
 
     // Write the string up to (but not including) the %, then drop that
     // text (including the %).
-    Out.write(InText.data(), Percent);
+    os.write(InText.data(), Percent);
     InText = InText.substr(Percent + 1);
 
     // '%%' -> '%'.
     if (InText[0] == '%') {
-      Out.write('%');
+      os.write('%');
       InText = InText.substr(1);
       continue;
     }
@@ -626,7 +626,7 @@ void DiagnosticEngine::formatDiagnosticText(
     }
 
     if (Modifier == "error") {
-      Out << StringRef(
+      os << StringRef(
         "<<INTERNAL ERROR: encountered %error in diagnostic text>>"
       );
       continue;
@@ -649,22 +649,22 @@ void DiagnosticEngine::formatDiagnosticText(
 #undef W2N_INDEX_RADIX
 
     if (IndexParseFailed) {
-      Out << StringRef("<<INTERNAL ERROR: unparseable argument index in "
-                       "diagnostic text>>");
+      os << StringRef("<<INTERNAL ERROR: unparseable argument index in "
+                      "diagnostic text>>");
       continue;
     }
 
     InText = InText.substr(Length);
 
     if (ArgIndex >= Args.size()) {
-      Out << StringRef("<<INTERNAL ERROR: out-of-range argument index in "
-                       "diagnostic text>>");
+      os << StringRef("<<INTERNAL ERROR: out-of-range argument index in "
+                      "diagnostic text>>");
       continue;
     }
 
     // Convert the argument to a string.
     formatDiagnosticArgument(
-      Modifier, ModifierArguments, Args, ArgIndex, FormatOpts, Out
+      Modifier, ModifierArguments, Args, ArgIndex, FormatOpts, os
     );
   }
 }

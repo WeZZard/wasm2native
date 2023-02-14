@@ -4,17 +4,17 @@
 
 using namespace w2n;
 
-void w2n::simple_display(llvm::raw_ostream& out, const FileUnit * file) {
-  if (!file) {
-    out << "(null)";
+void w2n::simple_display(llvm::raw_ostream& os, const FileUnit * ss) {
+  if (ss == nullptr) {
+    os << "(null)";
     return;
   }
 
-  switch (file->getKind()) {
+  switch (ss->getKind()) {
   case FileUnitKind::Source:
-    out << '\"' << cast<SourceFile>(file)->getFilename() << '\"';
+    os << '\"' << cast<SourceFile>(ss)->getFilename() << '\"';
     return;
-  case FileUnitKind::Builtin: out << "(Builtin)"; return;
+  case FileUnitKind::Builtin: os << "(Builtin)"; return;
   }
   llvm_unreachable("Unhandled case in switch");
 }

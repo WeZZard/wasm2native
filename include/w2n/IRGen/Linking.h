@@ -169,7 +169,7 @@ public:
 
   static LinkEntity forMemory(Memory * M);
 
-  void mangle(llvm::raw_ostream& out) const;
+  void mangle(llvm::raw_ostream& os) const;
 
   void mangle(SmallVectorImpl<char>& buffer) const;
 

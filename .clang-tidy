@@ -150,7 +150,8 @@ proto_implemented\
 |LAST_(DECL|STMT|EXPR|TYPE)\
 |(DECL|STMT|EXPR|TYPE)_RANGE\
 |BUILTIN|BUILTIN_.+\
-|ERROR|WARNING|NOTE|REMARK|FIXIT|DIAG|EDUCATIONAL_NOTES"
+|ERROR|WARNING|NOTE|REMARK|FIXIT|DIAG|EDUCATIONAL_NOTES\
+|HAS_TRIVIAL_DISPLAY"
   # readability-identifier-naming.MemberCase no longer works because we
   # defined public/private member's case separately
   # readability-identifier-naming.MethodCase no longer works because we
@@ -162,16 +163,18 @@ proto_implemented\
   - key: readability-identifier-naming.ParameterCase
     value: CamelCase
   - key: readability-identifier-naming.ParameterIgnoredRegexp
-  # out: simple_display(llvm::raw_ostream& out, const T& subject)
-  # subject: simple_display(llvm::raw_ostream& out, const T& subject)
-    value: 'out|subject'
+  # os: simple_display(llvm::raw_ostream& os, const T& ss), output stream
+  # ss: simple_display(llvm::raw_ostream& os, const T& ss), streamed subject
+  # hs: llvm::hash_code hash_value(const T& hs), hashed subject
+    value: 'os|ss'
   - key: readability-identifier-naming.ParameterPackCase
     value: CamelCase
   - key: readability-identifier-naming.PointerParameterCase
     value: CamelCase
   - key: readability-identifier-naming.PointerParameterIgnoredRegexp
-  # subject: simple_display(llvm::raw_ostream& out, const T& subject)
-    value: 'subject'
+  # ss: simple_display(llvm::raw_ostream& os, const T& ss), streamed subject
+  # hs: llvm::hash_code hash_value(const T& hs), hashed subject
+    value: 'ss|hs'
   - key: readability-identifier-naming.PrivateMemberCase
     value: CamelCase
   - key: readability-identifier-naming.PrivateMethodCase

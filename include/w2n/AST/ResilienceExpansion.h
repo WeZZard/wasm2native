@@ -49,8 +49,8 @@ enum class ResilienceExpansion : unsigned {
 };
 
 inline llvm::raw_ostream&
-operator<<(llvm::raw_ostream& os, ResilienceExpansion expansion) {
-  switch (expansion) {
+operator<<(llvm::raw_ostream& os, ResilienceExpansion ss) {
+  switch (ss) {
   case ResilienceExpansion::Minimal: return os << "Minimal";
   case ResilienceExpansion::Maximal: return os << "Maximal";
   }

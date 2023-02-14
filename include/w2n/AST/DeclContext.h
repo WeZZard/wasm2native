@@ -125,11 +125,11 @@ template <
   typename ParamT,
   typename = typename std::enable_if<
     std::is_same<ParamT, DeclContext>::value>::type>
-void simple_display(llvm::raw_ostream& out, const ParamT * subject) {
-  if (subject) {
-    subject->printContext(out, 0, true);
+void simple_display(llvm::raw_ostream& os, const ParamT * ss) {
+  if (ss) {
+    ss->printContext(os, 0, true);
   } else {
-    out << "(null)";
+    os << "(null)";
   }
 }
 

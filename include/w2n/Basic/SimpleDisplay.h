@@ -15,13 +15,13 @@
 namespace w2n {
 template <typename T>
 struct HasTrivialDisplay {
-  static const bool value = false;
+  static const bool Value = false;
 };
 
 #define HAS_TRIVIAL_DISPLAY(Type)                                        \
   template <>                                                            \
   struct HasTrivialDisplay<Type> {                                       \
-    static const bool value = true;                                      \
+    static const bool Value = true;                                      \
   }
 
 HAS_TRIVIAL_DISPLAY(unsigned char);
@@ -43,9 +43,9 @@ HAS_TRIVIAL_DISPLAY(std::string);
 #undef HAS_TRIVIAL_DISPLAY
 
 template <typename T>
-typename std::enable_if<HasTrivialDisplay<T>::value>::type
-simple_display(llvm::raw_ostream& out, const T& value) {
-  out << value;
+typename std::enable_if<HasTrivialDisplay<T>::Value>::type
+simple_display(llvm::raw_ostream& os, const T& ss) {
+  os << ss;
 }
 
 template <
@@ -53,7 +53,7 @@ template <
   typename... Types,
   typename std::enable_if<I == sizeof...(Types)>::type * = nullptr>
 void simple_display_tuple(
-  llvm::raw_ostream& out, const std::tuple<Types...>& value
+  llvm::raw_ostream& os, const std::tuple<Types...>& ss
 );
 
 template <
@@ -61,19 +61,20 @@ template <
   typename... Types,
   typename std::enable_if<I<sizeof...(Types)>::type * = nullptr> void
     simple_display_tuple(
-      llvm::raw_ostream& out, const std::tuple<Types...>& value
+      llvm::raw_ostream& os, const std::tuple<Types...>& ss
     ) {
   // Start or separator.
-  if (I == 0)
-    out << "(";
-  else
-    out << ", ";
+  if (I == 0) {
+    os << "(";
+  } else {
+    os << ", ";
+  }
 
   // Current element.
-  simple_display(out, std::get<I>(value));
+  simple_display(os, std::get<I>(ss));
 
   // Print the remaining elements.
-  simple_display_tuple<I + 1>(out, value);
+  simple_display_tuple<I + 1>(os, ss);
 }
 
 template <
@@ -81,104 +82,105 @@ template <
   typename... Types,
   typename std::enable_if<I == sizeof...(Types)>::type *>
 void simple_display_tuple(
-  llvm::raw_ostream& out, const std::tuple<Types...>& value
+  llvm::raw_ostream& os, const std::tuple<Types...>& ss
 ) {
   // Last element.
-  out << ")";
+  os << ")";
 }
 
 template <typename... Types>
 void simple_display(
-  llvm::raw_ostream& out, const std::tuple<Types...>& value
+  llvm::raw_ostream& os, const std::tuple<Types...>& ss
 ) {
-  simple_display_tuple<0>(out, value);
+  simple_display_tuple<0>(os, ss);
 }
 
 template <typename T1, typename T2>
-void simple_display(
-  llvm::raw_ostream& out, const std::pair<T1, T2>& value
-) {
-  out << "(";
-  simple_display(out, value.first);
-  out << ", ";
-  simple_display(out, value.second);
-  out << ")";
+void simple_display(llvm::raw_ostream& os, const std::pair<T1, T2>& ss) {
+  os << "(";
+  simple_display(os, ss.first);
+  os << ", ";
+  simple_display(os, ss.second);
+  os << ")";
 }
 
 template <typename T>
 void simple_display(
-  llvm::raw_ostream& out, const llvm::TinyPtrVector<T>& vector
+  llvm::raw_ostream& os, const llvm::TinyPtrVector<T>& ss
 ) {
-  out << "{";
-  bool first = true;
-  for (const T& value : vector) {
-    if (first)
-      first = false;
-    else
-      out << ", ";
+  os << "{";
+  bool First = true;
+  for (const T& Value : ss) {
+    if (First) {
+      First = false;
+    } else {
+      os << ", ";
+    }
 
-    simple_display(out, value);
+    simple_display(os, Value);
   }
-  out << "}";
+  os << "}";
+}
+
+template <typename T>
+void simple_display(llvm::raw_ostream& os, const llvm::ArrayRef<T>& ss) {
+  os << "{";
+  bool First = true;
+  for (const T& Value : ss) {
+    if (First) {
+      First = false;
+    } else {
+      os << ", ";
+    }
+
+    simple_display(os, Value);
+  }
+  os << "}";
 }
 
 template <typename T>
 void simple_display(
-  llvm::raw_ostream& out, const llvm::ArrayRef<T>& array
+  llvm::raw_ostream& os, const llvm::SmallVectorImpl<T>& ss
 ) {
-  out << "{";
-  bool first = true;
-  for (const T& value : array) {
-    if (first)
-      first = false;
-    else
-      out << ", ";
+  os << "{";
+  bool First = true;
+  for (const T& Value : ss) {
+    if (First) {
+      First = false;
+    } else {
+      os << ", ";
+    }
 
-    simple_display(out, value);
+    simple_display(os, Value);
   }
-  out << "}";
+  os << "}";
 }
 
 template <typename T>
-void simple_display(
-  llvm::raw_ostream& out, const llvm::SmallVectorImpl<T>& vec
-) {
-  out << "{";
-  bool first = true;
-  for (const T& value : vec) {
-    if (first)
-      first = false;
-    else
-      out << ", ";
+void simple_display(llvm::raw_ostream& os, const std::vector<T>& ss) {
+  os << "{";
+  bool First = true;
+  for (const T& Value : ss) {
+    if (First) {
+      First = false;
+    } else {
+      os << ", ";
+    }
 
-    simple_display(out, value);
+    simple_display(os, Value);
   }
-  out << "}";
-}
-
-template <typename T>
-void simple_display(llvm::raw_ostream& out, const std::vector<T>& vec) {
-  out << "{";
-  bool first = true;
-  for (const T& value : vec) {
-    if (first)
-      first = false;
-    else
-      out << ", ";
-
-    simple_display(out, value);
-  }
-  out << "}";
+  os << "}";
 }
 
 template <typename T, typename U>
 void simple_display(
-  llvm::raw_ostream& out, const llvm::PointerUnion<T, U>& ptrUnion
+  llvm::raw_ostream& os, const llvm::PointerUnion<T, U>& ss
 ) {
-  if (const auto t = ptrUnion.template dyn_cast<T>())
-    simple_display(out, t);
-  else
-    simple_display(out, ptrUnion.template get<U>());
+  if (const auto Subject = ss.template dyn_cast<T>()) {
+    simple_display(os, Subject);
+  } else {
+    simple_display(os, ss.template get<U>());
+  }
 }
 } // namespace w2n
 

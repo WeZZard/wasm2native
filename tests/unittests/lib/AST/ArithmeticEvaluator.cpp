@@ -57,18 +57,18 @@ public:
   }
 };
 
-void simple_display(llvm::raw_ostream& out, ArithmeticExpr * expr) {
-  switch (expr->kind) {
+void simple_display(llvm::raw_ostream& os, ArithmeticExpr * ss) {
+  switch (ss->kind) {
   case ArithmeticExpr::Kind::Literal:
-    out << "Literal: " << static_cast<Literal *>(expr)->value;
+    os << "Literal: " << static_cast<Literal *>(ss)->value;
     break;
 
   case ArithmeticExpr::Kind::Binary:
-    out << "Binary: ";
-    switch (static_cast<Binary *>(expr)->operatorKind) {
-    case Binary::OperatorKind::Sum: out << "sum"; break;
+    os << "Binary: ";
+    switch (static_cast<Binary *>(ss)->operatorKind) {
+    case Binary::OperatorKind::Sum: os << "sum"; break;
 
-    case Binary::OperatorKind::Product: out << "product"; break;
+    case Binary::OperatorKind::Product: os << "product"; break;
     }
     break;
   }

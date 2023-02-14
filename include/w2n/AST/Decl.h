@@ -150,7 +150,7 @@ public:
 
 SourceLoc extractNearestSourceLoc(const Decl * Decl);
 
-void simple_display(llvm::raw_ostream& Out, const Decl * Decl);
+void simple_display(llvm::raw_ostream& os, const Decl * ss);
 
 class ValueDecl : public Decl {
 protected:
@@ -184,7 +184,7 @@ public:
   LLVM_RTTI_CLASSOF_NONLEAF_CLASS(Decl, TypeDecl);
 };
 
-void simple_display(llvm::raw_ostream& Out, const ValueDecl * Decl);
+void simple_display(llvm::raw_ostream& os, const ValueDecl * ss);
 
 enum class SectionKind : uint8_t {
 #define DECL(Id, Parent)
@@ -218,7 +218,7 @@ public:
 
 SourceLoc extractNearestSourceLoc(const SectionDecl * Decl);
 
-void simple_display(llvm::raw_ostream& Out, const SectionDecl * Decl);
+void simple_display(llvm::raw_ostream& os, const SectionDecl * ss);
 
 class FuncTypeDecl;
 

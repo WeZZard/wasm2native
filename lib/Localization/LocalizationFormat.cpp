@@ -271,7 +271,7 @@ operator>>(LocalizationInput& yin, T& diagnostics) {
   return yin;
 }
 
-void DefToYAMLConverter::convert(llvm::raw_ostream& out) {
+void DefToYAMLConverter::convert(llvm::raw_ostream& os) {
   for (auto i : w2n::indices(IDs)) {
     out << "- id: " << IDs[i] << "\n";
 

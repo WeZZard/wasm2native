@@ -51,7 +51,7 @@ public:
     assert(IDs.size() == Messages.size());
   }
 
-  void convert(llvm::raw_ostream& out);
+  void convert(llvm::raw_ostream& os);
 };
 
 class LocalizationWriterInfo {
@@ -69,26 +69,26 @@ public:
   }
 
   std::pair<offset_type, offset_type> EmitKeyDataLength(
-    llvm::raw_ostream& out, key_type_ref key, data_type_ref data
+    llvm::raw_ostream& os, key_type_ref key, data_type_ref data
   ) {
     offset_type dataLength = static_cast<offset_type>(data.size());
-    endian::write<offset_type>(out, dataLength, little);
+    endian::write<offset_type>(os, dataLength, little);
     // No need to write the key length; it's constant.
     return {sizeof(key_type), dataLength};
   }
 
-  void EmitKey(llvm::raw_ostream& out, key_type_ref key, unsigned len) {
+  void EmitKey(llvm::raw_ostream& os, key_type_ref key, unsigned len) {
     assert(len == sizeof(key_type));
-    endian::write<key_type>(out, key, little);
+    endian::write<key_type>(os, key, little);
   }
 
   void EmitData(
-    llvm::raw_ostream& out,
+    llvm::raw_ostream& os,
     key_type_ref key,
     data_type_ref data,
     unsigned len
   ) {
-    out << data;
+    os << data;
   }
 };
 

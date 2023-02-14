@@ -49,10 +49,10 @@ public:
   PrettyStackTraceRequest(const Request& Req) : Req(Req) {
   }
 
-  void print(llvm::raw_ostream& out) const override {
-    out << "While evaluating request ";
-    simple_display(out, Req);
-    out << "\n";
+  void print(llvm::raw_ostream& os) const override {
+    os << "While evaluating request ";
+    simple_display(os, Req);
+    os << "\n";
   }
 };
 
@@ -72,7 +72,7 @@ public:
     Eval(Eval) {
   }
 
-  virtual void log(llvm::raw_ostream& out) const override;
+  virtual void log(llvm::raw_ostream& os) const override;
 
   virtual std::error_code convertToErrorCode() const override {
     // This is essentially unused, but is a temporary requirement for
@@ -479,10 +479,10 @@ private:
 };
 
 template <typename Request>
-void CyclicalRequestError<Request>::log(llvm::raw_ostream& out) const {
-  out << "Cycle detected:\n";
-  simple_display(out, Req);
-  out << "\n";
+void CyclicalRequestError<Request>::log(llvm::raw_ostream& os) const {
+  os << "Cycle detected:\n";
+  simple_display(os, Req);
+  os << "\n";
 }
 
 } // namespace w2n

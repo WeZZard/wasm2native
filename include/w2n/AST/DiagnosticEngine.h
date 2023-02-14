@@ -979,7 +979,7 @@ public:
   /// Format the given diagnostic text and place the result in the given
   /// buffer.
   static void formatDiagnosticText(
-    llvm::raw_ostream& Out,
+    llvm::raw_ostream& os,
     StringRef InText,
     ArrayRef<DiagnosticArgument> FormatArgs,
     DiagnosticFormatOptions FormatOpts = DiagnosticFormatOptions()

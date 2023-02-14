@@ -26,15 +26,15 @@ llvm::orc::ThreadSafeModule GeneratedModule::intoThreadSafeContext() && {
 }
 
 void w2n::simple_display(
-  llvm::raw_ostream& out, const IRGenDescriptor& desc
+  llvm::raw_ostream& os, const IRGenDescriptor& ss
 ) {
-  auto * MD = desc.Ctx.dyn_cast<ModuleDecl *>();
-  if (MD) {
-    out << "IR Generation for module " << MD->getName();
+  auto * MD = ss.Ctx.dyn_cast<ModuleDecl *>();
+  if (MD != nullptr) {
+    os << "IR Generation for module " << MD->getName();
   } else {
-    auto * file = desc.Ctx.get<FileUnit *>();
-    out << "IR Generation for file ";
-    simple_display(out, file);
+    auto * File = ss.Ctx.get<FileUnit *>();
+    os << "IR Generation for file ";
+    simple_display(os, File);
   }
 }
 

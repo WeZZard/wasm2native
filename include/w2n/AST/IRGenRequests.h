@@ -278,7 +278,7 @@ public:
   readDependencySource(const evaluator::DependencyRecorder&) const;
 };
 
-void simple_display(llvm::raw_ostream& out, const IRGenDescriptor& d);
+void simple_display(llvm::raw_ostream& os, const IRGenDescriptor& ss);
 
 SourceLoc extractNearestSourceLoc(const IRGenDescriptor& desc);
 

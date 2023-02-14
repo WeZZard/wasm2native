@@ -242,7 +242,7 @@ class RequestCache {
     typename Request,                                                    \
     typename ZoneTypes = TypeIDZoneTypes<Zone::Name>,                    \
     typename std::enable_if<                                             \
-      TypeID<Request>::zone == Zone::Name>::Type * = nullptr>            \
+      TypeID<Request>::zone == Zone::Name>::type * = nullptr>            \
   llvm::DenseMap<RequestKey<Request>, typename Request::OutputType> *    \
   getCache() {                                                           \
     auto& caches = Name##ZoneCache;                                      \

@@ -287,7 +287,7 @@ public:
   }
 
   /// Pretty-print the vector.
-  void print(llvm::raw_ostream& out) const;
+  void print(llvm::raw_ostream& os) const;
 
   W2N_DEBUG_DUMP;
 };

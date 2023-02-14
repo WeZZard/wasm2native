@@ -54,11 +54,11 @@ bool operator!=(
 }
 
 template <typename T>
-void simple_display(raw_ostream& out, const Optional<T>& opt) {
-  if (opt) {
-    simple_display(out, *opt);
+void simple_display(raw_ostream& os, const Optional<T>& ss) {
+  if (ss) {
+    simple_display(os, *ss);
   } else {
-    out << "None";
+    os << "None";
   }
 }
 } // end namespace llvm

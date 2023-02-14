@@ -100,7 +100,7 @@ public:
 };
 
 llvm::hash_code hash_value(const TBDGenDescriptor& desc);
-void simple_display(llvm::raw_ostream& out, const TBDGenDescriptor& desc);
+void simple_display(llvm::raw_ostream& os, const TBDGenDescriptor& ss);
 SourceLoc extractNearestSourceLoc(const TBDGenDescriptor& desc);
 
 using TBDFile = llvm::MachO::InterfaceFile;
@@ -248,8 +248,8 @@ public:
   }
 
   friend void
-  simple_display(llvm::raw_ostream& out, const SymbolSourceMap&) {
-    out << "(symbol storage map)";
+  simple_display(llvm::raw_ostream& os, const SymbolSourceMap& ss) {
+    os << "(symbol storage map)";
   }
 };
 

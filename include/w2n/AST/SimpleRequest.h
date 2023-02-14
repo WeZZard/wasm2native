@@ -338,9 +338,9 @@ public:
     return hash_combine(Req.Storage);
   }
 
-  friend void simple_display(llvm::raw_ostream& Out, const Derived& Req) {
-    Out << TypeID<Derived>::getName();
-    simple_display(Out, Req.Storage);
+  friend void simple_display(llvm::raw_ostream& os, const Derived& ss) {
+    os << TypeID<Derived>::getName();
+    simple_display(os, ss.Storage);
   }
 
   friend FrontendStatsTracer

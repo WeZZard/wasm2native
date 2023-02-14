@@ -125,22 +125,22 @@ SourceLoc Decl::getLocFromSource() const {
   llvm_unreachable("Unknown decl kind");
 }
 
-void Decl::dump(raw_ostream& OS, unsigned Indent) const {
+void Decl::dump(raw_ostream& os, unsigned Indent) const {
   w2n_proto_implemented([&] {
-    simple_display(OS, this);
-    OS << "\n";
+    simple_display(os, this);
+    os << "\n";
   });
 }
 
-void w2n::simple_display(llvm::raw_ostream& Out, const Decl * Decl) {
-  if (Decl == nullptr) {
-    Out << "(null)";
+void w2n::simple_display(llvm::raw_ostream& os, const Decl * ss) {
+  if (ss == nullptr) {
+    os << "(null)";
     return;
   }
-  if (auto ValueD = dyn_cast<ValueDecl>(Decl)) {
-    simple_display(Out, ValueD);
+  if (const auto * ValueD = dyn_cast<ValueDecl>(ss)) {
+    simple_display(os, ValueD);
   } else {
-    Out << "(unknown decl)";
+    os << "(unknown decl)";
   }
 }
 
@@ -167,11 +167,11 @@ void ValueDecl::dumpRef(raw_ostream& os) const {
   // TODO: Print location.
 }
 
-void w2n::simple_display(llvm::raw_ostream& Out, const ValueDecl * Decl) {
-  if (Decl) {
-    Decl->dumpRef(Out);
+void w2n::simple_display(llvm::raw_ostream& os, const ValueDecl * ss) {
+  if (ss != nullptr) {
+    ss->dumpRef(os);
   } else {
-    Out << "(null)";
+    os << "(null)";
   }
 }
 

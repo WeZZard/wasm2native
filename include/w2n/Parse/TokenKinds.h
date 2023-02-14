@@ -37,9 +37,9 @@ bool isTokenTextDetermined(TokenKind Kind);
 
 /// If a token kind has determined text, return the text; otherwise
 /// assert.
-StringRef getTokenText(TokenKind Kind);
+llvm::StringRef getTokenText(TokenKind Kind);
 
-void simple_display(llvm::raw_ostream& os, TokenKind kind);
+void simple_display(llvm::raw_ostream& os, TokenKind ss);
 } // end namespace w2n
 
 #endif // W2N_TOKENKINDS_H

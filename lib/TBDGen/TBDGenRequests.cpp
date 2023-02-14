@@ -67,15 +67,15 @@ llvm::hash_code w2n::hash_value(const TBDGenDescriptor& desc) {
 }
 
 void w2n::simple_display(
-  llvm::raw_ostream& out, const TBDGenDescriptor& desc
+  llvm::raw_ostream& os, const TBDGenDescriptor& ss
 ) {
-  out << "Generate TBD for ";
-  if (auto * module = desc.getFileOrModule().dyn_cast<ModuleDecl *>()) {
-    out << "module ";
-    simple_display(out, module);
+  os << "Generate TBD for ";
+  if (auto * Module = ss.getFileOrModule().dyn_cast<ModuleDecl *>()) {
+    os << "module ";
+    simple_display(os, Module);
   } else {
-    out << "file ";
-    simple_display(out, desc.getFileOrModule().get<FileUnit *>());
+    os << "file ";
+    simple_display(os, ss.getFileOrModule().get<FileUnit *>());
   }
 }
 

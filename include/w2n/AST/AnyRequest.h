@@ -37,8 +37,8 @@ struct AnyRequestVTable {
           == *static_cast<const Request *>(Rhs);
     }
 
-    static void simpleDisplay(const void * Ptr, llvm::raw_ostream& Out) {
-      simple_display(Out, *static_cast<const Request *>(Ptr));
+    static void simpleDisplay(const void * Ptr, llvm::raw_ostream& Os) {
+      simple_display(Os, *static_cast<const Request *>(Ptr));
     }
 
     static void diagnoseCycle(const void * Ptr, DiagnosticEngine& Diags) {
@@ -220,9 +220,9 @@ public:
   }
 
   friend void simple_display(
-    llvm::raw_ostream& out, const AnyRequestBase<Derived>& subject
+    llvm::raw_ostream& os, const AnyRequestBase<Derived>& ss
   ) {
-    subject.getVTable()->SimpleDisplay(subject.getRawStorage(), out);
+    ss.getVTable()->SimpleDisplay(ss.getRawStorage(), os);
   }
 };
 

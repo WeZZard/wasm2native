@@ -14,17 +14,17 @@ class DiagnosticEngine;
 /// RAII class that suppresses diagnostics by temporarily disabling all of
 /// the diagnostic consumers.
 class DiagnosticSuppression {
-  DiagnosticEngine& diags;
-  std::vector<DiagnosticConsumer *> consumers;
+  DiagnosticEngine& Diags;
+  std::vector<DiagnosticConsumer *> Consumers;
 
   DiagnosticSuppression(const DiagnosticSuppression&) = delete;
   DiagnosticSuppression& operator=(const DiagnosticSuppression&) = delete;
 
 public:
 
-  explicit DiagnosticSuppression(DiagnosticEngine& diags);
+  explicit DiagnosticSuppression(DiagnosticEngine& Diags);
   ~DiagnosticSuppression();
-  static bool isEnabled(const DiagnosticEngine& diags);
+  static bool isEnabled(const DiagnosticEngine& Diags);
 };
 
 } // namespace w2n

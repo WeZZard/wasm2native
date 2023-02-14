@@ -970,13 +970,13 @@ void DiagnosticEngine::resetBufferIndirectlyCausingDiagnostic() {
 }
 
 DiagnosticSuppression::DiagnosticSuppression(DiagnosticEngine& Diags) :
-  diags(Diags) {
-  consumers = Diags.takeConsumers();
+  Diags(Diags) {
+  Consumers = Diags.takeConsumers();
 }
 
 DiagnosticSuppression::~DiagnosticSuppression() {
-  for (auto * Consumer : consumers) {
-    diags.addConsumer(*Consumer);
+  for (auto * Consumer : Consumers) {
+    Diags.addConsumer(*Consumer);
   }
 }
 

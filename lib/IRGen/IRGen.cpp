@@ -1,4 +1,3 @@
-#include "IRGenInternal.h"
 #include "IRGenModule.h"
 #include <llvm/Analysis/TargetTransformInfo.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
@@ -487,7 +486,7 @@ IRGenRequest::evaluate(Evaluator& Eval, IRGenDescriptor Desc) const {
   embedBitcode(IGM.getModule(), Opts);
 
   // TODO: Turn the module hash into an actual output.
-  if (auto ** OutModuleHash = Desc.outModuleHash) {
+  if (auto ** OutModuleHash = Desc.OutModuleHash) {
     *OutModuleHash = IGM.ModuleHash;
   }
   return std::move(IGM).intoGeneratedModule();

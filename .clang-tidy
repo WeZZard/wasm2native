@@ -166,15 +166,15 @@ proto_implemented\
   # os: simple_display(llvm::raw_ostream& os, const T& ss), output stream
   # ss: simple_display(llvm::raw_ostream& os, const T& ss), streamed subject
   # hs: llvm::hash_code hash_value(const T& hs), hashed subject
-    value: 'os|ss'
+    value: '(os|ss|hs)'
   - key: readability-identifier-naming.ParameterPackCase
     value: CamelCase
   - key: readability-identifier-naming.PointerParameterCase
     value: CamelCase
   - key: readability-identifier-naming.PointerParameterIgnoredRegexp
-  # ss: simple_display(llvm::raw_ostream& os, const T& ss), streamed subject
-  # hs: llvm::hash_code hash_value(const T& hs), hashed subject
-    value: 'ss|hs'
+  # ss: simple_display(llvm::raw_ostream& os, const T * ss), streamed subject
+  # hs: llvm::hash_code hash_value(const T * hs), hashed subject
+    value: '(ss|hs)'
   - key: readability-identifier-naming.PrivateMemberCase
     value: CamelCase
   - key: readability-identifier-naming.PrivateMethodCase

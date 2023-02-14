@@ -37,7 +37,7 @@ class TBDGenDescriptor;
 
 namespace irgen {
 class IRGenModule;
-}
+} // namespace irgen
 
 } // namespace w2n
 
@@ -97,20 +97,14 @@ public:
   GeneratedModule(GeneratedModule&&) = default;
   GeneratedModule& operator=(GeneratedModule&&) = default;
 
-public:
-
   /// Construct a \c GeneratedModule that does not own any resources.
   static GeneratedModule null() {
     return GeneratedModule{};
   }
 
-public:
-
   explicit operator bool() const {
     return Module != nullptr && Context != nullptr;
   }
-
-public:
 
   const llvm::Module * getModule() const {
     return Module.get();
@@ -136,8 +130,6 @@ public:
     return Target.get();
   }
 
-public:
-
   /// Release ownership of the context and module to the caller, consuming
   /// this value in the process.
   ///
@@ -146,8 +138,6 @@ public:
   std::pair<llvm::LLVMContext *, llvm::Module *> release() && {
     return {Context.release(), Module.release()};
   }
-
-public:
 
   /// Transfers ownership of the underlying module and context to an
   /// ORC-compatible context.
@@ -168,21 +158,21 @@ struct IRGenDescriptor {
   StringRef ModuleName;
   const PrimarySpecificPaths& PSPs;
 
-  ArrayRef<std::string> parallelOutputFilenames;
-  llvm::GlobalVariable ** outModuleHash;
+  ArrayRef<std::string> ParallelOutputFilenames;
+  llvm::GlobalVariable ** OutModuleHash;
 
-  friend llvm::hash_code hash_value(const IRGenDescriptor& owner) {
-    return llvm::hash_combine(owner.Ctx, owner.SymbolsToEmit);
+  friend llvm::hash_code hash_value(const IRGenDescriptor& hs) {
+    return llvm::hash_combine(hs.Ctx, hs.SymbolsToEmit);
   }
 
   friend bool
-  operator==(const IRGenDescriptor& lhs, const IRGenDescriptor& rhs) {
-    return lhs.Ctx == rhs.Ctx && lhs.SymbolsToEmit == rhs.SymbolsToEmit;
+  operator==(const IRGenDescriptor& Lhs, const IRGenDescriptor& Rhs) {
+    return Lhs.Ctx == Rhs.Ctx && Lhs.SymbolsToEmit == Rhs.SymbolsToEmit;
   }
 
   friend bool
-  operator!=(const IRGenDescriptor& lhs, const IRGenDescriptor& rhs) {
-    return !(lhs == rhs);
+  operator!=(const IRGenDescriptor& Lhs, const IRGenDescriptor& Rhs) {
+    return !(Lhs == Rhs);
   }
 
 public:
@@ -252,7 +242,7 @@ public:
 /// can be recorded by the stats reporter.
 template <typename Request>
 void reportEvaluatedRequest(
-  UnifiedStatsReporter& stats, const Request& request
+  UnifiedStatsReporter& Stats, const Request& Req
 );
 
 class IRGenRequest :
@@ -280,7 +270,7 @@ public:
 
 void simple_display(llvm::raw_ostream& os, const IRGenDescriptor& ss);
 
-SourceLoc extractNearestSourceLoc(const IRGenDescriptor& desc);
+SourceLoc extractNearestSourceLoc(const IRGenDescriptor& Desc);
 
 /// Returns the optimized IR for a given file or module. Note this runs
 /// the entire compiler pipeline and ignores the passed SILModule.
@@ -298,8 +288,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  GeneratedModule
-  evaluate(Evaluator& evaluator, IRGenDescriptor desc) const;
+  GeneratedModule evaluate(Evaluator& Eval, IRGenDescriptor Desc) const;
 };
 
 using SymbolsToEmit = SmallVector<std::string, 1>;
@@ -320,7 +309,7 @@ private:
   friend SimpleRequest;
 
   // Evaluation.
-  StringRef evaluate(Evaluator& evaluator, IRGenDescriptor desc) const;
+  StringRef evaluate(Evaluator& Eval, IRGenDescriptor Desc) const;
 
 public:
 
@@ -352,7 +341,7 @@ public:
 ///
 /// Clients that form an ASTContext and will perform any IR generation
 /// should call this functions after forming the ASTContext.
-void registerIRGenRequestFunctions(Evaluator& evaluator);
+void registerIRGenRequestFunctions(Evaluator& Eval);
 
 } // namespace w2n
 

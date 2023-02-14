@@ -1,9 +1,10 @@
 /// This file declares the \c DiagnosticEngine class, which manages any
 /// diagnostics emitted by w2n.
 
-#ifndef W2N_BASIC_DIAGNOSTICENGINE_H
-#define W2N_BASIC_DIAGNOSTICENGINE_H
+#ifndef W2N_AST_DIAGNOSTICENGINE_H
+#define W2N_AST_DIAGNOSTICENGINE_H
 
+#include "llvm/ADT/STLExtras.h"
 #include <llvm/ADT/BitVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
@@ -49,7 +50,7 @@ namespace detail {
 /// need to specialize this class template to pass by reference.
 template <typename T>
 struct PassArgument {
-  typedef T type;
+  typedef T Type;
 };
 } // namespace detail
 
@@ -64,7 +65,7 @@ enum class DiagnosticArgumentKind {
 
 namespace diag {
 enum class RequirementKind : uint8_t;
-}
+} // namespace diag
 
 /// Variant type that holds a single diagnostic argument of a known
 /// type.
@@ -108,9 +109,9 @@ public:
     typename EnumType,
     typename std::enable_if<std::is_enum<EnumType>::value>::type * =
       nullptr>
-  DiagnosticArgument(EnumType value) :
+  DiagnosticArgument(EnumType Val) :
     DiagnosticArgument(
-      static_cast<typename std::underlying_type<EnumType>::type>(value)
+      static_cast<typename std::underlying_type<EnumType>::type>(Val)
     ) {
   }
 
@@ -222,7 +223,7 @@ public:
   template <typename... ArgTypes>
   Diagnostic(
     Diag<ArgTypes...> ID,
-    typename detail::PassArgument<ArgTypes>::type... VArgs
+    typename detail::PassArgument<ArgTypes>::Type... VArgs
   ) :
     ID(ID.ID) {
     DiagnosticArgument DiagArgs[] = {
@@ -272,20 +273,20 @@ public:
     return BehaviorLimit;
   }
 
-  void setLoc(SourceLoc loc) {
-    Loc = loc;
+  void setLoc(SourceLoc Loc) {
+    this->Loc = Loc;
   }
 
-  void setIsChildNote(bool isChildNote) {
-    IsChildNote = isChildNote;
+  void setIsChildNote(bool IsChildNote) {
+    this->IsChildNote = IsChildNote;
   }
 
-  void setDecl(const class Decl * decl) {
-    Decl = decl;
+  void setDecl(const class Decl * Decl) {
+    this->Decl = Decl;
   }
 
-  void setBehaviorLimit(DiagnosticBehavior limit) {
-    BehaviorLimit = limit;
+  void setBehaviorLimit(DiagnosticBehavior Limit) {
+    BehaviorLimit = Limit;
   }
 
   /// Returns true if this object represents a particular diagnostic.
@@ -354,8 +355,9 @@ public:
   }
 
   ~InFlightDiagnostic() {
-    if (IsActive)
+    if (IsActive) {
       flush();
+    }
   }
 
   /// Flush the active diagnostic to the diagnostic output engine.
@@ -365,7 +367,7 @@ public:
   /// For instance, if \c DiagnosticBehavior::Warning is passed, an error
   /// will be emitted as a warning, but a note will still be emitted as a
   /// note.
-  InFlightDiagnostic& limitBehavior(DiagnosticBehavior limit);
+  InFlightDiagnostic& limitBehavior(DiagnosticBehavior Limit);
 
   /// Limit the diagnostic behavior to warning until the specified
   /// version.
@@ -398,7 +400,7 @@ public:
   ///     diagnostic currently in \c *this.
   /// \li The location, ranges, decl, fix-its, and behavior limit of the
   ///     diagnostic currently in \c *this.
-  InFlightDiagnostic& wrapIn(const Diagnostic& wrapper);
+  InFlightDiagnostic& wrapIn(const Diagnostic& Wrapper);
 
   /// Wraps this diagnostic in another diagnostic. That is, \p ID and
   /// \p VArgs will be emitted in place of the diagnostic that otherwise
@@ -416,10 +418,10 @@ public:
   template <typename... ArgTypes>
   InFlightDiagnostic& wrapIn(
     Diag<DiagnosticInfo *, ArgTypes...> ID,
-    typename detail::PassArgument<ArgTypes>::type... VArgs
+    typename detail::PassArgument<ArgTypes>::Type... VArgs
   ) {
-    Diagnostic wrapper{ID, nullptr, std::move(VArgs)...};
-    return wrapIn(wrapper);
+    Diagnostic Wrapper{ID, nullptr, std::move(VArgs)...};
+    return wrapIn(Wrapper);
   }
 
   /// Add a token-based range to the currently-active diagnostic.
@@ -428,18 +430,18 @@ public:
   /// Add a character-based range to the currently-active diagnostic.
   InFlightDiagnostic& highlightChars(SourceLoc Start, SourceLoc End);
 
-  static const char * fixItStringFor(const FixItID id);
+  static const char * fixItStringFor(FixItID Id);
 
   /// Add a token-based replacement fix-it to the currently-active
   /// diagnostic.
   template <typename... ArgTypes>
   InFlightDiagnostic& fixItReplace(
     SourceRange R,
-    StructuredFixIt<ArgTypes...> fixIt,
-    typename detail::PassArgument<ArgTypes>::type... VArgs
+    StructuredFixIt<ArgTypes...> FixIt,
+    typename detail::PassArgument<ArgTypes>::Type... VArgs
   ) {
     DiagnosticArgument DiagArgs[] = {std::move(VArgs)...};
-    return fixItReplace(R, fixItStringFor(fixIt.ID), DiagArgs);
+    return fixItReplace(R, fixItStringFor(FixIt.ID), DiagArgs);
   }
 
   /// Add a character-based replacement fix-it to the currently-active
@@ -448,12 +450,12 @@ public:
   InFlightDiagnostic& fixItReplaceChars(
     SourceLoc Start,
     SourceLoc End,
-    StructuredFixIt<ArgTypes...> fixIt,
-    typename detail::PassArgument<ArgTypes>::type... VArgs
+    StructuredFixIt<ArgTypes...> FixIt,
+    typename detail::PassArgument<ArgTypes>::Type... VArgs
   ) {
     DiagnosticArgument DiagArgs[] = {std::move(VArgs)...};
     return fixItReplaceChars(
-      Start, End, fixItStringFor(fixIt.ID), DiagArgs
+      Start, End, fixItStringFor(FixIt.ID), DiagArgs
     );
   }
 
@@ -461,11 +463,11 @@ public:
   template <typename... ArgTypes>
   InFlightDiagnostic& fixItInsert(
     SourceLoc L,
-    StructuredFixIt<ArgTypes...> fixIt,
-    typename detail::PassArgument<ArgTypes>::type... VArgs
+    StructuredFixIt<ArgTypes...> FixIt,
+    typename detail::PassArgument<ArgTypes>::Type... VArgs
   ) {
     DiagnosticArgument DiagArgs[] = {std::move(VArgs)...};
-    return fixItReplaceChars(L, L, fixItStringFor(fixIt.ID), DiagArgs);
+    return fixItReplaceChars(L, L, fixItStringFor(FixIt.ID), DiagArgs);
   }
 
   /// Add an insertion fix-it to the currently-active diagnostic.  The
@@ -473,11 +475,11 @@ public:
   template <typename... ArgTypes>
   InFlightDiagnostic& fixItInsertAfter(
     SourceLoc L,
-    StructuredFixIt<ArgTypes...> fixIt,
-    typename detail::PassArgument<ArgTypes>::type... VArgs
+    StructuredFixIt<ArgTypes...> FixIt,
+    typename detail::PassArgument<ArgTypes>::Type... VArgs
   ) {
     DiagnosticArgument DiagArgs[] = {std::move(VArgs)...};
-    return fixItInsertAfter(L, fixItStringFor(fixIt.ID), DiagArgs);
+    return fixItInsertAfter(L, fixItStringFor(FixIt.ID), DiagArgs);
   }
 
   /// Add a token-based replacement fix-it to the currently-active
@@ -547,25 +549,25 @@ private:
 class DiagnosticState {
   /// Whether we should continue to emit diagnostics, even after a
   /// fatal error
-  bool showDiagnosticsAfterFatalError = false;
+  bool ShowDiagnosticsAfterFatalError = false;
 
   /// Don't emit any warnings
-  bool suppressWarnings = false;
+  bool SuppressWarnings = false;
 
   /// Emit all warnings as errors
-  bool warningsAsErrors = false;
+  bool WarningsAsErrors = false;
 
   /// Whether a fatal error has occurred
-  bool fatalErrorOccurred = false;
+  bool FatalErrorOccurred = false;
 
   /// Whether any error diagnostics have been emitted.
-  bool anyErrorOccurred = false;
+  bool AnyErrorOccurred = false;
 
   /// Track the previous emitted Behavior, useful for notes
-  DiagnosticBehavior previousBehavior = DiagnosticBehavior::Unspecified;
+  DiagnosticBehavior PreviousBehavior = DiagnosticBehavior::Unspecified;
 
   /// Track which diagnostics should be ignored.
-  llvm::BitVector ignoredDiagnostics;
+  llvm::BitVector IgnoredDiagnostics;
 
   friend class DiagnosticStateRAII;
 
@@ -575,62 +577,62 @@ public:
 
   /// Figure out the Behavior for the given diagnostic, taking current
   /// state such as fatality into account.
-  DiagnosticBehavior determineBehavior(const Diagnostic& diag);
+  DiagnosticBehavior determineBehavior(const Diagnostic& Diag);
 
   bool hadAnyError() const {
-    return anyErrorOccurred;
+    return AnyErrorOccurred;
   }
 
   bool hasFatalErrorOccurred() const {
-    return fatalErrorOccurred;
+    return FatalErrorOccurred;
   }
 
-  void setShowDiagnosticsAfterFatalError(bool val = true) {
-    showDiagnosticsAfterFatalError = val;
+  void setShowDiagnosticsAfterFatalError(bool Val = true) {
+    ShowDiagnosticsAfterFatalError = Val;
   }
 
-  bool getShowDiagnosticsAfterFatalError() {
-    return showDiagnosticsAfterFatalError;
+  bool getShowDiagnosticsAfterFatalError() const {
+    return ShowDiagnosticsAfterFatalError;
   }
 
   /// Whether to skip emitting warnings
-  void setSuppressWarnings(bool val) {
-    suppressWarnings = val;
+  void setSuppressWarnings(bool Val) {
+    SuppressWarnings = Val;
   }
 
   bool getSuppressWarnings() const {
-    return suppressWarnings;
+    return SuppressWarnings;
   }
 
   /// Whether to treat warnings as errors
-  void setWarningsAsErrors(bool val) {
-    warningsAsErrors = val;
+  void setWarningsAsErrors(bool Val) {
+    WarningsAsErrors = Val;
   }
 
   bool getWarningsAsErrors() const {
-    return warningsAsErrors;
+    return WarningsAsErrors;
   }
 
   void resetHadAnyError() {
-    anyErrorOccurred = false;
-    fatalErrorOccurred = false;
+    AnyErrorOccurred = false;
+    FatalErrorOccurred = false;
   }
 
   /// Set whether a diagnostic should be ignored.
-  void setIgnoredDiagnostic(DiagID id, bool ignored) {
-    ignoredDiagnostics[(unsigned)id] = ignored;
+  void setIgnoredDiagnostic(DiagID Id, bool Ignored) {
+    IgnoredDiagnostics[(unsigned)Id] = Ignored;
   }
 
-  void swap(DiagnosticState& other) {
+  void swap(DiagnosticState& Other) {
     std::swap(
-      showDiagnosticsAfterFatalError, other.showDiagnosticsAfterFatalError
+      ShowDiagnosticsAfterFatalError, Other.ShowDiagnosticsAfterFatalError
     );
-    std::swap(suppressWarnings, other.suppressWarnings);
-    std::swap(warningsAsErrors, other.warningsAsErrors);
-    std::swap(fatalErrorOccurred, other.fatalErrorOccurred);
-    std::swap(anyErrorOccurred, other.anyErrorOccurred);
-    std::swap(previousBehavior, other.previousBehavior);
-    std::swap(ignoredDiagnostics, other.ignoredDiagnostics);
+    std::swap(SuppressWarnings, Other.SuppressWarnings);
+    std::swap(WarningsAsErrors, Other.WarningsAsErrors);
+    std::swap(FatalErrorOccurred, Other.FatalErrorOccurred);
+    std::swap(AnyErrorOccurred, Other.AnyErrorOccurred);
+    std::swap(PreviousBehavior, Other.PreviousBehavior);
+    std::swap(IgnoredDiagnostics, Other.IgnoredDiagnostics);
   }
 
 private:
@@ -659,7 +661,7 @@ private:
   SmallVector<DiagnosticConsumer *, 2> Consumers;
 
   /// Tracks diagnostic behaviors and state
-  DiagnosticState state;
+  DiagnosticState State;
 
   /// The currently active diagnostic, if there is one.
   Optional<Diagnostic> ActiveDiagnostic;
@@ -684,7 +686,7 @@ private:
 
   /// Diagnostic producer to handle the logic behind retrieving a
   /// localized diagnostic message.
-  std::unique_ptr<diag::LocalizationProducer> localization;
+  std::unique_ptr<diag::LocalizationProducer> Localization;
 
   /// The number of open diagnostic transactions. Diagnostics are only
   /// emitted once all transactions have closed.
@@ -693,17 +695,17 @@ private:
   /// For batch mode, use this to know where to output a diagnostic from a
   /// non-primary file. It's any location in the buffer of the current
   /// primary input being compiled. May be invalid.
-  SourceLoc bufferIndirectlyCausingDiagnostic;
+  SourceLoc BufferIndirectlyCausingDiagnostic;
 
   /// Print diagnostic names after their messages
-  bool printDiagnosticNames = false;
+  bool PrintDiagnosticNames = false;
 
   /// Path to diagnostic documentation directory.
-  std::string diagnosticDocumentationPath = "";
+  std::string DiagnosticDocumentationPath;
 
   /// The w2n language version. This is used to limit diagnostic behavior
   /// until a specific language version, e.g. w2n 6.
-  version::Version languageVersion;
+  version::Version LanguageVersion;
 
   /// Whether we are actively pretty-printing a declaration as part of
   /// diagnostics.
@@ -719,90 +721,90 @@ public:
 
   explicit DiagnosticEngine(SourceManager& SourceMgr) :
     SourceMgr(SourceMgr),
-    ActiveDiagnostic(),
     TransactionStrings(TransactionAllocator) {
   }
 
   /// hadAnyError - return true if any *error* diagnostics have been
   /// emitted.
   bool hadAnyError() const {
-    return state.hadAnyError();
+    return State.hadAnyError();
   }
 
   bool hasFatalErrorOccurred() const {
-    return state.hasFatalErrorOccurred();
+    return State.hasFatalErrorOccurred();
   }
 
-  void setShowDiagnosticsAfterFatalError(bool val = true) {
-    state.setShowDiagnosticsAfterFatalError(val);
+  void setShowDiagnosticsAfterFatalError(bool Val = true) {
+    State.setShowDiagnosticsAfterFatalError(Val);
   }
 
   bool getShowDiagnosticsAfterFatalError() {
-    return state.getShowDiagnosticsAfterFatalError();
+    return State.getShowDiagnosticsAfterFatalError();
   }
 
   void flushConsumers() {
-    for (auto * consumer : Consumers)
-      consumer->flush();
+    for (auto * Consumer : Consumers) {
+      Consumer->flush();
+    }
   }
 
   /// Whether to skip emitting warnings
-  void setSuppressWarnings(bool val) {
-    state.setSuppressWarnings(val);
+  void setSuppressWarnings(bool Val) {
+    State.setSuppressWarnings(Val);
   }
 
   bool getSuppressWarnings() const {
-    return state.getSuppressWarnings();
+    return State.getSuppressWarnings();
   }
 
   /// Whether to treat warnings as errors
-  void setWarningsAsErrors(bool val) {
-    state.setWarningsAsErrors(val);
+  void setWarningsAsErrors(bool Val) {
+    State.setWarningsAsErrors(Val);
   }
 
   bool getWarningsAsErrors() const {
-    return state.getWarningsAsErrors();
+    return State.getWarningsAsErrors();
   }
 
   /// Whether to print diagnostic names after their messages
-  void setPrintDiagnosticNames(bool val) {
-    printDiagnosticNames = val;
+  void setPrintDiagnosticNames(bool Val) {
+    PrintDiagnosticNames = Val;
   }
 
   bool getPrintDiagnosticNames() const {
-    return printDiagnosticNames;
+    return PrintDiagnosticNames;
   }
 
-  void setDiagnosticDocumentationPath(std::string path) {
-    diagnosticDocumentationPath = path;
+  void setDiagnosticDocumentationPath(std::string Path) {
+    DiagnosticDocumentationPath = Path;
   }
 
   StringRef getDiagnosticDocumentationPath() {
-    return diagnosticDocumentationPath;
+    return DiagnosticDocumentationPath;
   }
 
   bool isPrettyPrintingDecl() const {
     return IsPrettyPrintingDecl;
   }
 
-  void setLanguageVersion(version::Version v) {
-    languageVersion = v;
+  void setLanguageVersion(version::Version V) {
+    LanguageVersion = V;
   }
 
-  void setLocalization(StringRef locale, StringRef path) {
-    assert(!locale.empty());
-    assert(!path.empty());
-    localization = diag::LocalizationProducer::producerFor(
-      locale, path, getPrintDiagnosticNames()
+  void setLocalization(StringRef Locale, StringRef Path) {
+    assert(!Locale.empty());
+    assert(!Path.empty());
+    Localization = diag::LocalizationProducer::producerFor(
+      Locale, Path, getPrintDiagnosticNames()
     );
   }
 
-  void ignoreDiagnostic(DiagID id) {
-    state.setIgnoredDiagnostic(id, true);
+  void ignoreDiagnostic(DiagID Id) {
+    State.setIgnoredDiagnostic(Id, true);
   }
 
   void resetHadAnyError() {
-    state.resetHadAnyError();
+    State.resetHadAnyError();
   }
 
   /// Add an additional DiagnosticConsumer to receive diagnostics.
@@ -878,7 +880,7 @@ public:
   InFlightDiagnostic diagnose(
     SourceLoc Loc,
     Diag<ArgTypes...> ID,
-    typename detail::PassArgument<ArgTypes>::type... Args
+    typename detail::PassArgument<ArgTypes>::Type... Args
   ) {
     return diagnose(Loc, Diagnostic(ID, std::move(Args)...));
   }
@@ -888,7 +890,7 @@ public:
   template <typename... ArgTypes>
   InFlightDiagnostic diagnose(
     Diag<ArgTypes...> ID,
-    typename detail::PassArgument<ArgTypes>::type... Args
+    typename detail::PassArgument<ArgTypes>::Type... Args
   ) = delete;
 
   /// Emit a diagnostic using a preformatted array of diagnostic
@@ -904,10 +906,9 @@ public:
   ///
   /// \returns An in-flight diagnostic, to which additional information
   /// can be attached.
-  InFlightDiagnostic diagnose(
-    const Decl * decl, DiagID id, ArrayRef<DiagnosticArgument> args
-  ) {
-    return diagnose(decl, Diagnostic(id, args));
+  InFlightDiagnostic
+  diagnose(const Decl * D, DiagID Id, ArrayRef<DiagnosticArgument> Args) {
+    return diagnose(D, Diagnostic(Id, Args));
   }
 
   /// Emit an already-constructed diagnostic referencing the given
@@ -920,10 +921,10 @@ public:
   ///
   /// \returns An in-flight diagnostic, to which additional information
   /// can be attached.
-  InFlightDiagnostic diagnose(const Decl * decl, const Diagnostic& diag) {
+  InFlightDiagnostic diagnose(const Decl * D, const Diagnostic& Diag) {
     assert(!ActiveDiagnostic && "Already have an active diagnostic");
-    ActiveDiagnostic = diag;
-    ActiveDiagnostic->setDecl(decl);
+    ActiveDiagnostic = Diag;
+    ActiveDiagnostic->setDecl(D);
     return InFlightDiagnostic(*this);
   }
 
@@ -938,11 +939,11 @@ public:
   /// the types expected by the diagnostic \p ID.
   template <typename... ArgTypes>
   InFlightDiagnostic diagnose(
-    const Decl * decl,
-    Diag<ArgTypes...> id,
-    typename detail::PassArgument<ArgTypes>::type... args
+    const Decl * D,
+    Diag<ArgTypes...> Id,
+    typename detail::PassArgument<ArgTypes>::Type... Args
   ) {
-    return diagnose(decl, Diagnostic(id, std::move(args)...));
+    return diagnose(D, Diagnostic(Id, std::move(Args)...));
   }
 
   /// Emit a parent diagnostic and attached notes.
@@ -953,22 +954,22 @@ public:
   /// \param builder A closure which builds and emits notes to be attached
   /// to the parent diag.
   void diagnoseWithNotes(
-    InFlightDiagnostic parentDiag, llvm::function_ref<void(void)> builder
+    InFlightDiagnostic ParentDiag, llvm::function_ref<void(void)> Builder
   );
 
   /// \returns true if diagnostic is marked with PointsToFirstBadToken
   /// option.
-  bool isDiagnosticPointsToFirstBadToken(DiagID id) const;
+  bool isDiagnosticPointsToFirstBadToken(DiagID Id) const;
 
   /// \returns true if the diagnostic is an API digester API or ABI
   /// breakage diagnostic.
-  bool isAPIDigesterBreakageDiagnostic(DiagID id) const;
+  bool isAPIDigesterBreakageDiagnostic(DiagID Id) const;
 
   /// \returns true if the diagnostic is marking a deprecation.
-  bool isDeprecationDiagnostic(DiagID id) const;
+  bool isDeprecationDiagnostic(DiagID Id) const;
 
   /// \returns true if the diagnostic is marking an unused element.
-  bool isNoUsageDiagnostic(DiagID id) const;
+  bool isNoUsageDiagnostic(DiagID Id) const;
 
   /// \returns true if any diagnostic consumer gave an error while
   /// invoking
@@ -989,7 +990,7 @@ private:
   /// Called when tentative diagnostic is about to be flushed,
   /// to apply any required transformations e.g. copy string arguments
   /// to extend their lifetime.
-  void onTentativeDiagnosticFlush(Diagnostic& diagnostic);
+  void onTentativeDiagnosticFlush(Diagnostic& Diagnostic);
 
   /// Flush the active diagnostic.
   void flushActiveDiagnostic();
@@ -1001,14 +1002,14 @@ private:
 
   /// Generate DiagnosticInfo for a Diagnostic to be passed to consumers.
   Optional<DiagnosticInfo>
-  diagnosticInfoForDiagnostic(const Diagnostic& diagnostic);
+  diagnosticInfoForDiagnostic(const Diagnostic& Diagnostic);
 
   /// Send \c diag to all diagnostic consumers.
-  void emitDiagnostic(const Diagnostic& diag);
+  void emitDiagnostic(const Diagnostic& Diag);
 
   /// Handle a new diagnostic, which will either be emitted, or added to
   /// an active transaction.
-  void handleDiagnostic(Diagnostic&& diag);
+  void handleDiagnostic(Diagnostic&& Diag);
 
   /// Clear any tentative diagnostics.
   void clearTentativeDiagnostics();
@@ -1018,16 +1019,16 @@ private:
   void emitTentativeDiagnostics();
 
   /// Forward all tentative diagnostics to a different diagnostic engine.
-  void forwardTentativeDiagnosticsTo(DiagnosticEngine& targetEngine);
+  void forwardTentativeDiagnosticsTo(DiagnosticEngine& TargetEngine);
 
 public:
 
-  DiagnosticKind declaredDiagnosticKindFor(const DiagID id);
+  DiagnosticKind declaredDiagnosticKindFor(DiagID Id);
 
   llvm::StringRef
-  diagnosticStringFor(const DiagID id, bool printDiagnosticNames);
+  diagnosticStringFor(DiagID Id, bool PrintDiagnosticNames);
 
-  static llvm::StringRef diagnosticIDStringFor(const DiagID id);
+  static llvm::StringRef diagnosticIDStringFor(DiagID Id);
 
   /// If there is no clear .dia file for a diagnostic, put it in the one
   /// corresponding to the SourceLoc given here.
@@ -1038,7 +1039,7 @@ public:
   void resetBufferIndirectlyCausingDiagnostic();
 
   SourceLoc getDefaultDiagnosticLoc() const {
-    return bufferIndirectlyCausingDiagnostic;
+    return BufferIndirectlyCausingDiagnostic;
   }
 };
 
@@ -1062,12 +1063,12 @@ public:
 /// DiagnosticStateRAII to ensure that their changes to diagnostic engine
 /// state don't leak out and affect the caller's diagnostics.
 class DiagnosticStateRAII {
-  llvm::SaveAndRestore<DiagnosticBehavior> previousBehavior;
+  llvm::SaveAndRestore<DiagnosticBehavior> PreviousBehavior;
 
 public:
 
-  DiagnosticStateRAII(DiagnosticEngine& diags) :
-    previousBehavior(diags.state.previousBehavior) {
+  DiagnosticStateRAII(DiagnosticEngine& Diags) :
+    PreviousBehavior(Diags.State.PreviousBehavior) {
   }
 
   ~DiagnosticStateRAII() {
@@ -1115,8 +1116,8 @@ public:
   DiagnosticTransaction(const DiagnosticTransaction&) = delete;
   DiagnosticTransaction& operator=(const DiagnosticTransaction&) = delete;
 
-  explicit DiagnosticTransaction(DiagnosticEngine& engine) :
-    Engine(engine),
+  explicit DiagnosticTransaction(DiagnosticEngine& Engine) :
+    Engine(Engine),
     PrevDiagnostics(Engine.TentativeDiagnostics.size()),
     Depth(Engine.TransactionCount),
     IsOpen(true) {
@@ -1135,18 +1136,16 @@ public:
   }
 
   bool hasErrors() const {
-    ArrayRef<Diagnostic> diagnostics(
+    ArrayRef<Diagnostic> Diagnostics(
       Engine.TentativeDiagnostics.begin() + PrevDiagnostics,
       Engine.TentativeDiagnostics.end()
     );
 
-    for (auto& diagnostic : diagnostics) {
-      auto behavior = Engine.state.determineBehavior(diagnostic);
-      if (behavior == DiagnosticBehavior::Fatal || behavior == DiagnosticBehavior::Error)
-        return true;
-    }
-
-    return false;
+    return llvm::any_of(Diagnostics, [&](auto Diag) -> bool {
+      auto Behavior = Engine.State.determineBehavior(Diag);
+      return Behavior == DiagnosticBehavior::Fatal
+          || Behavior == DiagnosticBehavior::Error;
+    });
   }
 
   /// Abort and close this transaction and erase all diagnostics
@@ -1191,8 +1190,8 @@ private:
 class CompoundDiagnosticTransaction : public DiagnosticTransaction {
 public:
 
-  explicit CompoundDiagnosticTransaction(DiagnosticEngine& engine) :
-    DiagnosticTransaction(engine) {
+  explicit CompoundDiagnosticTransaction(DiagnosticEngine& Engine) :
+    DiagnosticTransaction(Engine) {
   }
 
   ~CompoundDiagnosticTransaction() {
@@ -1214,15 +1213,15 @@ public:
 
     // The first diagnostic is assumed to be the parent. If this is not an
     // error or warning, we'll assert later when trying to add children.
-    Diagnostic& parent = Engine.TentativeDiagnostics[PrevDiagnostics];
+    Diagnostic& Parent = Engine.TentativeDiagnostics[PrevDiagnostics];
 
     // Associate the children with the parent.
-    for (auto diag =
+    for (auto * Diag =
            Engine.TentativeDiagnostics.begin() + PrevDiagnostics + 1;
-         diag != Engine.TentativeDiagnostics.end();
-         ++diag) {
-      diag->setIsChildNote(true);
-      parent.addChildNote(std::move(*diag));
+         Diag != Engine.TentativeDiagnostics.end();
+         ++Diag) {
+      Diag->setIsChildNote(true);
+      Parent.addChildNote(std::move(*Diag));
     }
 
     // Erase the children, they'll be emitted alongside their parent.
@@ -1271,11 +1270,11 @@ public:
   /// Create a new diagnostic queue with a given engine to forward the
   /// diagnostics to.
   explicit DiagnosticQueue(
-    DiagnosticEngine& engine, bool emitOnDestruction
+    DiagnosticEngine& Engine, bool EmitOnDestruction
   ) :
-    UnderlyingEngine(engine),
-    QueueEngine(engine.SourceMgr),
-    EmitOnDestruction(emitOnDestruction) {
+    UnderlyingEngine(Engine),
+    QueueEngine(Engine.SourceMgr),
+    EmitOnDestruction(EmitOnDestruction) {
     // Open a transaction to avoid emitting any diagnostics for the
     // temporary engine.
     QueueEngine.TransactionCount++;
@@ -1320,15 +1319,15 @@ public:
 };
 
 inline void DiagnosticEngine::diagnoseWithNotes(
-  InFlightDiagnostic parentDiag, llvm::function_ref<void(void)> builder
+  InFlightDiagnostic ParentDiag, llvm::function_ref<void(void)> Builder
 ) {
-  CompoundDiagnosticTransaction transaction(*this);
-  parentDiag.flush();
-  builder();
+  CompoundDiagnosticTransaction Transaction(*this);
+  ParentDiag.flush();
+  Builder();
 }
 
 /// FIXME: not ported \c EncodedDiagnosticMessage
 
 } // namespace w2n
 
-#endif
+#endif // W2N_AST_DIAGNOSTICENGINE_H

@@ -25,21 +25,21 @@
 
 ERROR(
   invalid_diagnostic,
-  none,
+  None,
   "INTERNAL ERROR: this diagnostic should not be produced",
   ()
 )
 
 ERROR(
   not_implemented,
-  none,
+  None,
   "INTERNAL ERROR: feature not implemented: %0",
   (StringRef)
 )
 
 ERROR(
   error_opening_output,
-  none,
+  None,
   "error opening '%0' for output: %1",
   (StringRef, StringRef)
 )
@@ -48,9 +48,9 @@ ERROR(
 // MARK: Circular reference diagnostics
 //------------------------------------------------------------------------------
 
-ERROR(circular_reference, none, "circular reference", ())
+ERROR(circular_reference, None, "circular reference", ())
 
-NOTE(circular_reference_through, none, "through reference here", ())
+NOTE(circular_reference_through, None, "through reference here", ())
 
 #define UNDEFINE_DIAGNOSTIC_MACROS
 #include <w2n/AST/DefineDiagnosticMacros.h>

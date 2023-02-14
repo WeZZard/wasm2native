@@ -40,7 +40,7 @@ void diagnoseSync(
   llvm::sys::Mutex * DiagMutex,
   SourceLoc Loc,
   Diag<ArgTypes...> ID,
-  typename w2n::detail::PassArgument<ArgTypes>::type... Args
+  typename w2n::detail::PassArgument<ArgTypes>::Type... Args
 ) {
   if (DiagMutex) {
     DiagMutex->lock();

@@ -9,96 +9,96 @@
 
 ERROR(
   no_llvm_target,
-  none,
+  None,
   "error loading LLVM target for triple '%0': %1",
   (StringRef, StringRef)
 )
 ERROR(
   error_codegen_init_fail,
-  none,
+  None,
   "cannot initialize code generation passes for target",
   ()
 )
 
 ERROR(
   irgen_unimplemented,
-  none,
+  None,
   "unimplemented IR generation feature %0",
   (StringRef)
 )
-ERROR(irgen_failure, none, "IR generation failure: %0", (StringRef))
+ERROR(irgen_failure, None, "IR generation failure: %0", (StringRef))
 
 ERROR(
   type_to_verify_not_found,
-  none,
+  None,
   "unable to find type '%0' to verify",
   (StringRef)
 )
 ERROR(
   type_to_verify_ambiguous,
-  none,
+  None,
   "type to verify '%0' is ambiguous",
   (StringRef)
 )
 ERROR(
   type_to_verify_dependent,
-  none,
+  None,
   "type to verify '%0' has unbound generic parameters",
   (StringRef)
 )
 ERROR(
   too_few_output_filenames,
-  none,
+  None,
   "too few output file names specified",
   ()
 )
 ERROR(
   no_input_files_for_mt,
-  none,
+  None,
   "no swift input files for multi-threaded compilation",
   ()
 )
 
 ERROR(
   alignment_dynamic_type_layout_unsupported,
-  none,
+  None,
   "@_alignment is not supported on types with dynamic layout",
   ()
 )
 ERROR(
   alignment_less_than_natural,
-  none,
+  None,
   "@_alignment cannot decrease alignment below natural alignment of %0",
   (unsigned)
 )
 ERROR(
   alignment_more_than_maximum,
-  none,
+  None,
   "@_alignment cannot increase alignment above maximum alignment of %0",
   (unsigned)
 )
 
 ERROR(
   temporary_allocation_size_negative,
-  none,
+  None,
   "allocation capacity must be greater than or equal to zero",
   ()
 )
 ERROR(
   temporary_allocation_size_overflow,
-  none,
+  None,
   "allocation byte count too large",
   ()
 )
 ERROR(
   temporary_allocation_alignment_not_positive,
-  none,
+  None,
   "alignment value must be greater than zero",
   ()
 )
 ERROR(
   temporary_allocation_alignment_not_power_of_2,
-  none,
+  None,
   "alignment value must be a power of two",
   ()
 )

@@ -149,7 +149,8 @@ proto_implemented\
 |FIRST_(DECL|STMT|EXPR|TYPE)\
 |LAST_(DECL|STMT|EXPR|TYPE)\
 |(DECL|STMT|EXPR|TYPE)_RANGE\
-|BUILTIN|BUILTIN_.+"
+|BUILTIN|BUILTIN_.+\
+|ERROR|WARNING|NOTE|REMARK|FIXIT|DIAG|EDUCATIONAL_NOTES"
   # readability-identifier-naming.MemberCase no longer works because we
   # defined public/private member's case separately
   # readability-identifier-naming.MethodCase no longer works because we

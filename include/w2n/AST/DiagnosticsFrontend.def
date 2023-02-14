@@ -25,30 +25,30 @@
 
 ERROR(
   error_wrong_number_of_arguments,
-  none,
+  None,
   "wrong number of '%0' arguments (expected %1, got %2)",
   (StringRef, int, int)
 )
 
 ERROR(
   error_formatting_multiple_file_ranges,
-  none,
+  None,
   "file ranges don't support multiple input files",
   ()
 )
 
-ERROR(error_formatting_invalid_range, none, "file range is invalid", ())
+ERROR(error_formatting_invalid_range, None, "file range is invalid", ())
 
 WARNING(
   stats_disabled,
-  none,
+  None,
   "compiler was not built with support for collecting statistics",
   ()
 )
 
 WARNING(
   tbd_warn_truncating_version,
-  none,
+  None,
   "truncating %select{current|compatibility}0 version '%1' in TBD file "
   "to fit in 32-bit space used by old mach-o format",
   (unsigned, StringRef)
@@ -56,31 +56,28 @@ WARNING(
 
 ERROR(
   tbd_err_invalid_version,
-  none,
+  None,
   "invalid dynamic library %select{current|compatibility}0 version '%1'",
   (unsigned, StringRef)
 )
 
 WARNING(
   tbd_only_supported_in_whole_module,
-  none,
+  None,
   "TBD generation is only supported when the whole module can be seen",
   ()
 )
 
 ERROR(
   tbd_not_supported_with_cmo,
-  none,
+  None,
   "Test-Based InstallAPI (TBD) is not support with "
   "cross-module-optimization",
   ()
 )
 
 ERROR(
-  unknown_platform_name,
-  none,
-  "unknown platform name %0",
-  (StringRef)
+  unknown_platform_name, None, "unknown platform name %0", (StringRef)
 )
 
 #define UNDEFINE_DIAGNOSTIC_MACROS

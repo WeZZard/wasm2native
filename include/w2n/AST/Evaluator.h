@@ -14,6 +14,7 @@
 #include <w2n/AST/RequestCache.h>
 #include <w2n/Basic/AnyValue.h>
 #include <w2n/Basic/LanguageOptions.h>
+#include <w2n/Basic/Statistic.h>
 
 namespace llvm {
 class raw_ostream;

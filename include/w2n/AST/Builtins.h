@@ -18,6 +18,9 @@
 #ifndef W2N_AST_BUILTINS_H
 #define W2N_AST_BUILTINS_H
 
+#include <llvm/IR/Attributes.h>
+#include <llvm/IR/Intrinsics.h>
+#include <llvm/Support/AtomicOrdering.h>
 #include <cstdint>
 #include <w2n/AST/ASTContext.h>
 

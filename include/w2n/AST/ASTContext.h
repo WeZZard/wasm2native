@@ -1,7 +1,7 @@
 #ifndef W2N_AST_ASTCONTEXT_H
 #define W2N_AST_ASTCONTEXT_H
 
-#include "llvm/ADT/Optional.h"
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SetVector.h>
 #include <llvm/Support/Allocator.h>
 #include <w2n/AST/ASTAllocated.h>
@@ -15,7 +15,6 @@
 #include <w2n/Basic/LanguageOptions.h>
 #include <w2n/Basic/Malloc.h>
 #include <w2n/Basic/SourceManager.h>
-#include <w2n/Frontend/Frontend.h>
 
 namespace w2n {
 

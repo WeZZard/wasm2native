@@ -8,6 +8,7 @@
 #include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/Linkage.h>
 #include <w2n/AST/Module.h>
+#include <w2n/AST/SourceFile.h>
 #include <w2n/AST/TypeCheckerRequests.h>
 #include <w2n/Basic/Unimplemented.h>
 

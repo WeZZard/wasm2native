@@ -155,7 +155,7 @@ public:
     /// Continue the current walk, replacing the current node with \p
     /// node.
     template <typename T>
-    static Detail::ContinueWalkResult<T> Continue(T Node) {
+    static Detail::ContinueWalkResult<T> createContinue(T Node) {
       return {std::move(Node)};
     }
 
@@ -163,8 +163,9 @@ public:
     /// node. However, skip visiting the children of \p node, and instead
     /// resume the walk of the parent node.
     template <typename T>
-    static Detail::SkipChildrenIfWalkResult<T> SkipChildren(T Node) {
-      return SkipChildrenIf(true, std::move(Node));
+    static Detail::SkipChildrenIfWalkResult<T> createSkipChildren(T Node
+    ) {
+      return createSkipChildrenIf(true, std::move(Node));
     }
 
     /// If \p cond is true, this is equivalent to \c
@@ -172,7 +173,7 @@ public:
     /// Action::Continue(node).
     template <typename T>
     static Detail::SkipChildrenIfWalkResult<T>
-    SkipChildrenIf(bool Cond, T Node) {
+    createSkipChildrenIf(bool Cond, T Node) {
       return {Cond, std::move(Node)};
     }
 
@@ -181,49 +182,51 @@ public:
     /// Action::SkipChildren(node).
     template <typename T>
     static Detail::SkipChildrenIfWalkResult<T>
-    VisitChildrenIf(bool Cond, T Node) {
-      return SkipChildrenIf(!Cond, std::move(Node));
+    createVisitChildrenIf(bool Cond, T Node) {
+      return createSkipChildrenIf(!Cond, std::move(Node));
     }
 
     /// If \p cond is true, this is equivalent to \c Action::Stop().
     /// Otherwise, it is equivalent to \c Action::Continue(node).
     template <typename T>
-    static Detail::StopIfWalkResult<T> StopIf(bool Cond, T Node) {
+    static Detail::StopIfWalkResult<T> createStopIf(bool Cond, T Node) {
       return {Cond, std::move(Node)};
     }
 
     /// Continue the current walk.
-    static Detail::ContinueWalkAction Continue() {
+    static Detail::ContinueWalkAction createContinue() {
       return {};
     }
 
     /// Continue the current walk, but do not visit the children of the
     /// current node. Instead, resume at the parent's post-walk.
-    static Detail::SkipChildrenIfWalkAction SkipChildren() {
-      return SkipChildrenIf(true);
+    static Detail::SkipChildrenIfWalkAction createSkipChildren() {
+      return createSkipChildrenIf(true);
     }
 
     /// If \p cond is true, this is equivalent to \c
     /// Action::SkipChildren(). Otherwise, it is equivalent to \c
     /// Action::Continue().
-    static Detail::SkipChildrenIfWalkAction SkipChildrenIf(bool Cond) {
+    static Detail::SkipChildrenIfWalkAction createSkipChildrenIf(bool Cond
+    ) {
       return {Cond};
     }
 
     /// If \p cond is true, this is equivalent to \c Action::Continue().
     /// Otherwise, it is equivalent to \c Action::SkipChildren().
-    static Detail::SkipChildrenIfWalkAction VisitChildrenIf(bool Cond) {
-      return SkipChildrenIf(!Cond);
+    static Detail::SkipChildrenIfWalkAction
+    createVisitChildrenIf(bool Cond) {
+      return createSkipChildrenIf(!Cond);
     }
 
     /// Terminate the walk, returning without visiting any other nodes.
-    static Detail::StopWalkAction Stop() {
+    static Detail::StopWalkAction createStop() {
       return {};
     }
 
     /// If \p cond is true, this is equivalent to \c Action::Stop().
     /// Otherwise, it is equivalent to \c Action::Continue().
-    static Detail::StopIfWalkAction StopIf(bool Cond) {
+    static Detail::StopIfWalkAction createStopIf(bool Cond) {
       return {Cond};
     }
   };
@@ -336,7 +339,7 @@ public:
       Value(std::move(Result.Value)) {
     }
 
-    PreWalkResult(Detail::StopWalkAction) :
+    PreWalkResult(Detail::StopWalkAction /*unused*/) :
       Action(PreWalkAction::Stop),
       Value(None) {
     }
@@ -387,7 +390,7 @@ public:
       Value(std::move(Result.Value)) {
     }
 
-    PostWalkResult(Detail::StopWalkAction) :
+    PostWalkResult(Detail::StopWalkAction /*unused*/) :
       Action(PostWalkAction::Stop),
       Value(None) {
     }
@@ -403,7 +406,7 @@ public:
   /// returns \c Action::Continue(E).
   ///
   virtual PreWalkResult<Expr *> walkToExprPre(Expr * E) {
-    return Action::Continue(E);
+    return Action::createContinue(E);
   }
 
   /// This method is called after visiting an expression's children. If a
@@ -417,7 +420,7 @@ public:
   /// returns \c Action::Continue(E).
   ///
   virtual PostWalkResult<Expr *> walkToExprPost(Expr * E) {
-    return Action::Continue(E);
+    return Action::createContinue(E);
   }
 
   /// This method is called when first visiting a statement before
@@ -430,7 +433,7 @@ public:
   /// returns \c Action::Continue(S).
   ///
   virtual PreWalkResult<Stmt *> walkToStmtPre(Stmt * S) {
-    return Action::Continue(S);
+    return Action::createContinue(S);
   }
 
   /// This method is called after visiting an statements's children. If a
@@ -444,7 +447,7 @@ public:
   /// returns \c Action::Continue(S).
   ///
   virtual PostWalkResult<Stmt *> walkToStmtPost(Stmt * S) {
-    return Action::Continue(S);
+    return Action::createContinue(S);
   }
 
   /// walkToDeclPre - This method is called when first visiting a decl,
@@ -457,7 +460,7 @@ public:
   /// is \c Action::Continue().
   ///
   virtual PreWalkAction walkToDeclPre(Decl * D) {
-    return Action::Continue();
+    return Action::createContinue();
   }
 
   /// walkToDeclPost - This method is called after visiting the children
@@ -469,7 +472,7 @@ public:
   /// is \c Action::Continue().
   ///
   virtual PostWalkAction walkToDeclPost(Decl * D) {
-    return Action::Continue();
+    return Action::createContinue();
   }
 
 protected:

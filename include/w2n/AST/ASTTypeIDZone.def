@@ -16,6 +16,10 @@
 //
 //===----------------------------------------------------------------===//
 
+#ifndef W2N_TYPEID_NAMED
+#define W2N_TYPEID_NAMED(A, B)
+#endif
+
 W2N_TYPEID_NAMED(Decl *, Decl)
 W2N_TYPEID_NAMED(ModuleDecl *, ModuleDecl)
 W2N_TYPEID_NAMED(SourceFile *, SourceFile)

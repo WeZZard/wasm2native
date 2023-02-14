@@ -10,6 +10,11 @@
 
 namespace llvm {
 class hash_code;
+template <typename... PTs>
+class PointerUnion;
+
+template <typename PT1, typename PT2>
+hash_code hash_value(const llvm::PointerUnion<PT1, PT2>& Ptr);
 
 /// \c std::vector hash support.
 template <typename T>
@@ -20,10 +25,16 @@ hash_code hash_value(const std::vector<T *>& Vec);
 #pragma mark Including llvm/ADT/Hashing.h
 
 #include <llvm/ADT/Hashing.h>
+#include <llvm/ADT/PointerUnion.h>
 
 #pragma mark Templates Implementation
 
 namespace llvm {
+
+template <typename PT1, typename PT2>
+hash_code hash_value(const llvm::PointerUnion<PT1, PT2>& Ptr) {
+  return hash_value(Ptr.getOpaqueValue());
+}
 
 template <typename T>
 hash_code hash_value(const std::vector<T *>& Vec) {

@@ -184,4 +184,15 @@ void simple_display(
 }
 } // namespace w2n
 
+namespace llvm {
+template <typename T>
+void simple_display(raw_ostream& os, const Optional<T>& ss) {
+  if (ss) {
+    simple_display(os, *ss);
+  } else {
+    os << "None";
+  }
+}
+} // namespace llvm
+
 #endif // W2N_BASIC_SIMPLEDISPLAY_H

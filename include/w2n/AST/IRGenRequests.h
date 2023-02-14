@@ -24,7 +24,8 @@
 #include <w2n/AST/ASTTypeIDs.h>
 #include <w2n/AST/EvaluatorDependencies.h>
 #include <w2n/AST/SimpleRequest.h>
-#include <w2n/Basic/AnyValue.h>
+#include <w2n/Basic/LLVMEquatable.h>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/PrimarySpecificPaths.h>
 #include <w2n/Basic/Statistic.h>
 

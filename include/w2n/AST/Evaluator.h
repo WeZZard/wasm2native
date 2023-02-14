@@ -12,7 +12,8 @@
 #include <w2n/AST/AnyRequest.h>
 #include <w2n/AST/EvaluatorDependencies.h>
 #include <w2n/AST/RequestCache.h>
-#include <w2n/Basic/AnyValue.h>
+#include <w2n/Basic/LLVMEquatable.h>
+#include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/LanguageOptions.h>
 #include <w2n/Basic/Statistic.h>
 

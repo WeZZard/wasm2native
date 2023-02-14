@@ -206,7 +206,9 @@ proto_implemented\
     value: CamelCase
   - key: readability-identifier-naming.TypeAliasIgnoredRegexp
     # Multi-line regex literal: double quote is required, `\` to break.
-    value: ".+_iterator"
+    value: "\
+.+_iterator\
+|[A-Za-z0-9]+_t"
   - key: readability-identifier-naming.TypedefCase
     value: CamelCase
   - key: readability-identifier-naming.TypeTemplateParameterCase

@@ -112,11 +112,11 @@ void Evaluator::diagnoseCycle(const ActiveRequest& Req) {
 void evaluator::DependencyRecorder::recordDependency(
   const DependencyCollector::Reference& Ref
 ) {
-  if (activeRequestReferences.empty()) {
+  if (ActiveRequestReferences.empty()) {
     return;
   }
 
-  activeRequestReferences.back().insert(Ref);
+  ActiveRequestReferences.back().insert(Ref);
 }
 
 evaluator::DependencyCollector::DependencyCollector(
@@ -125,19 +125,19 @@ evaluator::DependencyCollector::DependencyCollector(
   Parent(Parent) {
 #ifndef NDEBUG
   assert(
-    !Parent.isRecording
+    !Parent.IsRecording
     && "Probably not a good idea to allow nested recording"
   );
-  Parent.isRecording = true;
+  Parent.IsRecording = true;
 #endif
 }
 
 evaluator::DependencyCollector::~DependencyCollector() {
 #ifndef NDEBUG
   assert(
-    Parent.isRecording && "Should have been recording this whole time"
+    Parent.IsRecording && "Should have been recording this whole time"
   );
-  Parent.isRecording = false;
+  Parent.IsRecording = false;
 #endif
 }
 
@@ -168,8 +168,8 @@ void evaluator::DependencyCollector::addDynamicLookupName(
 void evaluator::DependencyRecorder::enumerateReferencesInFile(
   const SourceFile * SF, ReferenceEnumerator F
 ) const {
-  auto Entry = fileReferences.find(SF);
-  if (Entry == fileReferences.end()) {
+  auto Entry = FileReferences.find(SF);
+  if (Entry == FileReferences.end()) {
     return;
   }
 

@@ -40,7 +40,7 @@ class DependencyRecorder {
 
   /// Whether we are performing an incremental build and should therefore
   /// record request references.
-  bool shouldRecord;
+  bool ShouldRecord;
 
   /// References recorded while evaluating a dependency source request for
   /// each source file. This map is updated upon completion of a
@@ -51,14 +51,14 @@ class DependencyRecorder {
     llvm::DenseSet<
       DependencyCollector::Reference,
       DependencyCollector::Reference::Info>>
-    fileReferences;
+    FileReferences;
 
   /// References recorded while evaluating each request. This map is
   /// populated upon completion of each request, and includes all
   /// references from each downstream request as well. Note that uncached
   /// requests don't appear as keys in this map; their references are
   /// charged to the innermost cached active request.
-  RequestReferences requestReferences;
+  RequestReferences RequestReferences;
 
   /// Stack of references from each cached active request. When evaluating
   /// a dependency sink request, we update the innermost set of
@@ -68,18 +68,18 @@ class DependencyRecorder {
     DependencyCollector::Reference,
     2,
     DependencyCollector::Reference::Info>>
-    activeRequestReferences;
+    ActiveRequestReferences;
 
 #ifndef NDEBUG
   /// Used to catch places where a request's writeDependencySink() method
   /// kicks off another request, which would break invariants, so we
   /// disallow this from happening.
-  bool isRecording = false;
+  bool IsRecording = false;
 #endif
 
 public:
 
-  DependencyRecorder(bool shouldRecord) : shouldRecord(shouldRecord) {
+  DependencyRecorder(bool ShouldRecord) : ShouldRecord(ShouldRecord) {
   }
 
   /// Push a new empty set onto the activeRequestReferences stack.
@@ -90,29 +90,28 @@ public:
   /// references into the requestReferences map, as well as the next
   /// innermost entry in activeRequestReferences.
   template <typename Request>
-  void endRequest(const Request& req);
+  void endRequest(const Request& Req);
 
   /// When replaying a request whose value has already been cached, we
   /// need to update the innermost set in the activeRequestReferences
   /// stack.
   template <typename Request>
-  void replayCachedRequest(const Request& req);
+  void replayCachedRequest(const Request& Req);
 
   /// Upon completion of a dependency source request, we update the
   /// fileReferences map.
   template <typename Request>
-  void
-  handleDependencySourceRequest(const Request& req, SourceFile * source);
+  void handleDependencySourceRequest(const Request& Req, SourceFile * SF);
 
   /// Clear the recorded dependencies of a request, if any.
   template <typename Request>
-  void clearRequest(const Request& req);
+  void clearRequest(const Request& Req);
 
 private:
 
   /// Add an entry to the innermost set on the activeRequestReferences
   /// stack. Called from the DependencyCollector.
-  void recordDependency(const DependencyCollector::Reference& ref);
+  void recordDependency(const DependencyCollector::Reference& Ref);
 
 public:
 
@@ -130,88 +129,94 @@ public:
   /// responsibility of callers to ensure they are order-invariant or are
   /// sorting the result.
   void enumerateReferencesInFile(
-    const SourceFile * SF, ReferenceEnumerator f
+    const SourceFile * SF, ReferenceEnumerator F
   ) const;
 };
 
 template <typename Request>
 void evaluator::DependencyRecorder::beginRequest() {
-  if (!shouldRecord)
+  if (!ShouldRecord) {
     return;
+  }
 
-  if (!Request::isEverCached && !Request::isDependencySource)
+  if (!Request::isEverCached && !Request::isDependencySource) {
     return;
+  }
 
-  activeRequestReferences.push_back({});
+  ActiveRequestReferences.push_back({});
 }
 
 template <typename Request>
-void evaluator::DependencyRecorder::endRequest(const Request& req) {
-  if (!shouldRecord)
+void evaluator::DependencyRecorder::endRequest(const Request& Req) {
+  if (!ShouldRecord) {
     return;
+  }
 
-  if (!Request::isEverCached && !Request::isDependencySource)
+  if (!Request::isEverCached && !Request::isDependencySource) {
     return;
+  }
 
   // Grab all the dependencies we've recorded so far, and pop
   // the stack.
-  auto recorded = std::move(activeRequestReferences.back());
-  activeRequestReferences.pop_back();
+  auto Recorded = std::move(ActiveRequestReferences.back());
+  ActiveRequestReferences.pop_back();
 
   // If we didn't record anything, there is nothing to do.
-  if (recorded.empty())
+  if (Recorded.empty()) {
     return;
+  }
 
   // Convert the set of dependencies into a vector.
-  std::vector<DependencyCollector::Reference> vec(
-    recorded.begin(), recorded.end()
+  std::vector<DependencyCollector::Reference> Vec(
+    Recorded.begin(), Recorded.end()
   );
 
   // The recorded dependencies bubble up to the parent request.
-  if (!activeRequestReferences.empty()) {
-    activeRequestReferences.back().insert(vec.begin(), vec.end());
+  if (!ActiveRequestReferences.empty()) {
+    ActiveRequestReferences.back().insert(Vec.begin(), Vec.end());
   }
 
   // Finally, record the dependencies so we can replay them
   // later when the request is re-evaluated.
-  requestReferences.insert<Request>(std::move(req), std::move(vec));
+  RequestReferences.insert<Request>(std::move(Req), std::move(Vec));
 }
 
 template <typename Request>
-void evaluator::DependencyRecorder::replayCachedRequest(const Request& req
+void evaluator::DependencyRecorder::replayCachedRequest(const Request& Req
 ) {
-  assert(req.isCached());
+  assert(Req.isCached());
 
-  if (!shouldRecord)
+  if (!ShouldRecord) {
     return;
+  }
 
-  if (activeRequestReferences.empty())
+  if (ActiveRequestReferences.empty()) {
     return;
+  }
 
-  auto found = requestReferences.find_as<Request>(req);
-  if (found == requestReferences.end<Request>())
+  auto Found = RequestReferences.find_as<Request>(Req);
+  if (Found == RequestReferences.end<Request>()) {
     return;
+  }
 
-  activeRequestReferences.back().insert(
-    found->second.begin(), found->second.end()
+  ActiveRequestReferences.back().insert(
+    Found->second.begin(), Found->second.end()
   );
 }
 
 template <typename Request>
 void evaluator::DependencyRecorder::handleDependencySourceRequest(
-  const Request& req, SourceFile * source
+  const Request& Req, SourceFile * SF
 ) {
-  auto found = requestReferences.find_as<Request>(req);
-  if (found != requestReferences.end<Request>()) {
-    fileReferences[source].insert(
-      found->second.begin(), found->second.end()
-    );
+  auto Found = RequestReferences.find_as<Request>(Req);
+  if (Found != RequestReferences.end<Request>()) {
+    FileReferences[SF].insert(Found->second.begin(), Found->second.end());
   }
 }
 
 template <typename Request>
-void evaluator::DependencyRecorder::clearRequest(const Request& req) {
-  requestReferences.erase(req);
+void evaluator::DependencyRecorder::clearRequest(const Request& Req) {
+  RequestReferences.erase(Req);
 }
 
 } // end namespace evaluator

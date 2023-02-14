@@ -103,8 +103,9 @@ public:
   /// The buffer ID for the file that was imported, or None if there
   /// is no associated buffer.
   Optional<unsigned> getBufferID() const {
-    if (BufferID == -1)
+    if (BufferID == -1) {
       return None;
+    }
     return BufferID;
   }
 
@@ -147,11 +148,11 @@ public:
   }
 
   virtual void
-  collectLinkLibraries(ModuleDecl::LinkLibraryCallback callback
+  collectLinkLibraries(ModuleDecl::LinkLibraryCallback Callback
   ) const override;
 
-  static bool classof(const FileUnit * file) {
-    return file->getKind() == FileUnitKind::Source;
+  static bool classof(const FileUnit * File) {
+    return File->getKind() == FileUnitKind::Source;
   }
 
   static bool classof(const DeclContext * DC) {

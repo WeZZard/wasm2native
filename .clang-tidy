@@ -105,6 +105,10 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.FunctionCase
     value: camelBack
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    # This affects friend function despite there is public/protected/private
+    # method case & ignored regexp.
+    value: "simple_display|hash_value|.+_begin|.+_end|find_as"
   - key: readability-identifier-naming.GlobalConstantCase
     value: CamelCase
   - key: readability-identifier-naming.GlobalConstantPointerCase
@@ -180,17 +184,19 @@ proto_implemented\
   - key: readability-identifier-naming.PrivateMethodCase
     value: camelBack
   - key: readability-identifier-naming.privateMethodIgnoredRegexp
-    value: ".+_begin|.+_end"
+    value: "simple_display|hash_value|.+_begin|.+_end|find_as"
   - key: readability-identifier-naming.ProtectedMemberCase
     value: CamelCase
   - key: readability-identifier-naming.ProtectedMethodCase
     value: camelBack
+  - key: readability-identifier-naming.ProtectedMethodIgnoredRegexp
+    value: "simple_display|hash_value|.+_begin|.+_end|find_as"
   - key: readability-identifier-naming.PublicMemberCase
     value: CamelCase
   - key: readability-identifier-naming.PublicMethodCase
     value: camelBack
   - key: readability-identifier-naming.PublicMethodIgnoredRegexp
-    value: ".+_begin|.+_end"
+    value: "simple_display|hash_value|.+_begin|.+_end|find_as"
   - key: readability-identifier-naming.ScopedEnumConstantCase
     value: CamelCase
   - key: readability-identifier-naming.ScopedEnumConstantIgnoredRegexp

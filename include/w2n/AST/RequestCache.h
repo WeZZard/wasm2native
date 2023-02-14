@@ -28,7 +28,7 @@ template <typename... Ts>
 struct TupleHasDenseMapInfo<
   std::tuple<Ts...>,
   void_t<decltype(llvm::DenseMapInfo<Ts>::getEmptyKey)...>> {
-  using type = void_t<>;
+  using Type = void_t<>;
 };
 
 } // end namespace detail
@@ -60,70 +60,74 @@ class RequestKey {
     return RequestKey(StorageKind::Tombstone);
   }
 
-  RequestKey(StorageKind kind) : Empty(), Kind(kind) {
-    assert(kind != StorageKind::Normal);
+  RequestKey(StorageKind Kind) : Empty(), Kind(Kind) {
+    assert(Kind != StorageKind::Normal);
   }
 
 public:
 
-  explicit RequestKey(Request req) :
-    Req(std::move(req)),
+  explicit RequestKey(Request Req) :
+    Req(std::move(Req)),
     Kind(StorageKind::Normal) {
   }
 
-  RequestKey(const RequestKey& other) : Empty(), Kind(other.Kind) {
-    if (Kind == StorageKind::Normal)
-      new (&Req) Request(other.Req);
+  RequestKey(const RequestKey& X) : Empty(), Kind(X.Kind) {
+    if (Kind == StorageKind::Normal) {
+      new (&Req) Request(X.Req);
+    }
   }
 
-  RequestKey(RequestKey&& other) : Empty(), Kind(other.Kind) {
-    if (Kind == StorageKind::Normal)
-      new (&Req) Request(std::move(other.Req));
+  RequestKey(RequestKey&& X) : Empty(), Kind(X.Kind) {
+    if (Kind == StorageKind::Normal) {
+      new (&Req) Request(std::move(X.Req));
+    }
   }
 
-  RequestKey& operator=(const RequestKey& other) {
-    if (&other != this) {
+  RequestKey& operator=(const RequestKey& X) {
+    if (&X != this) {
       this->~RequestKey();
-      new (this) RequestKey(other);
+      new (this) RequestKey(X);
     }
     return *this;
   }
 
-  RequestKey& operator=(RequestKey&& other) {
-    if (&other != this) {
+  RequestKey& operator=(RequestKey&& X) {
+    if (&X != this) {
       this->~RequestKey();
-      new (this) RequestKey(std::move(other));
+      new (this) RequestKey(std::move(X));
     }
     return *this;
   }
 
   ~RequestKey() {
-    if (Kind == StorageKind::Normal)
+    if (Kind == StorageKind::Normal) {
       Req.~Request();
-  }
-
-  bool isStorageEqual(const Request& req) const {
-    if (Kind != StorageKind::Normal)
-      return false;
-    return Req == req;
-  }
-
-  friend bool operator==(const RequestKey& lhs, const RequestKey& rhs) {
-    if (lhs.Kind == StorageKind::Normal && rhs.Kind == StorageKind::Normal) {
-      return lhs.Req == rhs.Req;
-    } else {
-      return lhs.Kind == rhs.Kind;
     }
   }
 
-  friend bool operator!=(const RequestKey& lhs, const RequestKey& rhs) {
-    return !(lhs == rhs);
+  bool isStorageEqual(const Request& Req) const {
+    if (Kind != StorageKind::Normal) {
+      return false;
+    }
+    return Req == Req;
   }
 
-  friend llvm::hash_code hash_value(const RequestKey& key) {
-    if (key.Kind != StorageKind::Normal)
+  friend bool operator==(const RequestKey& Lhs, const RequestKey& Rhs) {
+    if (Lhs.Kind == StorageKind::Normal && Rhs.Kind == StorageKind::Normal) {
+      return Lhs.Req == Rhs.Req;
+    }
+    return Lhs.Kind == Rhs.Kind;
+  }
+
+  friend bool operator!=(const RequestKey& Lhs, const RequestKey& Rhs) {
+    return !(Lhs == Rhs);
+  }
+
+  friend llvm::hash_code hash_value(const RequestKey& hs) {
+    if (hs.Kind != StorageKind::Normal) {
       return 1;
-    return hash_value(key.Req);
+    }
+    return hash_value(hs.Req);
   }
 };
 
@@ -147,23 +151,23 @@ class RequestKey<
 
 public:
 
-  explicit RequestKey(Request req) : Req(std::move(req)) {
+  explicit RequestKey(Request Req) : Req(std::move(Req)) {
   }
 
-  bool isStorageEqual(const Request& req) const {
-    return Req == req;
+  bool isStorageEqual(const Request& Req) const {
+    return Req == Req;
   }
 
-  friend bool operator==(const RequestKey& lhs, const RequestKey& rhs) {
-    return lhs.Req == rhs.Req;
+  friend bool operator==(const RequestKey& Lhs, const RequestKey& Rhs) {
+    return Lhs.Req == Rhs.Req;
   }
 
-  friend bool operator!=(const RequestKey& lhs, const RequestKey& rhs) {
-    return !(lhs == rhs);
+  friend bool operator!=(const RequestKey& Lhs, const RequestKey& Rhs) {
+    return !(Lhs == Rhs);
   }
 
-  friend llvm::hash_code hash_value(const RequestKey& key) {
-    return hash_value(key.Req);
+  friend llvm::hash_code hash_value(const RequestKey& hs) {
+    return hash_value(hs.Req);
   }
 };
 
@@ -174,9 +178,9 @@ class PerRequestCache {
   void * Storage;
   std::function<void(void *)> Deleter;
 
-  PerRequestCache(void * storage, std::function<void(void *)> deleter) :
-    Storage(storage),
-    Deleter(deleter) {
+  PerRequestCache(void * Storage, std::function<void(void *)> Deleter) :
+    Storage(Storage),
+    Deleter(Deleter) {
   }
 
 public:
@@ -184,16 +188,16 @@ public:
   PerRequestCache() : Storage(nullptr), Deleter([](void *) {}) {
   }
 
-  PerRequestCache(PerRequestCache&& other) :
-    Storage(other.Storage),
-    Deleter(std::move(other.Deleter)) {
-    other.Storage = nullptr;
+  PerRequestCache(PerRequestCache&& X) :
+    Storage(X.Storage),
+    Deleter(std::move(X.Deleter)) {
+    X.Storage = nullptr;
   }
 
-  PerRequestCache& operator=(PerRequestCache&& other) {
-    if (&other != this) {
+  PerRequestCache& operator=(PerRequestCache&& X) {
+    if (&X != this) {
       this->~PerRequestCache();
-      new (this) PerRequestCache(std::move(other));
+      new (this) PerRequestCache(std::move(X));
     }
     return *this;
   }
@@ -205,8 +209,8 @@ public:
   static PerRequestCache makeEmpty() {
     using Map =
       llvm::DenseMap<RequestKey<Request>, typename Request::OutputType>;
-    return PerRequestCache(new Map(), [](void * ptr) {
-      delete static_cast<Map *>(ptr);
+    return PerRequestCache(new Map(), [](void * Ptr) {
+      delete static_cast<Map *>(Ptr);
     });
   }
 
@@ -220,12 +224,13 @@ public:
   }
 
   bool isNull() const {
-    return !Storage;
+    return Storage == nullptr;
   }
 
   ~PerRequestCache() {
-    if (Storage)
+    if (Storage != nullptr) {
       Deleter(Storage);
+    }
   }
 };
 
@@ -264,9 +269,9 @@ public:
   typename llvm::DenseMap<
     RequestKey<Request>,
     typename Request::OutputType>::const_iterator
-  find_as(const Request& req) {
-    auto * cache = getCache<Request>();
-    return cache->find_as(req);
+  find_as(const Request& Req) {
+    auto * Cache = getCache<Request>();
+    return Cache->find_as(Req);
   }
 
   template <typename Request>
@@ -274,24 +279,24 @@ public:
     RequestKey<Request>,
     typename Request::OutputType>::const_iterator
   end() {
-    auto * cache = getCache<Request>();
-    return cache->end();
+    auto * Cache = getCache<Request>();
+    return Cache->end();
   }
 
   template <typename Request>
-  void insert(Request req, typename Request::OutputType val) {
-    auto * cache = getCache<Request>();
-    auto result =
-      cache->insert({RequestKey<Request>(std::move(req)), std::move(val)}
+  void insert(Request Req, typename Request::OutputType Val) {
+    auto * Cache = getCache<Request>();
+    auto Result =
+      Cache->insert({RequestKey<Request>(std::move(Req)), std::move(Val)}
       );
-    assert(result.second && "Request result was already cached");
-    (void)result;
+    assert(Result.second && "Request result was already cached");
+    (void)Result;
   }
 
   template <typename Request>
-  void erase(Request req) {
-    auto * cache = getCache<Request>();
-    cache->erase(RequestKey<Request>(std::move(req)));
+  void erase(Request Req) {
+    auto * Cache = getCache<Request>();
+    Cache->erase(RequestKey<Request>(std::move(Req)));
   }
 
   void clear() {
@@ -308,10 +313,10 @@ class PerRequestReferences {
   std::function<void(void *)> Deleter;
 
   PerRequestReferences(
-    void * storage, std::function<void(void *)> deleter
+    void * Storage, std::function<void(void *)> Deleter
   ) :
-    Storage(storage),
-    Deleter(deleter) {
+    Storage(Storage),
+    Deleter(Deleter) {
   }
 
 public:
@@ -319,16 +324,16 @@ public:
   PerRequestReferences() : Storage(nullptr), Deleter([](void *) {}) {
   }
 
-  PerRequestReferences(PerRequestReferences&& other) :
-    Storage(other.Storage),
-    Deleter(std::move(other.Deleter)) {
-    other.Storage = nullptr;
+  PerRequestReferences(PerRequestReferences&& X) :
+    Storage(X.Storage),
+    Deleter(std::move(X.Deleter)) {
+    X.Storage = nullptr;
   }
 
-  PerRequestReferences& operator=(PerRequestReferences&& other) {
-    if (&other != this) {
+  PerRequestReferences& operator=(PerRequestReferences&& X) {
+    if (&X != this) {
       this->~PerRequestReferences();
-      new (this) PerRequestReferences(std::move(other));
+      new (this) PerRequestReferences(std::move(X));
     }
     return *this;
   }
@@ -341,8 +346,8 @@ public:
     using Map = llvm::DenseMap<
       RequestKey<Request>,
       std::vector<DependencyCollector::Reference>>;
-    return PerRequestReferences(new Map(), [](void * ptr) {
-      delete static_cast<Map *>(ptr);
+    return PerRequestReferences(new Map(), [](void * Ptr) {
+      delete static_cast<Map *>(Ptr);
     });
   }
 
@@ -359,12 +364,13 @@ public:
   }
 
   bool isNull() const {
-    return !Storage;
+    return Storage == nullptr;
   }
 
   ~PerRequestReferences() {
-    if (Storage)
+    if (Storage != nullptr) {
       Deleter(Storage);
+    }
   }
 };
 
@@ -406,9 +412,9 @@ public:
   typename llvm::DenseMap<
     RequestKey<Request>,
     std::vector<DependencyCollector::Reference>>::const_iterator
-  find_as(const Request& req) {
-    auto * refs = getRefs<Request>();
-    return refs->find_as(req);
+  find_as(const Request& Req) {
+    auto * Refs = getRefs<Request>();
+    return Refs->find_as(Req);
   }
 
   template <typename Request>
@@ -416,21 +422,21 @@ public:
     RequestKey<Request>,
     std::vector<DependencyCollector::Reference>>::const_iterator
   end() {
-    auto * refs = getRefs<Request>();
-    return refs->end();
+    auto * Refs = getRefs<Request>();
+    return Refs->end();
   }
 
   template <typename Request>
   void
-  insert(Request req, std::vector<DependencyCollector::Reference> val) {
-    auto * refs = getRefs<Request>();
-    refs->insert({RequestKey<Request>(std::move(req)), std::move(val)});
+  insert(Request Req, std::vector<DependencyCollector::Reference> Val) {
+    auto * Refs = getRefs<Request>();
+    Refs->insert({RequestKey<Request>(std::move(Req)), std::move(Val)});
   }
 
   template <typename Request>
-  void erase(Request req) {
-    auto * refs = getRefs<Request>();
-    refs->erase(RequestKey<Request>(std::move(req)));
+  void erase(Request Req) {
+    auto * Refs = getRefs<Request>();
+    Refs->erase(RequestKey<Request>(std::move(Req)));
   }
 
   void clear() {
@@ -458,20 +464,20 @@ struct DenseMapInfo<w2n::evaluator::RequestKey<Request, Info>> {
     return RequestKey::getTombstone();
   }
 
-  static unsigned getHashValue(const RequestKey& key) {
-    return hash_value(key);
+  static unsigned getHashValue(const RequestKey& Key) {
+    return hash_value(Key);
   }
 
-  static unsigned getHashValue(const Request& request) {
-    return hash_value(request);
+  static unsigned getHashValue(const Request& Req) {
+    return hash_value(Req);
   }
 
-  static bool isEqual(const RequestKey& lhs, const RequestKey& rhs) {
-    return lhs == rhs;
+  static bool isEqual(const RequestKey& Lhs, const RequestKey& Rhs) {
+    return Lhs == Rhs;
   }
 
-  static bool isEqual(const Request& lhs, const RequestKey& rhs) {
-    return rhs.isStorageEqual(lhs);
+  static bool isEqual(const Request& Lhs, const RequestKey& Rhs) {
+    return Rhs.isStorageEqual(Lhs);
   }
 };
 

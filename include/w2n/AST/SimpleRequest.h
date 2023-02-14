@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/DiagnosticsCommon.h>
+#include <w2n/Basic/Compiler.h>
 #include <w2n/Basic/LLVMHashing.h>
 #include <w2n/Basic/SimpleDisplay.h>
 #include <w2n/Basic/Statistic.h>
@@ -50,6 +51,9 @@ enum class RequestFlags {
   DependencySink = 1 << 4,
 };
 
+// clang-format off
+
+W2N_UNUSED
 static constexpr inline RequestFlags
 operator|(RequestFlags Lhs, RequestFlags Rhs) {
   return RequestFlags(
@@ -57,6 +61,8 @@ operator|(RequestFlags Lhs, RequestFlags Rhs) {
     | static_cast<std::underlying_type<RequestFlags>::type>(Rhs)
   );
 }
+
+// clang-format on
 
 /// -------------------------------------------------------------------------
 /// Extracting the source location "nearest" a request.
@@ -272,7 +278,7 @@ class SimpleRequest<Derived, Output(Inputs...), Caching> {
 
   template <size_t... Indices>
   Output
-  callDerived(Evaluator& Eval, std::index_sequence<Indices...>) const {
+  callDerived(Evaluator& Eval, std::index_sequence<Indices...> I) const {
     static_assert(
       sizeof...(Indices) > 0, "Subclass must define evaluate()"
     );
@@ -288,13 +294,13 @@ protected:
 
 public:
 
-  constexpr static bool isEverCached = detail::isEverCached(Caching);
-  constexpr static bool hasExternalCache =
+  constexpr static bool IsEverCached = detail::isEverCached(Caching);
+  constexpr static bool HasExternalCache =
     detail::hasExternalCache(Caching);
 
-  constexpr static bool isDependencySource =
+  constexpr static bool IsDependencySource =
     detail::isDependencySource(Caching);
-  constexpr static bool isDependencySink =
+  constexpr static bool IsDependencySink =
     detail::isDependencySink(Caching);
 
   using OutputType = Output;

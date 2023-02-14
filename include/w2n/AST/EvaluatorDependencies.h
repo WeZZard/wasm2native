@@ -139,7 +139,7 @@ void evaluator::DependencyRecorder::beginRequest() {
     return;
   }
 
-  if (!Request::isEverCached && !Request::isDependencySource) {
+  if (!Request::IsEverCached && !Request::IsDependencySource) {
     return;
   }
 
@@ -152,7 +152,7 @@ void evaluator::DependencyRecorder::endRequest(const Request& Req) {
     return;
   }
 
-  if (!Request::isEverCached && !Request::isDependencySource) {
+  if (!Request::IsEverCached && !Request::IsDependencySource) {
     return;
   }
 

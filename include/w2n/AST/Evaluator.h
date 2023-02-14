@@ -256,7 +256,7 @@ public:
   /// be cached.
   template <
     typename Request,
-    typename std::enable_if<Request::isEverCached>::type * = nullptr>
+    typename std::enable_if<Request::IsEverCached>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
   operator()(const Request& Req) {
     // The request can be cached, but check a predicate to determine
@@ -273,7 +273,7 @@ public:
   /// will never be cached.
   template <
     typename Request,
-    typename std::enable_if<!Request::isEverCached>::type * = nullptr>
+    typename std::enable_if<!Request::IsEverCached>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
   operator()(const Request& Req) {
     return getResultUncached(Req);
@@ -295,7 +295,7 @@ public:
   /// be computed.
   template <
     typename Request,
-    typename std::enable_if<Request::hasExternalCache>::type * = nullptr>
+    typename std::enable_if<Request::HasExternalCache>::type * = nullptr>
   void
   cacheOutput(const Request& Req, typename Request::OutputType&& Output) {
     Req.cacheResult(std::move(Output));
@@ -305,7 +305,7 @@ public:
   /// be computed.
   template <
     typename Request,
-    typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
+    typename std::enable_if<!Request::HasExternalCache>::type * = nullptr>
   void
   cacheOutput(const Request& Req, typename Request::OutputType&& Output) {
     Cache.insert<Request>(Req, std::move(Output));
@@ -314,7 +314,7 @@ public:
   /// Do not introduce new callers of this function.
   template <
     typename Request,
-    typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
+    typename std::enable_if<!Request::HasExternalCache>::type * = nullptr>
   void clearCachedOutput(const Request& Req) {
     Cache.erase<Request>(Req);
     Recorder.clearRequest<Request>(Req);
@@ -389,7 +389,7 @@ private:
   /// and detect recursion.
   template <
     typename Request,
-    typename std::enable_if<Request::hasExternalCache>::type * = nullptr>
+    typename std::enable_if<Request::HasExternalCache>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
   getResultCached(const Request& Req) {
     // If there is a cached result, return it.
@@ -417,7 +417,7 @@ private:
   /// retrieve previously-computed results and detect recursion.
   template <
     typename Request,
-    typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
+    typename std::enable_if<!Request::HasExternalCache>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
   getResultCached(const Request& Req) {
     // If we already have an entry for this request in the cache, return
@@ -443,7 +443,7 @@ private:
 
   template <
     typename Request,
-    typename std::enable_if<!Request::isDependencySink>::type * = nullptr>
+    typename std::enable_if<!Request::IsDependencySink>::type * = nullptr>
   void handleDependencySinkRequest(
     const Request& Req, const typename Request::OutputType& Output
   ) {
@@ -451,7 +451,7 @@ private:
 
   template <
     typename Request,
-    typename std::enable_if<Request::isDependencySink>::type * = nullptr>
+    typename std::enable_if<Request::IsDependencySink>::type * = nullptr>
   void handleDependencySinkRequest(
     const Request& Req, const typename Request::OutputType& Output
   ) {
@@ -461,14 +461,14 @@ private:
 
   template <
     typename Request,
-    typename std::enable_if<!Request::isDependencySource>::type * =
+    typename std::enable_if<!Request::IsDependencySource>::type * =
       nullptr>
   void handleDependencySourceRequest(const Request& Req) {
   }
 
   template <
     typename Request,
-    typename std::enable_if<Request::isDependencySource>::type * =
+    typename std::enable_if<Request::IsDependencySource>::type * =
       nullptr>
   void handleDependencySourceRequest(const Request& Req) {
     auto Source = Req.readDependencySource(Recorder);

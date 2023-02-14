@@ -107,58 +107,59 @@ void Evaluator::diagnoseCycle(const ActiveRequest& request) {
 }
 
 void evaluator::DependencyRecorder::recordDependency(
-  const DependencyCollector::Reference& ref
+  const DependencyCollector::Reference& Ref
 ) {
-  if (activeRequestReferences.empty())
+  if (activeRequestReferences.empty()) {
     return;
+  }
 
-  activeRequestReferences.back().insert(ref);
+  activeRequestReferences.back().insert(Ref);
 }
 
 evaluator::DependencyCollector::DependencyCollector(
-  evaluator::DependencyRecorder& parent
+  evaluator::DependencyRecorder& Parent
 ) :
-  parent(parent) {
+  Parent(Parent) {
 #ifndef NDEBUG
   assert(
-    !parent.isRecording
+    !Parent.isRecording
     && "Probably not a good idea to allow nested recording"
   );
-  parent.isRecording = true;
+  Parent.isRecording = true;
 #endif
 }
 
 evaluator::DependencyCollector::~DependencyCollector() {
 #ifndef NDEBUG
   assert(
-    parent.isRecording && "Should have been recording this whole time"
+    Parent.isRecording && "Should have been recording this whole time"
   );
-  parent.isRecording = false;
+  Parent.isRecording = false;
 #endif
 }
 
 void evaluator::DependencyCollector::addUsedMember(
-  DeclContext * subject, DeclBaseName name
+  DeclContext * Subject, DeclBaseName Name
 ) {
   // FIXME: assert(subject->isTypeContext());
-  return parent.recordDependency(Reference::usedMember(subject, name));
+  return Parent.recordDependency(Reference::usedMember(Subject, Name));
 }
 
 void evaluator::DependencyCollector::addPotentialMember(
-  DeclContext * subject
+  DeclContext * Subject
 ) {
   // FIXME: assert(subject->isTypeContext());
-  return parent.recordDependency(Reference::potentialMember(subject));
+  return Parent.recordDependency(Reference::potentialMember(Subject));
 }
 
-void evaluator::DependencyCollector::addTopLevelName(DeclBaseName name) {
-  return parent.recordDependency(Reference::topLevel(name));
+void evaluator::DependencyCollector::addTopLevelName(DeclBaseName Name) {
+  return Parent.recordDependency(Reference::topLevel(Name));
 }
 
 void evaluator::DependencyCollector::addDynamicLookupName(
-  DeclBaseName name
+  DeclBaseName Name
 ) {
-  return parent.recordDependency(Reference::dynamic(name));
+  return Parent.recordDependency(Reference::dynamic(Name));
 }
 
 void evaluator::DependencyRecorder::enumerateReferencesInFile(
@@ -170,7 +171,7 @@ void evaluator::DependencyRecorder::enumerateReferencesInFile(
   }
 
   for (const auto& ref : entry->getSecond()) {
-    switch (ref.kind) {
+    switch (ref.RefKind) {
     case DependencyCollector::Reference::Kind::Empty:
     case DependencyCollector::Reference::Kind::Tombstone:
       llvm_unreachable("Cannot enumerate dead reference!");

@@ -35,17 +35,17 @@ struct DependencyCollector {
       PotentialMember,
       TopLevel,
       Dynamic,
-    } kind;
+    } RefKind;
 
-    DeclContext * subject;
-    DeclBaseName name;
+    DeclContext * Subject;
+    DeclBaseName Name;
 
   private:
 
-    Reference(Kind kind, DeclContext * subject, DeclBaseName name) :
-      kind(kind),
-      subject(subject),
-      name(name) {
+    Reference(Kind RefKind, DeclContext * Subject, DeclBaseName Name) :
+      RefKind(RefKind),
+      Subject(Subject),
+      Name(Name) {
     }
 
   public:
@@ -64,26 +64,22 @@ struct DependencyCollector {
         llvm::DenseMapInfo<DeclBaseName>::getTombstoneKey()};
     }
 
-  public:
-
     static Reference
-    usedMember(DeclContext * subject, DeclBaseName name) {
-      return {Kind::UsedMember, subject, name};
+    usedMember(DeclContext * subject, DeclBaseName Name) {
+      return {Kind::UsedMember, subject, Name};
     }
 
-    static Reference potentialMember(DeclContext * subject) {
-      return {Kind::PotentialMember, subject, DeclBaseName()};
+    static Reference potentialMember(DeclContext * Subject) {
+      return {Kind::PotentialMember, Subject, DeclBaseName()};
     }
 
-    static Reference topLevel(DeclBaseName name) {
-      return {Kind::TopLevel, nullptr, name};
+    static Reference topLevel(DeclBaseName Name) {
+      return {Kind::TopLevel, nullptr, Name};
     }
 
-    static Reference dynamic(DeclBaseName name) {
-      return {Kind::Dynamic, nullptr, name};
+    static Reference dynamic(DeclBaseName Name) {
+      return {Kind::Dynamic, nullptr, Name};
     }
-
-  public:
 
     struct Info {
       static inline Reference getEmptyKey() {
@@ -96,27 +92,25 @@ struct DependencyCollector {
 
       static inline unsigned getHashValue(const Reference& Val) {
         return llvm::hash_combine(
-          Val.kind, Val.subject, Val.name.getAsOpaquePointer()
+          Val.RefKind, Val.Subject, Val.Name.getAsOpaquePointer()
         );
       }
 
       static bool isEqual(const Reference& LHS, const Reference& RHS) {
-        return LHS.kind == RHS.kind && LHS.subject == RHS.subject
-            && LHS.name == RHS.name;
+        return LHS.RefKind == RHS.RefKind && LHS.Subject == RHS.Subject
+            && LHS.Name == RHS.Name;
       }
     };
   };
 
 private:
 
-  DependencyRecorder& parent;
+  DependencyRecorder& Parent;
 
 public:
 
-  explicit DependencyCollector(DependencyRecorder& parent);
+  explicit DependencyCollector(DependencyRecorder& Parent);
   ~DependencyCollector();
-
-public:
 
   /// Registers a named reference from the current dependency scope to a
   /// member defined in the given \p subject type.
@@ -126,7 +120,8 @@ public:
   /// are known up front. A used member dependency causes the file to be
   /// rebuilt if the definition of that member changes in any way - via
   /// deletion, addition, or mutation of a member with that same name.
-  void addUsedMember(DeclContext * subject, DeclBaseName name);
+  void addUsedMember(DeclContext * Subject, DeclBaseName Name);
+
   /// Registers a reference from the current dependency scope to a
   /// "potential member" of the given \p subject type.
   ///
@@ -142,26 +137,26 @@ public:
   /// These dependencies are most appropriate for protocol conformances,
   /// superclass constraints, and other requirements involving entire
   /// types.
-  void addPotentialMember(DeclContext * subject);
+  void addPotentialMember(DeclContext * Subject);
+
   /// Registers a reference from the current dependency scope to a given
   /// top-level \p name.
   ///
   /// A top level dependency causes a rebuild when another top-level
   /// entity with that name is added, removed, or modified.
-  void addTopLevelName(DeclBaseName name);
+  void addTopLevelName(DeclBaseName Name);
+
   /// Registers a reference from the current dependency scope to a given
   /// dynamic member \p name.
   ///
   /// A dynamic lookup dependency is a special kind of member dependency
   /// on a name that is found by \c AnyObject lookup.
-  void addDynamicLookupName(DeclBaseName name);
-
-public:
+  void addDynamicLookupName(DeclBaseName Name);
 
   /// Retrieves the dependency recorder that created this dependency
   /// collector.
   const DependencyRecorder& getRecorder() const {
-    return parent;
+    return Parent;
   }
 };
 

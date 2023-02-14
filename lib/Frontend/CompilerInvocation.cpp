@@ -29,7 +29,7 @@ static bool parseLanguageOptions(
 );
 
 static bool parseSearchPathOptions(
-  SearchPathOptions_t& Options,
+  SearchPathOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
@@ -203,7 +203,7 @@ bool parseLanguageOptions(
 }
 
 bool parseSearchPathOptions(
-  SearchPathOptions_t& Options,
+  SearchPathOptions& Options,
   const ArgList& Arguments,
   DiagnosticEngine& Diagnostic,
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers

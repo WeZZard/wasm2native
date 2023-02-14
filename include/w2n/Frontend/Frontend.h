@@ -20,7 +20,7 @@
 
 namespace w2n {
 
-class SearchPathOptions_t {};
+class SearchPathOptions {};
 
 /**
  * @brief A suite of module buffers.
@@ -39,7 +39,7 @@ private:
 
   FrontendOptions FrontendOpts;
   LanguageOptions LanguageOpts;
-  SearchPathOptions_t SearchPathOpts;
+  SearchPathOptions SearchPathOpts;
   IRGenOptions IRGenOpts;
   TBDGenOptions TBDGenOpts;
 
@@ -82,11 +82,11 @@ public:
     return LanguageOpts;
   }
 
-  SearchPathOptions_t& getSearchPathOptions() {
+  SearchPathOptions& getSearchPathOptions() {
     return SearchPathOpts;
   }
 
-  const SearchPathOptions_t& getSearchPathOptions() const {
+  const SearchPathOptions& getSearchPathOptions() const {
     return SearchPathOpts;
   }
 
@@ -119,7 +119,7 @@ public:
   }
 
   const PrimarySpecificPaths&
-  getPrimarySpecificPathsForPrimary(StringRef filename) const;
+  getPrimarySpecificPathsForPrimary(StringRef Filename) const;
   const PrimarySpecificPaths&
   getPrimarySpecificPathsForSourceFile(const SourceFile& SF) const;
 };
@@ -212,7 +212,7 @@ public:
   void freeASTContext();
 
   const PrimarySpecificPaths&
-  getPrimarySpecificPathsForPrimary(StringRef filename) const;
+  getPrimarySpecificPathsForPrimary(StringRef Filename) const;
   const PrimarySpecificPaths&
   getPrimarySpecificPathsForSourceFile(const SourceFile& SF) const;
 
@@ -252,8 +252,6 @@ private:
    * pointer.
    */
   Optional<ModuleBuffers> getInputBuffersIfPresent(const Input& I);
-
-private:
 
   /**
    * @brief Creates a new wasm file for the main module.

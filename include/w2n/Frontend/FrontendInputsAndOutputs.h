@@ -21,9 +21,8 @@ class FrontendInputsAndOutputs final {
 public:
 
   FrontendInputsAndOutputs() = default;
-  FrontendInputsAndOutputs(const FrontendInputsAndOutputs& other);
-  FrontendInputsAndOutputs&
-  operator=(const FrontendInputsAndOutputs& other);
+  FrontendInputsAndOutputs(const FrontendInputsAndOutputs& X);
+  FrontendInputsAndOutputs& operator=(const FrontendInputsAndOutputs& X);
 
   bool shouldRecoverMissingInputs() const {
     return ShouldRecoverMissingInputs;
@@ -37,8 +36,6 @@ public:
 
 #pragma mark Inputs
 
-public:
-
   ArrayRef<Input> getAllInputs() const {
     return AllInputs;
   }
@@ -46,7 +43,7 @@ public:
   std::vector<std::string> getInputFilenames() const;
 
   /// \return nullptr if not a primary input file.
-  const Input * primaryInputNamed(StringRef name) const;
+  const Input * primaryInputNamed(StringRef Name) const;
 
   unsigned inputCount() const {
     return AllInputs.size();
@@ -76,25 +73,25 @@ public:
 
   bool isReadingFromStdin() const;
 
-  /// If \p fn returns true, exits early and returns true.
-  bool forEachInput(llvm::function_ref<bool(const Input&)> fn) const;
+  /// If \p Fn returns true, exits early and returns true.
+  bool forEachInput(llvm::function_ref<bool(const Input&)> Fn) const;
   // Primaries:
 
   const Input& firstPrimaryInput() const;
   const Input& lastPrimaryInput() const;
 
-  /// If \p fn returns true, exit early and return true.
-  bool forEachPrimaryInput(llvm::function_ref<bool(const Input&)> fn
+  /// If \p Fn returns true, exit early and return true.
+  bool forEachPrimaryInput(llvm::function_ref<bool(const Input&)> Fn
   ) const;
 
   /// Iterates over primary inputs, exposing their unique ordered index
-  /// If \p fn returns true, exit early and return true.
+  /// If \p Fn returns true, exit early and return true.
   bool forEachPrimaryInputWithIndex(
-    llvm::function_ref<bool(const Input&, unsigned index)> fn
+    llvm::function_ref<bool(const Input&, unsigned Index)> Fn
   ) const;
 
-  /// If \p fn returns true, exit early and return true.
-  bool forEachNonPrimaryInput(llvm::function_ref<bool(const Input&)> fn
+  /// If \p Fn returns true, exit early and return true.
+  bool forEachNonPrimaryInput(llvm::function_ref<bool(const Input&)> Fn
   ) const;
 
   unsigned primaryInputCount() const {
@@ -119,22 +116,20 @@ public:
 
 #pragma mark Inputs
 
-public:
-
   void clearInputs();
-  void addInput(const Input& input);
+  void addInput(const Input& I);
   void
-  addInputFile(StringRef file, llvm::MemoryBuffer * buffer = nullptr);
+  addInputFile(StringRef File, llvm::MemoryBuffer * Buffer = nullptr);
   void addPrimaryInputFile(
-    StringRef file, llvm::MemoryBuffer * buffer = nullptr
+    StringRef File, llvm::MemoryBuffer * Buffer = nullptr
   );
 
   bool isSingleThreadedWMO() const {
     return IsSingleThreadedWMO;
   }
 
-  void setIsSingleThreadedWMO(bool istw) {
-    IsSingleThreadedWMO = istw;
+  void setIsSingleThreadedWMO(bool Istw) {
+    IsSingleThreadedWMO = Istw;
   }
 
   const PrimarySpecificPaths& getPrimarySpecificPathsForPrimary(StringRef
@@ -144,15 +139,15 @@ public:
   /// generates the main output, even though it will include code
   /// generated from all of them.
   ///
-  /// If \p fn returns true, return early and return true.
+  /// If \p Fn returns true, return early and return true.
   bool forEachInputProducingAMainOutputFile(
-    llvm::function_ref<bool(const Input&)> fn
+    llvm::function_ref<bool(const Input&)> Fn
   ) const;
 
   std::vector<std::string> copyOutputFilenames() const;
   std::vector<std::string> copyIndexUnitOutputFilenames() const;
 
-  void forEachOutputFilename(llvm::function_ref<void(StringRef)> fn
+  void forEachOutputFilename(llvm::function_ref<void(StringRef)> Fn
   ) const;
 };
 

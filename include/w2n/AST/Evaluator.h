@@ -18,7 +18,7 @@
 
 namespace llvm {
 class raw_ostream;
-}
+} // namespace llvm
 
 namespace w2n {
 
@@ -42,16 +42,16 @@ using RequestFunction =
 /// Pretty stack trace handler for an arbitrary request.
 template <typename Request>
 class PrettyStackTraceRequest : public llvm::PrettyStackTraceEntry {
-  const Request& request;
+  const Request& Req;
 
 public:
 
-  PrettyStackTraceRequest(const Request& request) : request(request) {
+  PrettyStackTraceRequest(const Request& Req) : Req(Req) {
   }
 
   void print(llvm::raw_ostream& out) const override {
     out << "While evaluating request ";
-    simple_display(out, request);
+    simple_display(out, Req);
     out << "\n";
   }
 };
@@ -64,14 +64,12 @@ struct CyclicalRequestError :
 public:
 
   static char ID;
-  const Request& request;
-  const Evaluator& evaluator;
+  const Request& Req;
+  const Evaluator& Eval;
 
-  CyclicalRequestError(
-    const Request& request, const Evaluator& evaluator
-  ) :
-    request(request),
-    evaluator(evaluator) {
+  CyclicalRequestError(const Request& Req, const Evaluator& Eval) :
+    Req(Req),
+    Eval(Eval) {
   }
 
   virtual void log(llvm::raw_ostream& out) const override;
@@ -180,14 +178,14 @@ void reportEvaluatedRequest(
 class Evaluator {
   /// The diagnostics engine through which any cyclic-dependency
   /// diagnostics will be emitted.
-  DiagnosticEngine& diags;
+  DiagnosticEngine& Diags;
 
   /// Whether to dump detailed debug info for cycles.
-  bool debugDumpCycles;
+  bool DebugDumpCycles;
 
   /// Used to report statistics about which requests were evaluated, if
   /// non-null.
-  UnifiedStatsReporter * stats = nullptr;
+  UnifiedStatsReporter * Stats = nullptr;
 
   /// A vector containing the abstract request functions that can compute
   /// the result of a particular request within a given zone. The
@@ -199,44 +197,44 @@ class Evaluator {
   ///                               Evaluator &evaluator);
   /// and called to satisfy the request.
   std::vector<std::pair<uint8_t, ArrayRef<AbstractRequestFunction *>>>
-    requestFunctionsByZone;
+    RequestFunctionsByZone;
 
   /// A vector containing all of the active evaluation requests, which
   /// is treated as a stack and is used to detect cycles.
-  llvm::SetVector<ActiveRequest> activeRequests;
+  llvm::SetVector<ActiveRequest> ActiveRequests;
 
   /// A cache that stores the results of requests.
-  evaluator::RequestCache cache;
+  evaluator::RequestCache Cache;
 
-  evaluator::DependencyRecorder recorder;
+  evaluator::DependencyRecorder Recorder;
 
   /// Retrieve the request function for the given zone and request IDs.
   AbstractRequestFunction *
-  getAbstractRequestFunction(uint8_t zoneID, uint8_t requestID) const;
+  getAbstractRequestFunction(uint8_t ZoneID, uint8_t RequestID) const;
 
   /// Retrieve the request function for the given request type.
   template <typename Request>
   auto getRequestFunction() const -> RequestFunction<Request> * {
-    auto abstractFn = getAbstractRequestFunction(
+    auto AbstractFn = getAbstractRequestFunction(
       TypeID<Request>::zoneID, TypeID<Request>::localID
     );
-    assert(abstractFn && "No request function for request");
-    return reinterpret_cast<RequestFunction<Request> *>(abstractFn);
+    assert(AbstractFn && "No request function for request");
+    return reinterpret_cast<RequestFunction<Request> *>(AbstractFn);
   }
 
 public:
 
   /// Construct a new evaluator that can emit cyclic-dependency
   /// diagnostics through the given diagnostics engine.
-  Evaluator(DiagnosticEngine& diags, const LanguageOptions& opts);
+  Evaluator(DiagnosticEngine& Diags, const LanguageOptions& Opts);
 
   /// Emit GraphViz output visualizing the request graph.
-  void emitRequestEvaluatorGraphViz(llvm::StringRef graphVizPath);
+  void emitRequestEvaluatorGraphViz(llvm::StringRef GraphVizPath);
 
   /// Set the unified stats reporter through which evaluated-request
   /// statistics will be recorded.
-  void setStatsReporter(UnifiedStatsReporter * stats) {
-    this->stats = stats;
+  void setStatsReporter(UnifiedStatsReporter * Stats) {
+    this->Stats = Stats;
   }
 
   /// Register the set of request functions for the given zone.
@@ -244,14 +242,14 @@ public:
   /// These functions will be called to evaluate any requests within that
   /// zone.
   void registerRequestFunctions(
-    Zone zone, ArrayRef<AbstractRequestFunction *> functions
+    Zone Zone, ArrayRef<AbstractRequestFunction *> Functions
   );
 
   void enumerateReferencesInFile(
     const SourceFile * SF,
-    evaluator::DependencyRecorder::ReferenceEnumerator f
+    evaluator::DependencyRecorder::ReferenceEnumerator F
   ) const {
-    return recorder.enumerateReferencesInFile(SF, f);
+    return Recorder.enumerateReferencesInFile(SF, F);
   }
 
   /// Retrieve the result produced by evaluating a request that can
@@ -277,8 +275,8 @@ public:
     typename Request,
     typename std::enable_if<!Request::isEverCached>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
-  operator()(const Request& request) {
-    return getResultUncached(request);
+  operator()(const Request& Req) {
+    return getResultUncached(Req);
   }
 
   /// Evaluate a set of requests and return their results as a tuple.
@@ -287,9 +285,9 @@ public:
   /// requests that all need to be satisfied.
   template <typename... Requests>
   std::tuple<llvm::Expected<typename Requests::OutputType>...>
-  operator()(const Requests&... requests) {
+  operator()(const Requests&... Reqs) {
     return std::tuple<llvm::Expected<typename Requests::OutputType>...>(
-      (*this)(requests)...
+      (*this)(Reqs)...
     );
   }
 
@@ -298,10 +296,9 @@ public:
   template <
     typename Request,
     typename std::enable_if<Request::hasExternalCache>::type * = nullptr>
-  void cacheOutput(
-    const Request& request, typename Request::OutputType&& output
-  ) {
-    request.cacheResult(std::move(output));
+  void
+  cacheOutput(const Request& Req, typename Request::OutputType&& Output) {
+    Req.cacheResult(std::move(Output));
   }
 
   /// Cache a precomputed value for the given request, so that it will not
@@ -309,19 +306,18 @@ public:
   template <
     typename Request,
     typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
-  void cacheOutput(
-    const Request& request, typename Request::OutputType&& output
-  ) {
-    cache.insert<Request>(request, std::move(output));
+  void
+  cacheOutput(const Request& Req, typename Request::OutputType&& Output) {
+    Cache.insert<Request>(Req, std::move(Output));
   }
 
   /// Do not introduce new callers of this function.
   template <
     typename Request,
     typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
-  void clearCachedOutput(const Request& request) {
-    cache.erase<Request>(request);
-    recorder.clearRequest<Request>(request);
+  void clearCachedOutput(const Request& Req) {
+    Cache.erase<Request>(Req);
+    Recorder.clearRequest<Request>(Req);
   }
 
   /// Clear the cache stored within this evaluator.
@@ -329,20 +325,20 @@ public:
   /// Note that this does not clear the caches of requests that use
   /// external caching.
   void clearCache() {
-    cache.clear();
+    Cache.clear();
   }
 
   /// Is the given request, or an equivalent, currently being evaluated?
   template <typename Request>
-  bool hasActiveRequest(const Request& request) const {
-    return activeRequests.count(ActiveRequest(request));
+  bool hasActiveRequest(const Request& Req) const {
+    return ActiveRequests.count(ActiveRequest(Req));
   }
 
 private:
 
   /// Diagnose a cycle detected in the evaluation of the given
   /// request.
-  void diagnoseCycle(const ActiveRequest& request);
+  void diagnoseCycle(const ActiveRequest& Req);
 
   /// Check the dependency from the current top of the stack to
   /// the given request, including cycle detection and diagnostics.
@@ -350,7 +346,7 @@ private:
   /// \returns true if a cycle was detected, in which case this function
   /// has already diagnosed the cycle. Otherwise, returns \c false and
   /// adds this request to the \c activeRequests stack.
-  bool checkDependency(const ActiveRequest& request);
+  bool checkDependency(const ActiveRequest& Req);
 
   /// Produce the result of the request without caching.
   template <typename Request>
@@ -371,19 +367,19 @@ private:
     // FrontendStatsTracer statsTracer = make_tracer(stats, request);
     // if (stats) reportEvaluatedRequest(*stats, request);
 
-    recorder.beginRequest<Request>();
+    Recorder.beginRequest<Request>();
 
     auto&& Result = getRequestFunction<Request>()(Req, *this);
 
-    recorder.endRequest<Request>(Req);
+    Recorder.endRequest<Request>(Req);
 
     handleDependencySourceRequest<Request>(Req);
     handleDependencySinkRequest<Request>(Req, Result);
 
     // Make sure we remove this from the set of active requests once we're
     // done.
-    assert(activeRequests.back() == ActiveReq);
-    activeRequests.pop_back();
+    assert(ActiveRequests.back() == ActiveReq);
+    ActiveRequests.pop_back();
 
     return std::move(Result);
   }
@@ -398,7 +394,7 @@ private:
   getResultCached(const Request& Req) {
     // If there is a cached result, return it.
     if (auto Cached = Req.getCachedResult()) {
-      recorder.replayCachedRequest(Req);
+      Recorder.replayCachedRequest(Req);
       handleDependencySinkRequest<Request>(Req, *Cached);
       return *Cached;
     }
@@ -423,34 +419,33 @@ private:
     typename Request,
     typename std::enable_if<!Request::hasExternalCache>::type * = nullptr>
   llvm::Expected<typename Request::OutputType>
-  getResultCached(const Request& request) {
+  getResultCached(const Request& Req) {
     // If we already have an entry for this request in the cache, return
     // it.
-    auto known = cache.find_as<Request>(request);
-    if (known != cache.end<Request>()) {
-      auto result = known->second;
-      recorder.replayCachedRequest(request);
-      handleDependencySinkRequest<Request>(request, result);
-      return result;
+    auto Known = Cache.find_as<Request>(Req);
+    if (Known != Cache.end<Request>()) {
+      auto Result = Known->second;
+      Recorder.replayCachedRequest(Req);
+      handleDependencySinkRequest<Request>(Req, Result);
+      return Result;
     }
 
     // Compute the result.
-    auto result = getResultUncached(request);
-    if (!result)
-      return result;
+    auto Result = getResultUncached(Req);
+    if (!Result) {
+      return Result;
+    }
 
     // Cache the result.
-    cache.insert<Request>(request, *result);
-    return result;
+    Cache.insert<Request>(Req, *Result);
+    return Result;
   }
-
-private:
 
   template <
     typename Request,
     typename std::enable_if<!Request::isDependencySink>::type * = nullptr>
   void handleDependencySinkRequest(
-    const Request& r, const typename Request::OutputType& o
+    const Request& Req, const typename Request::OutputType& Output
   ) {
   }
 
@@ -458,27 +453,27 @@ private:
     typename Request,
     typename std::enable_if<Request::isDependencySink>::type * = nullptr>
   void handleDependencySinkRequest(
-    const Request& r, const typename Request::OutputType& o
+    const Request& Req, const typename Request::OutputType& Output
   ) {
-    evaluator::DependencyCollector collector(recorder);
-    r.writeDependencySink(collector, o);
+    evaluator::DependencyCollector Collector(Recorder);
+    Req.writeDependencySink(Collector, Output);
   }
 
   template <
     typename Request,
     typename std::enable_if<!Request::isDependencySource>::type * =
       nullptr>
-  void handleDependencySourceRequest(const Request& r) {
+  void handleDependencySourceRequest(const Request& Req) {
   }
 
   template <
     typename Request,
     typename std::enable_if<Request::isDependencySource>::type * =
       nullptr>
-  void handleDependencySourceRequest(const Request& r) {
-    auto source = r.readDependencySource(recorder);
-    if (!source.isNull() && source.get()->isPrimary()) {
-      recorder.handleDependencySourceRequest(r, source.get());
+  void handleDependencySourceRequest(const Request& Req) {
+    auto Source = Req.readDependencySource(Recorder);
+    if (!Source.isNull() && Source.get()->isPrimary()) {
+      Recorder.handleDependencySourceRequest(Req, Source.get());
     }
   }
 };
@@ -486,7 +481,7 @@ private:
 template <typename Request>
 void CyclicalRequestError<Request>::log(llvm::raw_ostream& out) const {
   out << "Cycle detected:\n";
-  simple_display(out, request);
+  simple_display(out, Req);
   out << "\n";
 }
 

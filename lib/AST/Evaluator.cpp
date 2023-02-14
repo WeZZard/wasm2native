@@ -13,12 +13,13 @@
 using namespace w2n;
 
 AbstractRequestFunction * Evaluator::getAbstractRequestFunction(
-  uint8_t zoneID, uint8_t requestID
+  uint8_t ZoneId, uint8_t RequestId
 ) const {
-  for (const auto& zone : requestFunctionsByZone) {
-    if (zone.first == zoneID) {
-      if (requestID < zone.second.size())
-        return zone.second[requestID];
+  for (const auto& Zone : RequestFunctionsByZone) {
+    if (Zone.first == ZoneId) {
+      if (RequestId < Zone.second.size()) {
+        return Zone.second[RequestId];
+      }
 
       return nullptr;
     }
@@ -28,63 +29,64 @@ AbstractRequestFunction * Evaluator::getAbstractRequestFunction(
 }
 
 void Evaluator::registerRequestFunctions(
-  Zone zone, ArrayRef<AbstractRequestFunction *> functions
+  Zone Zone, ArrayRef<AbstractRequestFunction *> Functions
 ) {
-  uint8_t zoneID = static_cast<uint8_t>(zone);
+  uint8_t ZoneId = static_cast<uint8_t>(Zone);
 #ifndef NDEBUG
-  for (const auto& zone : requestFunctionsByZone) {
-    assert(zone.first != zoneID);
+  for (const auto& EachZone : RequestFunctionsByZone) {
+    assert(EachZone.first != ZoneId);
   }
 #endif
 
-  requestFunctionsByZone.push_back({zoneID, functions});
+  RequestFunctionsByZone.push_back({ZoneId, Functions});
 }
 
 Evaluator::Evaluator(
-  DiagnosticEngine& diags, const LanguageOptions& opts
+  DiagnosticEngine& Diags, const LanguageOptions& Opts
 ) :
-  diags(diags),
-  debugDumpCycles(opts.DebugDumpCycles),
-  recorder(opts.RecordRequestReferences) {
+  Diags(Diags),
+  DebugDumpCycles(Opts.DebugDumpCycles),
+  Recorder(Opts.RecordRequestReferences) {
 }
 
-bool Evaluator::checkDependency(const ActiveRequest& request) {
+bool Evaluator::checkDependency(const ActiveRequest& Req) {
   // Record this as an active request.
-  if (activeRequests.insert(request))
+  if (ActiveRequests.insert(Req)) {
     return false;
+  }
 
   // Diagnose cycle.
-  diagnoseCycle(request);
+  diagnoseCycle(Req);
   return true;
 }
 
-void Evaluator::diagnoseCycle(const ActiveRequest& request) {
-  if (debugDumpCycles) {
-    const auto printIndent = [](llvm::raw_ostream& OS, unsigned indent) {
-      OS.indent(indent);
+void Evaluator::diagnoseCycle(const ActiveRequest& Req) {
+  if (DebugDumpCycles) {
+    const auto PrintIndent = [](llvm::raw_ostream& OS, unsigned Indent) {
+      OS.indent(Indent);
       OS << "`--";
     };
 
-    unsigned indent = 1;
+    unsigned Indent = 1;
     auto& OS = llvm::errs();
 
     OS << "===CYCLE DETECTED===\n";
-    for (const auto& step : activeRequests) {
-      printIndent(OS, indent);
-      if (step == request) {
+    for (const auto& Step : ActiveRequests) {
+      PrintIndent(OS, Indent);
+      if (Step == Req) {
         OS.changeColor(llvm::raw_ostream::GREEN);
-        simple_display(OS, step);
+        simple_display(OS, Step);
         OS.resetColor();
       } else {
-        simple_display(OS, step);
+        simple_display(OS, Step);
       }
       OS << "\n";
-      indent += 4;
+      Indent += 4;
     }
 
-    printIndent(OS, indent);
+    PrintIndent(OS, Indent);
     OS.changeColor(llvm::raw_ostream::GREEN);
-    simple_display(OS, request);
+    simple_display(OS, Req);
 
     OS.changeColor(llvm::raw_ostream::RED);
     OS << " (cyclic dependency)";
@@ -93,12 +95,13 @@ void Evaluator::diagnoseCycle(const ActiveRequest& request) {
     OS << "\n";
   }
 
-  request.diagnoseCycle(diags);
-  for (const auto& step : llvm::reverse(activeRequests)) {
-    if (step == request)
+  Req.diagnoseCycle(Diags);
+  for (const auto& Step : llvm::reverse(ActiveRequests)) {
+    if (Step == Req) {
       return;
+    }
 
-    step.noteCycleStep(diags);
+    Step.noteCycleStep(Diags);
   }
 
   llvm_unreachable(
@@ -163,22 +166,22 @@ void evaluator::DependencyCollector::addDynamicLookupName(
 }
 
 void evaluator::DependencyRecorder::enumerateReferencesInFile(
-  const SourceFile * SF, ReferenceEnumerator f
+  const SourceFile * SF, ReferenceEnumerator F
 ) const {
-  auto entry = fileReferences.find(SF);
-  if (entry == fileReferences.end()) {
+  auto Entry = fileReferences.find(SF);
+  if (Entry == fileReferences.end()) {
     return;
   }
 
-  for (const auto& ref : entry->getSecond()) {
-    switch (ref.RefKind) {
+  for (const auto& Ref : Entry->getSecond()) {
+    switch (Ref.RefKind) {
     case DependencyCollector::Reference::Kind::Empty:
     case DependencyCollector::Reference::Kind::Tombstone:
       llvm_unreachable("Cannot enumerate dead reference!");
     case DependencyCollector::Reference::Kind::UsedMember:
     case DependencyCollector::Reference::Kind::PotentialMember:
     case DependencyCollector::Reference::Kind::TopLevel:
-    case DependencyCollector::Reference::Kind::Dynamic: f(ref);
+    case DependencyCollector::Reference::Kind::Dynamic: F(Ref);
     }
   }
 }

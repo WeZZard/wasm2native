@@ -3,7 +3,9 @@
 
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/StringRef.h>
+#include <vector>
 #include <w2n/AST/DependencyCollector.h>
+#include <w2n/Basic/TypeID.h>
 
 #ifndef W2N_AST_REQUESTCACHE_H
 #define W2N_AST_REQUESTCACHE_H
@@ -240,7 +242,7 @@ class RequestCache {
     typename Request,                                                    \
     typename ZoneTypes = TypeIDZoneTypes<Zone::Name>,                    \
     typename std::enable_if<                                             \
-      TypeID<Request>::zone == Zone::Name>::type * = nullptr>            \
+      TypeID<Request>::zone == Zone::Name>::Type * = nullptr>            \
   llvm::DenseMap<RequestKey<Request>, typename Request::OutputType> *    \
   getCache() {                                                           \
     auto& caches = Name##ZoneCache;                                      \

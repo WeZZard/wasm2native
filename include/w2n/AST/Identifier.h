@@ -81,8 +81,8 @@ public:
     return Pointer == nullptr;
   }
 
-  bool is(StringRef string) const {
-    return str().equals(string);
+  bool is(StringRef String) const {
+    return str().equals(String);
   }
 
   const void * getAsOpaquePointer() const {
@@ -103,10 +103,10 @@ public:
    *
    * @note Null identifiers come after all other identifiers.
    */
-  int compare(Identifier other) const;
+  int compare(Identifier Other) const;
 
-  friend llvm::hash_code hash_value(Identifier ident) {
-    return llvm::hash_value(ident.getAsOpaquePointer());
+  friend llvm::hash_code hash_value(Identifier Ident) {
+    return llvm::hash_value(Ident.getAsOpaquePointer());
   }
 
   bool operator==(Identifier RHS) const {

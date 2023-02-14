@@ -67,7 +67,7 @@ public:
 
   /// Return the source range of the expression.
   SourceRange getSourceRange() const {
-    w2n_proto_implemented([] { return SourceRange(); });
+    return w2n_proto_implemented([] { return SourceRange(); });
   }
 
   /// getStartLoc - Return the location of the start of the expression.

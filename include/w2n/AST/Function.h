@@ -1,9 +1,8 @@
 #ifndef W2N_AST_FUNCTION_H
 #define W2N_AST_FUNCTION_H
 
-#include <_types/_uint32_t.h>
-#include "llvm/ADT/StringRef.h"
-#include "llvm/ADT/Twine.h"
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
 #include <llvm/ADT/ilist.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTWalker.h>

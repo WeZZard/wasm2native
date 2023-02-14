@@ -23,6 +23,10 @@
 //
 //===----------------------------------------------------------------===//
 
+#ifndef BUILTIN
+#define BUILTIN(Id, Name, Attrs)
+#endif
+
 #pragma mark Binary Operations
 
 /// Binary operations have type (T,T) -> T.

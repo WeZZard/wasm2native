@@ -27,16 +27,16 @@ class LLVM_POINTER_LIKE_ALIGNMENT(DeclContext) DeclContext :
 
   llvm::PointerIntPair<DeclContext *, 3, ASTHierarchy> ParentAndKind;
 
-  void setParent(DeclContext * parent) {
-    ParentAndKind.setPointer(parent);
+  void setParent(DeclContext * Parent) {
+    ParentAndKind.setPointer(Parent);
   }
 
   static ASTHierarchy getASTHierarchyFromKind(DeclContextKind Kind) {
     switch (Kind) {
     case DeclContextKind::FileUnit: return ASTHierarchy::FileUnit;
     case DeclContextKind::Module: return ASTHierarchy::Decl;
-    default: llvm_unreachable("Unhandled DeclContextKind");
     }
+    llvm_unreachable("Unhandled DeclContextKind");
   }
 
 public:
@@ -54,10 +54,11 @@ public:
 
   DeclContext(DeclContextKind Kind, DeclContext * Parent) :
     ParentAndKind(Parent, getASTHierarchyFromKind(Kind)) {
-    if (Kind != DeclContextKind::Module)
+    if (Kind != DeclContextKind::Module) {
       assert(
         Parent != nullptr && "DeclContext must have a parent context"
       );
+    }
   }
 
   DeclContextKind getContextKind() const;
@@ -124,11 +125,12 @@ template <
   typename ParamT,
   typename = typename std::enable_if<
     std::is_same<ParamT, DeclContext>::value>::type>
-void simple_display(llvm::raw_ostream& out, const ParamT * dc) {
-  if (dc)
-    dc->printContext(out, 0, true);
-  else
+void simple_display(llvm::raw_ostream& out, const ParamT * subject) {
+  if (subject) {
+    subject->printContext(out, 0, true);
+  } else {
     out << "(null)";
+  }
 }
 
 /// Extract the source location from the given declaration context.

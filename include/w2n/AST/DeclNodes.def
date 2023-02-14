@@ -5,6 +5,9 @@
 ///   If the declaration node is not abstract, its enumerator value is
 ///   DeclKind::Id.  The node's class name is Id##Decl, and the name of
 ///   its base class (in the Decl hierarchy) is Parent.
+#ifndef DECL
+#define DECL(Id, Parent)
+#endif
 
 /// An abstract declaration node is an abstract base class in the
 /// hierarchy; it is never a most-derived type, and it does not have an

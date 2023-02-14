@@ -1,10 +1,9 @@
 #ifndef W2N_AST_DECL_H
 #define W2N_AST_DECL_H
 
-#include <_types/_uint8_t.h>
-#include "llvm/Support/ErrorHandling.h"
 #include <llvm/ADT/PointerUnion.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/Support/ErrorHandling.h>
 #include <cstdint>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/ASTWalker.h>
@@ -162,7 +161,7 @@ protected:
 public:
 
   /// Dump a reference to the given declaration.
-  void dumpRef(raw_ostream& os) const;
+  void dumpRef(raw_ostream& Stream) const;
 
   /// Dump a reference to the given declaration.
   W2N_DEBUG_DUMPER(dumpRef());

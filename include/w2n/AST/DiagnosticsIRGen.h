@@ -26,7 +26,7 @@ namespace diag {
 
 // Declare common diagnostics objects with their appropriate types.
 #define DIAG(KIND, ID, Options, Text, Signature)                         \
-  extern detail::DiagWithArguments<void Signature>::type ID;
+  extern detail::DiagWithArguments<void Signature>::Type ID;
 #include "DiagnosticsIRGen.def"
 
 } // namespace diag

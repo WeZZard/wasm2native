@@ -23,9 +23,9 @@ enum class w2n::FixItID : uint32_t {
 namespace w2n {
 namespace diag {
 #define DIAG(KIND, ID, Options, Text, Signature)                         \
-  detail::DiagWithArguments<void Signature>::type ID = {DiagID::ID};
+  detail::DiagWithArguments<void Signature>::Type ID = {DiagID::ID};
 #define FIXIT(ID, Text, Signature)                                       \
-  detail::StructuredFixItWithArguments<void Signature>::type ID = {      \
+  detail::StructuredFixItWithArguments<void Signature>::Type ID = {      \
     FixItID::ID};
 #include <w2n/AST/DiagnosticsAll.def>
 } // end namespace diag

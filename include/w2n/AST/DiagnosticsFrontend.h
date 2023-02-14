@@ -9,7 +9,7 @@ namespace w2n {
 namespace diag {
 // Declare common diagnostics objects with their appropriate types.
 #define DIAG(KIND, ID, Options, Text, Signature)                         \
-  extern detail::DiagWithArguments<void Signature>::type ID;
+  extern detail::DiagWithArguments<void Signature>::Type ID;
 #include <w2n/AST/DiagnosticsFrontend.def>
 } // namespace diag
 } // namespace w2n

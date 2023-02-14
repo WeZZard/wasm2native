@@ -19,7 +19,7 @@ struct DiagWithArguments;
 
 template <typename... ArgTypes>
 struct DiagWithArguments<void(ArgTypes...)> {
-  typedef Diag<ArgTypes...> type;
+  typedef Diag<ArgTypes...> Type;
 };
 
 template <typename T>
@@ -27,7 +27,7 @@ struct StructuredFixItWithArguments;
 
 template <typename... ArgTypes>
 struct StructuredFixItWithArguments<void(ArgTypes...)> {
-  typedef StructuredFixIt<ArgTypes...> type;
+  typedef StructuredFixIt<ArgTypes...> Type;
 };
 } // end namespace detail
 
@@ -39,9 +39,9 @@ enum class RequirementKind : uint8_t;
 
 // Declare common diagnostics objects with their appropriate types.
 #define DIAG(KIND, ID, Options, Text, Signature)                         \
-  extern detail::DiagWithArguments<void Signature>::type ID;
+  extern detail::DiagWithArguments<void Signature>::Type ID;
 #define FIXIT(ID, Text, Signature)                                       \
-  extern detail::StructuredFixItWithArguments<void Signature>::type ID;
+  extern detail::StructuredFixItWithArguments<void Signature>::Type ID;
 #include <w2n/AST/DiagnosticsCommon.def>
 } // end namespace diag
 } // end namespace w2n

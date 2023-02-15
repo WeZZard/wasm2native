@@ -49,11 +49,11 @@ class ClusteredBitVector {
   llvm::Optional<APInt> Bits;
 
   /// Copy constructor from APInt.
-  ClusteredBitVector(const APInt& bits) : Bits(bits) {
+  ClusteredBitVector(const APInt& Bits) : Bits(Bits) {
   }
 
   /// Move constructor from APInt.
-  ClusteredBitVector(APInt&& bits) : Bits(std::move(bits)) {
+  ClusteredBitVector(APInt&& Bits) : Bits(std::move(Bits)) {
   }
 
 public:
@@ -62,31 +62,29 @@ public:
   /// any allocations.
   ClusteredBitVector() = default;
 
-  ClusteredBitVector(const ClusteredBitVector& other) : Bits(other.Bits) {
+  ClusteredBitVector(const ClusteredBitVector& X) : Bits(X.Bits) {
   }
 
-  ClusteredBitVector(ClusteredBitVector&& other) :
-    Bits(std::move(other.Bits)) {
-  }
-
-  /// Create a new ClusteredBitVector from the provided APInt,
-  /// with a size of 0 if the optional does not have a value.
-  ClusteredBitVector(const llvm::Optional<APInt>& bits) : Bits(bits) {
+  ClusteredBitVector(ClusteredBitVector&& X) : Bits(std::move(X.Bits)) {
   }
 
   /// Create a new ClusteredBitVector from the provided APInt,
   /// with a size of 0 if the optional does not have a value.
-  ClusteredBitVector(llvm::Optional<APInt>&& bits) :
-    Bits(std::move(bits)) {
+  ClusteredBitVector(const llvm::Optional<APInt>& X) : Bits(X) {
   }
 
-  ClusteredBitVector& operator=(const ClusteredBitVector& other) {
-    this->Bits = other.Bits;
+  /// Create a new ClusteredBitVector from the provided APInt,
+  /// with a size of 0 if the optional does not have a value.
+  ClusteredBitVector(llvm::Optional<APInt>&& X) : Bits(std::move(X)) {
+  }
+
+  ClusteredBitVector& operator=(const ClusteredBitVector& X) {
+    this->Bits = X.Bits;
     return *this;
   }
 
-  ClusteredBitVector& operator=(ClusteredBitVector&& other) {
-    this->Bits = std::move(other.Bits);
+  ClusteredBitVector& operator=(ClusteredBitVector&& X) {
+    this->Bits = std::move(X.Bits);
     return *this;
   }
 
@@ -104,110 +102,108 @@ public:
   }
 
   /// Append the bits from the given vector to this one.
-  void append(const ClusteredBitVector& other) {
+  void append(const ClusteredBitVector& Other) {
     // Nothing to do if the other vector is empty.
-    if (!other.Bits) {
+    if (!Other.Bits) {
       return;
     }
     if (!Bits) {
-      Bits = other.Bits;
+      Bits = Other.Bits;
       return;
     }
-    APInt& v = Bits.value();
-    unsigned w = v.getBitWidth();
-    v = v.zext(w + other.Bits.value().getBitWidth());
-    v.insertBits(other.Bits.value(), w);
-    return;
+    APInt& Val = Bits.value();
+    unsigned Width = Val.getBitWidth();
+    Val = Val.zext(Width + Other.Bits.value().getBitWidth());
+    Val.insertBits(Other.Bits.value(), Width);
   }
 
   /// Add the low N bits from the given value to the vector.
-  void add(size_t numBits, uint64_t value) {
-    append(fromAPInt(APInt(numBits, value)));
+  void add(size_t NumBits, uint64_t Value) {
+    append(fromAPInt(APInt(NumBits, Value)));
   }
 
   /// Append a number of clear bits to this vector.
-  void appendClearBits(size_t numBits) {
-    if (numBits == 0) {
+  void appendClearBits(size_t NumBits) {
+    if (NumBits == 0) {
       return;
     }
     if (Bits) {
-      APInt& v = Bits.value();
-      v = v.zext(v.getBitWidth() + numBits);
+      APInt& Value = Bits.value();
+      Value = Value.zext(Value.getBitWidth() + NumBits);
       return;
     }
-    Bits = APInt::getNullValue(numBits);
+    Bits = APInt::getNullValue(NumBits);
   }
 
   /// Extend the vector out to the given length with clear bits.
-  void extendWithClearBits(size_t newSize) {
-    assert(newSize >= size());
-    appendClearBits(newSize - size());
+  void extendWithClearBits(size_t NewSize) {
+    assert(NewSize >= size());
+    appendClearBits(NewSize - size());
   }
 
   /// Append a number of set bits to this vector.
-  void appendSetBits(size_t numBits) {
-    if (numBits == 0) {
+  void appendSetBits(size_t NumBits) {
+    if (NumBits == 0) {
       return;
     }
     if (Bits) {
-      APInt& v = Bits.value();
-      unsigned w = v.getBitWidth();
-      v = v.zext(w + numBits);
-      v.setBitsFrom(w);
+      APInt& Value = Bits.value();
+      unsigned Width = Value.getBitWidth();
+      Value = Value.zext(Width + NumBits);
+      Value.setBitsFrom(Width);
       return;
     }
-    Bits = APInt::getAllOnesValue(numBits);
-    return;
+    Bits = APInt::getAllOnesValue(NumBits);
   }
 
   /// Extend the vector out to the given length with set bits.
-  void extendWithSetBits(size_t newSize) {
-    assert(newSize >= size());
-    appendSetBits(newSize - size());
+  void extendWithSetBits(size_t NewSize) {
+    assert(NewSize >= size());
+    appendSetBits(NewSize - size());
   }
 
   /// Test whether a particular bit is set.
-  bool operator[](size_t i) const {
-    assert(i < size());
-    return Bits.value()[i];
+  bool operator[](size_t I) const {
+    assert(I < size());
+    return Bits.value()[I];
   }
 
   /// Intersect a bit-vector of the same size into this vector.
-  ClusteredBitVector& operator&=(const ClusteredBitVector& other) {
-    assert(size() == other.size());
+  ClusteredBitVector& operator&=(const ClusteredBitVector& X) {
+    assert(size() == X.size());
     if (Bits) {
-      APInt& v = Bits.value();
-      v &= other.Bits.value();
+      APInt& Value = Bits.value();
+      Value &= X.Bits.value();
     }
     return *this;
   }
 
   /// Union a bit-vector of the same size into this vector.
-  ClusteredBitVector& operator|=(const ClusteredBitVector& other) {
-    assert(size() == other.size());
+  ClusteredBitVector& operator|=(const ClusteredBitVector& Other) {
+    assert(size() == Other.size());
     if (Bits) {
-      APInt& v = Bits.value();
-      v |= other.Bits.value();
+      APInt& Value = Bits.value();
+      Value |= Other.Bits.value();
     }
     return *this;
   }
 
   /// Set bit i.
-  void setBit(size_t i) {
-    assert(i < size());
-    Bits.value().setBit(i);
+  void setBit(size_t I) {
+    assert(I < size());
+    Bits.value().setBit(I);
   }
 
   /// Clear bit i.
-  void clearBit(size_t i) {
-    assert(i < size());
-    Bits.value().clearBit(i);
+  void clearBit(size_t I) {
+    assert(I < size());
+    Bits.value().clearBit(I);
   }
 
   /// Toggle bit i.
-  void flipBit(size_t i) {
-    assert(i < size());
-    Bits.value().flipBit(i);
+  void flipBit(size_t I) {
+    assert(I < size());
+    Bits.value().flipBit(I);
   }
 
   /// Toggle all the bits in this vector.
@@ -240,21 +236,21 @@ public:
   }
 
   friend bool operator==(
-    const ClusteredBitVector& lhs, const ClusteredBitVector& rhs
+    const ClusteredBitVector& Lhs, const ClusteredBitVector& Rhs
   ) {
-    if (lhs.size() != rhs.size()) {
+    if (Lhs.size() != Rhs.size()) {
       return false;
     }
-    if (lhs.size() == 0) {
+    if (Lhs.size() == 0 /* NOLINT(readability-container-size-empty) */) {
       return true;
     }
-    return lhs.Bits.value() == rhs.Bits.value();
+    return Lhs.Bits.value() == Rhs.Bits.value();
   }
 
   friend bool operator!=(
-    const ClusteredBitVector& lhs, const ClusteredBitVector& rhs
+    const ClusteredBitVector& Lhs, const ClusteredBitVector& Rhs
   ) {
-    return !(lhs == rhs);
+    return !(Lhs == Rhs);
   }
 
   /// Return this bit-vector as an APInt, with low indices becoming
@@ -265,25 +261,25 @@ public:
   }
 
   /// Construct a bit-vector from an APInt.
-  static ClusteredBitVector fromAPInt(const APInt& value) {
-    return ClusteredBitVector(value);
+  static ClusteredBitVector fromAPInt(const APInt& Value) {
+    return ClusteredBitVector(Value);
   }
 
   /// Construct a bit-vector from an APInt.
-  static ClusteredBitVector fromAPInt(APInt&& value) {
-    return ClusteredBitVector(std::move(value));
+  static ClusteredBitVector fromAPInt(APInt&& Value) {
+    return ClusteredBitVector(std::move(Value));
   }
 
   /// Return a constant bit-vector of the given size.
-  static ClusteredBitVector getConstant(size_t numBits, bool value) {
-    if (numBits == 0) {
+  static ClusteredBitVector getConstant(size_t NumBits, bool Value) {
+    if (NumBits == 0) {
       return ClusteredBitVector();
     }
-    auto vec = APInt::getNullValue(numBits);
-    if (value) {
-      vec.flipAllBits();
+    auto Vec = APInt::getNullValue(NumBits);
+    if (Value) {
+      Vec.flipAllBits();
     }
-    return ClusteredBitVector(vec);
+    return ClusteredBitVector(Vec);
   }
 
   /// Pretty-print the vector.

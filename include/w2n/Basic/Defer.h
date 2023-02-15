@@ -11,15 +11,15 @@ namespace detail {
 struct DeferTask {};
 
 template <typename F>
-auto operator+(DeferTask, F&& fn)
-  -> decltype(llvm::make_scope_exit(std::forward<F>(fn))) {
-  return llvm::make_scope_exit(std::forward<F>(fn));
+auto operator+(DeferTask /*unused*/, F&& Fn)
+  -> decltype(llvm::make_scope_exit(std::forward<F>(Fn))) {
+  return llvm::make_scope_exit(std::forward<F>(Fn));
 }
 } // namespace detail
 } // end namespace w2n
 
-#define DEFER_CONCAT_IMPL(x, y)  x##y
-#define DEFER_MACRO_CONCAT(x, y) DEFER_CONCAT_IMPL(x, y)
+#define W2N_DEFER_CONCAT_IMPL(x, y)  x##y
+#define W2N_DEFER_MACRO_CONCAT(x, y) W2N_DEFER_CONCAT_IMPL(x, y)
 
 /// This macro is used to register a function / lambda to be run on exit
 /// from a scope.  Its typical use looks like:
@@ -29,7 +29,7 @@ auto operator+(DeferTask, F&& fn)
 ///   };
 ///
 #define W2N_DEFER                                                        \
-  auto DEFER_MACRO_CONCAT(defer_func, __COUNTER__) =                     \
+  auto W2N_DEFER_MACRO_CONCAT(defer_func, __COUNTER__) =                 \
     ::w2n::detail::DeferTask() + [&]()
 
 #endif // W2N_BASIC_DEFER_H

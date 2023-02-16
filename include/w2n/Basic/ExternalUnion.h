@@ -1,5 +1,4 @@
-//===- ExternalUnion.h - A union with external discriminator -*- C++
-//-*-===//
+//===- ExternalUnion.h - external discriminator union -----*- C++ -*-===//
 //
 // This source file is part of the Swift.org open source project
 //

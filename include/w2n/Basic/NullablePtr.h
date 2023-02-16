@@ -30,7 +30,8 @@ public:
     NullablePtr<OtherT> Other,
     typename std::enable_if<
       std::is_convertible<OtherT *, T *>::value,
-      PlaceHolder>::type = PlaceHolder()
+      PlaceHolder>::type /*unused*/
+    = PlaceHolder()
   ) :
     Ptr(Other.getPtrOrNull()) {
   }
@@ -63,32 +64,32 @@ public:
     return getPtrOr(nullptr);
   }
 
-  T * getPtrOr(T * defaultValue) {
-    return Ptr ? Ptr : defaultValue;
+  T * getPtrOr(T * DefaultValue) {
+    return Ptr ? Ptr : DefaultValue;
   }
 
-  const T * getPtrOr(const T * defaultValue) const {
-    return Ptr ? Ptr : defaultValue;
+  const T * getPtrOr(const T * DefaultValue) const {
+    return Ptr ? Ptr : DefaultValue;
   }
 
   explicit operator bool() const {
     return Ptr;
   }
 
-  bool operator==(const NullablePtr<T>& other) const {
-    return other.Ptr == Ptr;
+  bool operator==(const NullablePtr<T>& Other) const {
+    return Other.Ptr == Ptr;
   }
 
-  bool operator!=(const NullablePtr<T>& other) const {
-    return !(*this == other);
+  bool operator!=(const NullablePtr<T>& Other) const {
+    return !(*this == Other);
   }
 
-  bool operator==(const T * other) const {
-    return other == Ptr;
+  bool operator==(const T * Other) const {
+    return Other == Ptr;
   }
 
-  bool operator!=(const T * other) const {
-    return !(*this == other);
+  bool operator!=(const T * Other) const {
+    return !(*this == Other);
   }
 };
 
@@ -102,12 +103,12 @@ template <typename T>
 struct PointerLikeTypeTraits<w2n::NullablePtr<T>> {
 public:
 
-  static inline void * getAsVoidPointer(w2n::NullablePtr<T> ptr) {
-    return static_cast<void *>(ptr.getPtrOrNull());
+  static inline void * getAsVoidPointer(w2n::NullablePtr<T> Ptr) {
+    return static_cast<void *>(Ptr.getPtrOrNull());
   }
 
-  static inline w2n::NullablePtr<T> getFromVoidPointer(void * ptr) {
-    return w2n::NullablePtr<T>(static_cast<T *>(ptr));
+  static inline w2n::NullablePtr<T> getFromVoidPointer(void * Ptr) {
+    return w2n::NullablePtr<T>(static_cast<T *>(Ptr));
   }
 
   enum {

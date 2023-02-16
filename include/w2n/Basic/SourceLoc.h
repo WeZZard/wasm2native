@@ -65,8 +65,9 @@ public:
   }
 
   SourceLoc getAdvancedLocOrInvalid(int ByteOffset) const {
-    if (isValid())
+    if (isValid()) {
       return getAdvancedLoc(ByteOffset);
+    }
     return SourceLoc();
   }
 
@@ -93,8 +94,8 @@ public:
 
   W2N_DEBUG_DUMPER(dump(const SourceManager& SM));
 
-  friend size_t hash_value(SourceLoc loc) {
-    return reinterpret_cast<uintptr_t>(loc.getOpaquePointerValue());
+  friend size_t hash_value(SourceLoc Loc) {
+    return reinterpret_cast<uintptr_t>(Loc.getOpaquePointerValue());
   }
 
   friend void simple_display(raw_ostream& os, const SourceLoc& ss) {
@@ -153,12 +154,12 @@ public:
   /// Checks whether this range overlaps with the given range.
   bool overlaps(SourceRange Other) const;
 
-  bool operator==(const SourceRange& other) const {
-    return Start == other.Start && End == other.End;
+  bool operator==(const SourceRange& Other) const {
+    return Start == Other.Start && End == Other.End;
   }
 
-  bool operator!=(const SourceRange& other) const {
-    return !operator==(other);
+  bool operator!=(const SourceRange& Other) const {
+    return !operator==(Other);
   }
 
   /// Print out the SourceRange.  If the locations are in the same buffer
@@ -214,12 +215,12 @@ public:
     return !isValid();
   }
 
-  bool operator==(const CharSourceRange& other) const {
-    return Start == other.Start && ByteLength == other.ByteLength;
+  bool operator==(const CharSourceRange& Other) const {
+    return Start == Other.Start && ByteLength == Other.ByteLength;
   }
 
-  bool operator!=(const CharSourceRange& other) const {
-    return !operator==(other);
+  bool operator!=(const CharSourceRange& Other) const {
+    return !operator==(Other);
   }
 
   SourceLoc getStart() const {
@@ -231,19 +232,19 @@ public:
   }
 
   /// Returns true if the given source location is contained in the range.
-  bool contains(SourceLoc loc) const {
-    auto less = std::less<const char *>();
-    auto less_equal = std::less_equal<const char *>();
-    return less_equal(
-             getStart().Value.getPointer(), loc.Value.getPointer()
+  bool contains(SourceLoc Loc) const {
+    auto Less = std::less<const char *>();
+    auto LessEqual = std::less_equal<const char *>();
+    return LessEqual(
+             getStart().Value.getPointer(), Loc.Value.getPointer()
            )
-        && less(loc.Value.getPointer(), getEnd().Value.getPointer());
+        && Less(Loc.Value.getPointer(), getEnd().Value.getPointer());
   }
 
   bool contains(CharSourceRange Other) const {
-    auto less_equal = std::less_equal<const char *>();
+    auto LessEqual = std::less_equal<const char *>();
     return contains(Other.getStart())
-        && less_equal(
+        && LessEqual(
              Other.getEnd().Value.getPointer(),
              getEnd().Value.getPointer()
         );
@@ -256,7 +257,7 @@ public:
     if (Diff > 0) {
       ByteLength += Diff;
     }
-    const auto MyStartPtr = getStart().Value.getPointer();
+    const char * const MyStartPtr = getStart().Value.getPointer();
     Diff = MyStartPtr - Other.getStart().Value.getPointer();
     if (Diff > 0) {
       ByteLength += Diff;
@@ -265,8 +266,9 @@ public:
   }
 
   bool overlaps(CharSourceRange Other) const {
-    if (getByteLength() == 0 || Other.getByteLength() == 0)
+    if (getByteLength() == 0 || Other.getByteLength() == 0) {
       return false;
+    }
     return contains(Other.getStart()) || Other.contains(getStart());
   }
 

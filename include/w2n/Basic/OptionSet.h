@@ -39,21 +39,21 @@ public:
   }
 
   /// Create an empty option set.
-  constexpr OptionSet(llvm::NoneType) : Storage() {
+  constexpr OptionSet(llvm::NoneType /*unused*/) : Storage() {
   }
 
   /// Create an option set with only the given option set.
-  constexpr OptionSet(Flags flag) :
-    Storage(static_cast<StorageType>(flag)) {
+  constexpr OptionSet(Flags Flag) :
+    Storage(static_cast<StorageType>(Flag)) {
   }
 
   /// Create an option set containing the given options.
-  constexpr OptionSet(std::initializer_list<Flags> flags) :
-    Storage(combineFlags(flags)) {
+  constexpr OptionSet(std::initializer_list<Flags> F) :
+    Storage(combineFlags(F)) {
   }
 
   /// Create an option set from raw storage.
-  explicit constexpr OptionSet(StorageType storage) : Storage(storage) {
+  explicit constexpr OptionSet(StorageType Storage) : Storage(Storage) {
   }
 
   /// Check whether an option set is non-empty.
@@ -85,14 +85,14 @@ public:
 
   /// Determine whether this option set contains all of the options in the
   /// given set.
-  constexpr bool contains(OptionSet set) const {
-    return !static_cast<bool>(set - *this);
+  constexpr bool contains(OptionSet Set) const {
+    return !static_cast<bool>(Set - *this);
   }
 
   /// Check if this option set contains the exact same options as the
   /// given set.
-  constexpr bool containsOnly(OptionSet set) const {
-    return Storage == set.Storage;
+  constexpr bool containsOnly(OptionSet Set) const {
+    return Storage == Set.Storage;
   }
 
   // '==' and '!=' are deliberately not defined because they provide a
@@ -100,58 +100,59 @@ public:
   // you actually want '==' behavior, use 'containsOnly'.
 
   /// Produce the union of two option sets.
-  friend constexpr OptionSet operator|(OptionSet lhs, OptionSet rhs) {
-    return OptionSet(lhs.Storage | rhs.Storage);
+  friend constexpr OptionSet operator|(OptionSet Lhs, OptionSet Rhs) {
+    return OptionSet(Lhs.Storage | Rhs.Storage);
   }
 
   /// Produce the union of two option sets.
-  friend constexpr OptionSet& operator|=(OptionSet& lhs, OptionSet rhs) {
-    lhs.Storage |= rhs.Storage;
-    return lhs;
+  friend constexpr OptionSet& operator|=(OptionSet& Lhs, OptionSet Rhs) {
+    Lhs.Storage |= Rhs.Storage;
+    return Lhs;
   }
 
   /// Produce the intersection of two option sets.
-  friend constexpr OptionSet operator&(OptionSet lhs, OptionSet rhs) {
-    return OptionSet(lhs.Storage & rhs.Storage);
+  friend constexpr OptionSet operator&(OptionSet Lhs, OptionSet Rhs) {
+    return OptionSet(Lhs.Storage & Rhs.Storage);
   }
 
   /// Produce the intersection of two option sets.
-  friend constexpr OptionSet& operator&=(OptionSet& lhs, OptionSet rhs) {
-    lhs.Storage &= rhs.Storage;
-    return lhs;
+  friend constexpr OptionSet& operator&=(OptionSet& Lhs, OptionSet Rhs) {
+    Lhs.Storage &= Rhs.Storage;
+    return Lhs;
   }
 
   /// Produce the difference of two option sets.
-  friend constexpr OptionSet operator-(OptionSet lhs, OptionSet rhs) {
-    return OptionSet(lhs.Storage & ~rhs.Storage);
+  friend constexpr OptionSet operator-(OptionSet Lhs, OptionSet Rhs) {
+    return OptionSet(Lhs.Storage & ~Rhs.Storage);
   }
 
   /// Produce the difference of two option sets.
-  friend constexpr OptionSet& operator-=(OptionSet& lhs, OptionSet rhs) {
-    lhs.Storage &= ~rhs.Storage;
-    return lhs;
+  friend constexpr OptionSet& operator-=(OptionSet& Lhs, OptionSet Rhs) {
+    Lhs.Storage &= ~Rhs.Storage;
+    return Lhs;
   }
 
 private:
 
   template <typename T>
-  static auto _checkResultTypeOperatorOr(T t) -> decltype(t | t) {
+  static auto checkResultTypeOperatorOr(T Val) -> decltype(Val | Val) {
     return T();
   }
 
-  static void _checkResultTypeOperatorOr(...) {
+  static void checkResultTypeOperatorOr(...) {
   }
 
   static constexpr StorageType
-  combineFlags(const std::initializer_list<Flags>& flags) {
-    OptionSet result;
-    for (Flags flag : flags)
-      result |= flag;
-    return result.Storage;
+  combineFlags(const std::initializer_list<Flags>& F) {
+    OptionSet Result;
+    for (Flags Flag : F) {
+      Result |= Flag;
+    }
+    return Result.Storage;
   }
 
   static_assert(
-    !std::is_same<decltype(_checkResultTypeOperatorOr(Flags())), Flags>::
+    !std::is_same<decltype(checkResultTypeOperatorOr(Flags())), Flags>::
       value,
     "operator| should produce an OptionSet"
   );

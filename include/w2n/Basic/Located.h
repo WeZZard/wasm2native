@@ -24,10 +24,10 @@ struct Located {
   /// The original source location from which the item was parsed.
   SourceLoc Loc;
 
-  Located() : Item(), Loc() {
+  Located() : Item() {
   }
 
-  Located(T Item, SourceLoc loc) : Item(Item), Loc(loc) {
+  Located(T Item, SourceLoc Loc) : Item(Item), Loc(Loc) {
   }
 
   W2N_DEBUG_DUMP;
@@ -35,8 +35,8 @@ struct Located {
 };
 
 template <typename T>
-bool operator==(const Located<T>& lhs, const Located<T>& rhs) {
-  return lhs.Item == rhs.Item && lhs.Loc == rhs.Loc;
+bool operator==(const Located<T>& Lhs, const Located<T>& Rhs) {
+  return Lhs.Item == Rhs.Item && Lhs.Loc == Rhs.Loc;
 }
 
 } // end namespace w2n

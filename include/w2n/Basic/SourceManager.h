@@ -117,10 +117,10 @@ public:
   /// exists. The name and line offset must match exactly in that case.
   ///
   /// \sa closeVirtualFile
-  bool openVirtualFile(SourceLoc loc, StringRef name, int lineOffset);
+  bool openVirtualFile(SourceLoc Loc, StringRef Name, int LineOffset);
 
   /// Close a \c #sourceLocation-defined virtual file region.
-  void closeVirtualFile(SourceLoc end);
+  void closeVirtualFile(SourceLoc End);
 
   /// Creates a copy of a \c MemoryBuffer and adds it to the \c
   /// SourceManager, taking ownership of the copy.
@@ -196,10 +196,11 @@ public:
   ) const {
     assert(Loc.isValid());
     int LineOffset = getLineOffset(Loc);
-    int l, c;
-    std::tie(l, c) = LLVMSourceMgr.getLineAndColumn(Loc.Value, BufferID);
-    assert(LineOffset + l > 0 && "bogus line offset");
-    return {LineOffset + l, c};
+    int L;
+    int C;
+    std::tie(L, C) = LLVMSourceMgr.getLineAndColumn(Loc.Value, BufferID);
+    assert(LineOffset + L > 0 && "bogus line offset");
+    return {LineOffset + L, C};
   }
 
   /// Returns the real line and column for a source location.
@@ -224,7 +225,7 @@ public:
     CharSourceRange Range, Optional<unsigned> BufferID = None
   ) const;
 
-  llvm::SMDiagnostic GetMessage(
+  llvm::SMDiagnostic getMessage(
     SourceLoc Loc,
     llvm::SourceMgr::DiagKind Kind,
     const Twine& Msg,
@@ -280,15 +281,15 @@ public:
   /// must be owned by \p otherManager. Returns an invalid SourceLoc if it
   /// cannot be translated.
   SourceLoc
-  getLocForForeignLoc(SourceLoc otherLoc, SourceManager& otherMgr);
+  getLocForForeignLoc(SourceLoc OtherLoc, SourceManager& OtherMgr);
 
 private:
 
   int getLineOffset(SourceLoc Loc) const {
-    if (auto VFile = getVirtualFile(Loc))
+    if (const auto * VFile = getVirtualFile(Loc)) {
       return VFile->LineOffset;
-    else
-      return 0;
+    }
+    return 0;
   }
 };
 

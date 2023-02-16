@@ -12,7 +12,7 @@ enum ID : uint8_t {
 #define TYPE(NAME, ID, EXTENSION, FLAGS) TY_##ID,
 #include <w2n/Basic/FileTypes.def>
 #undef TYPE
-  TY_INVALID
+  TY_INVALID // NOLINT(readability-identifier-naming)
 };
 
 /// Return the name of the type for \p Id.
@@ -30,10 +30,10 @@ ID lookupTypeForExtension(StringRef Ext);
 /// Lookup the type to use for the name \p Name.
 ID lookupTypeForName(StringRef Name);
 
-static inline void forAllTypes(llvm::function_ref<void(file_types::ID)> fn
-) {
-  for (uint8_t i = 0; i < static_cast<uint8_t>(TY_INVALID); ++i)
-    fn(static_cast<ID>(i));
+inline void forAllTypes(llvm::function_ref<void(file_types::ID)> Fn) {
+  for (uint8_t I = 0; I < static_cast<uint8_t>(TY_INVALID); ++I) {
+    Fn(static_cast<ID>(I));
+  }
 }
 
 bool isInputType(ID Id);
@@ -55,7 +55,9 @@ struct DenseMapInfo<w2n::file_types::ID> {
   }
 
   static unsigned getHashValue(ID Val) {
-    return (unsigned)Val * 37U;
+#define W2N_FILE_TYPE_ID_HASH_MAGIC 37U
+    return (unsigned)Val * W2N_FILE_TYPE_ID_HASH_MAGIC;
+#undef W2N_FILE_TYPE_ID_HASH_MAGIC
   }
 
   static bool isEqual(ID LHS, ID RHS) {

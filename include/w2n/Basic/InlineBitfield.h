@@ -18,7 +18,6 @@
 #ifndef W2N_BASIC_INLINEBITFIELD_H
 #define W2N_BASIC_INLINEBITFIELD_H
 
-#include <_types/_uint64_t.h>
 #include <llvm/Support/Compiler.h>
 #include <bit>
 #include <cstdint>

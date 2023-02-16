@@ -4,7 +4,7 @@ PROJECT_ROOT=$(git rev-parse --show-toplevel)
 MONOREPO_ROOT=$PROJECT_ROOT/..
 BUILD_DIR=$MONOREPO_ROOT/build
 CONFIG_PATH=$PROJECT_ROOT/.clang-tidy
-COMPILE_COMMANDS_PATH=$BUILD_DIR/wasm2native/compile_commands.json
+COMPILE_COMMANDS_PATH=$BUILD_DIR/wasm2native
 CLANG_TIDY_PATH=$(which clang-tidy)
 if [[ "$CLANG_TIDY_PATH" == "" ]]; then
   # FIXME: Hard coded Homebrew installation point on macOS Ventura
@@ -44,7 +44,7 @@ function resolve_files() {
   if [[ $FILE_LIST == "" ]]; then
     # Find all files in PROJECT_ROOT which end in .cpp and .c., as 
     # specified in the regular expression just below
-    FILES="$(find "$PROJECT_ROOT" | grep -E ".*(\.cpp|\.c)$")"
+    FILES="$(find . -type f -iname \*\.cpp -o -iname \*\.h -o -iname \*\.c -o -iname \*\.h)"
   else
     for EACH_FILE in "$FILE_LIST"; do
       if [[ $FILES == "" ]]; then

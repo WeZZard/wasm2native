@@ -3,7 +3,6 @@
 
 #include <llvm/Option/ArgList.h>
 #include <w2n/Frontend/FrontendInputsAndOutputs.h>
-#include <w2n/Frontend/FrontendOptions.h>
 #include <w2n/Frontend/Input.h>
 
 namespace w2n {

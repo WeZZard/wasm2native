@@ -108,7 +108,6 @@ std::vector<Address> IRGenFunction::emitProlog(
   );
   EarliestIP = AllocaIP;
 
-  uint32_t LocalIndex = 0;
   std::vector<Address> FuncLocals;
 
   // Emit locals in activation record for funciton arguments
@@ -118,7 +117,9 @@ std::vector<Address> IRGenFunction::emitProlog(
     // FIXME: Alignment
     Alignment FixedAlignment = Alignment(4);
     auto DebugName =
-      (llvm::Twine("$local") + llvm::Twine(LocalIndex)).str();
+      (llvm::Twine("$local") + llvm::Twine(FuncLocals.size())
+       + llvm::Twine(" aka $arg") + llvm::Twine(FuncLocals.size()))
+        .str();
     auto Addr = createAlloca(Ty, FixedAlignment, DebugName);
     // TODO: zero-initialize Addr
     FuncLocals.emplace_back(Addr);
@@ -132,7 +133,7 @@ std::vector<Address> IRGenFunction::emitProlog(
       // FIXME: Alignment
       Alignment FixedAlignment = Alignment(4);
       auto DebugName =
-        (llvm::Twine("$local") + llvm::Twine(LocalIndex)).str();
+        (llvm::Twine("$local") + llvm::Twine(FuncLocals.size())).str();
       auto Addr = createAlloca(Ty, FixedAlignment, DebugName);
       // TODO: zero-initialize Addr
       FuncLocals.emplace_back(Addr);
@@ -166,7 +167,8 @@ void IRGenFunction::emitEpilog() {
     if (ReturnType->isVoidTy()) {
       Builder.CreateRetVoid();
     } else {
-      auto * LoadInst = Builder.CreateLoad(RetVal, "return-value-load");
+      auto * LoadInst =
+        Builder.CreateLoad(RetVal, "$loaded-return-value");
       Builder.CreateRet(LoadInst);
     }
   });

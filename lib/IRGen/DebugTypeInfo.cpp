@@ -26,21 +26,21 @@ using namespace w2n;
 using namespace irgen;
 
 DebugTypeInfo::DebugTypeInfo(
-  w2n::Type * Ty,
-  llvm::Type * FragmentStorageTy,
+  Type * Ty,
+  llvm::Type * StorageTy,
   Optional<Size> SizeInBytes,
   Alignment AlignInBytes,
   bool HasDefaultAlignment,
-  bool IsMetadata,
-  bool SizeIsFragmentSize
+  bool IsMetadataType,
+  bool IsFragmentTypeInfo
 ) :
   Ty(Ty),
-  FragmentStorageType(FragmentStorageTy),
+  FragmentStorageType(StorageTy),
   SizeInBytes(SizeInBytes),
   Align(AlignInBytes),
   DefaultAlignment(HasDefaultAlignment),
-  IsMetadataType(IsMetadata),
-  SizeIsFragmentSize(SizeIsFragmentSize) {
+  IsMetadataType(IsMetadataType),
+  SizeIsFragmentSize(IsFragmentTypeInfo) {
   assert(Align.getValue() != 0);
 }
 
@@ -52,7 +52,7 @@ DebugTypeInfo DebugTypeInfo::getFromTypeInfo(
   w2n::Type * Ty, const TypeInfo& Info, bool IsFragmentTypeInfo
 ) {
   Optional<Size> SizeInBytes;
-  if (Info.isFixedSize()) {
+  if (Info.isFixedSize() != 0) {
     const FixedTypeInfo& FixTy = *cast<const FixedTypeInfo>(&Info);
     SizeInBytes = FixTy.getFixedSize();
   }

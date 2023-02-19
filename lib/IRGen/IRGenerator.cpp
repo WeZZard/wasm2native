@@ -86,21 +86,25 @@ void IRGenerator::emitLazyDefinitions() {
   w2n_proto_implemented();
 }
 
-void IRGenerator::addLazyFunction(Function * f) {
+void IRGenerator::addLazyFunction(Function * F) {
   // Add it to the queue if it hasn't already been put there.
-  if (!LazilyEmittedFunctions.insert(f).second)
+  if (!LazilyEmittedFunctions.insert(F).second) {
     return;
+  }
 
   assert(!FinishedEmittingLazyDefinitions);
-  LazyFunctionDefinitions.push_back(f);
+  LazyFunctionDefinitions.push_back(F);
 
-  if (auto * dc = f->getDeclContext())
-    if (dc->getParentSourceFile())
+  if (auto * DC = F->getDeclContext()) {
+    if (DC->getParentSourceFile() != nullptr) {
       return;
+    }
+  }
 
-  if (CurrentIGM == nullptr)
+  if (CurrentIGM == nullptr) {
     return;
+  }
 
   // Don't update the map if we already have an entry.
-  DefaultIGMForFunction.insert(std::make_pair(f, CurrentIGM));
+  DefaultIGMForFunction.insert(std::make_pair(F, CurrentIGM));
 }

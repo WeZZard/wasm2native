@@ -139,17 +139,19 @@ void IRGenModule::unimplemented(SourceLoc Loc, StringRef Message) {
   Context.Diags.diagnose(Loc, diag::irgen_unimplemented, Message);
 }
 
-void IRGenModule::fatal_unimplemented(SourceLoc Loc, StringRef Message) {
+void IRGenModule::fatalUnimplemented(SourceLoc Loc, StringRef Message) {
   Context.Diags.diagnose(Loc, diag::irgen_unimplemented, Message);
   llvm::report_fatal_error(
     llvm::Twine("unimplemented IRGen feature! ") + Message
   );
 }
 
-void IRGenModule::error(SourceLoc loc, const Twine& message) {
-  SmallVector<char, 128> buffer;
+void IRGenModule::error(SourceLoc Loc, const Twine& Message) {
+#define W2N_ERROR_MSG_BUFFER_LENGTH 128
+  SmallVector<char, W2N_ERROR_MSG_BUFFER_LENGTH> Buffer;
+#undef W2N_ERROR_MSG_BUFFER_LENGTH
   Context.Diags.diagnose(
-    loc, diag::irgen_failure, message.toStringRef(buffer)
+    Loc, diag::irgen_failure, Message.toStringRef(Buffer)
   );
 }
 
@@ -189,26 +191,14 @@ Address IRGenModule::getAddrOfGlobalVariable(
   return Address(Addr, StorageType, Alignment(GVar->getAlignment()));
 }
 
-static bool isLazilyEmittedFunction(Function& F, IRGenModule& IGM) {
-  if (F.isExported())
-    return false;
-
-  // Needed by lldb to print global variables which are propagated by the
-  // mandatory GlobalOpt.
-  if (IGM.getOptions().OptMode == OptimizationMode::NoOptimization && F.isGlobalInit())
-    return false;
-
-  return true;
-}
-
 StackProtectorMode IRGenModule::shouldEmitStackProtector(Function * F) {
-  auto& Opts = IRGen.getOptions();
-  return (Opts.EnableStackProtection)
+  const auto& Opts = IRGen.getOptions();
+  return (Opts.EnableStackProtection) != 0
          ? StackProtectorMode::StackProtector
          : StackProtectorMode::NoStackProtector;
 }
 
-llvm::Type * IRGenModule::getStorageType(Type * T) {
+llvm::Type * IRGenModule::getStorageType(Type * T) const {
 #define TYPE(Id, Parent)
 #define NUMBER_TYPE(Id, Parent)                                          \
   case TypeKind::Id: return Id##Ty;

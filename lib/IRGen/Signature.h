@@ -27,7 +27,7 @@
 
 namespace llvm {
 class FunctionType;
-}
+} // namespace llvm
 
 namespace w2n {
 class Identifier;
@@ -86,9 +86,8 @@ public:
 
   // The mutators below should generally only be used when building up
   // a callee.
-
-  void setType(llvm::FunctionType * type) {
-    Type = type;
+  void setType(llvm::FunctionType * T) {
+    Type = T;
   }
 
   llvm::AttributeList& getMutableAttributes() & {

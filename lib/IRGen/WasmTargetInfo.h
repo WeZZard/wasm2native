@@ -31,8 +31,8 @@ class IRGenModule;
 
 class WasmTargetInfo {
   explicit WasmTargetInfo(
-    llvm::Triple::ObjectFormatType outputObjectFormat,
-    unsigned numPointerBits
+    llvm::Triple::ObjectFormatType OutputObjectFormat,
+    unsigned NumPointerBits
   );
 
 public:

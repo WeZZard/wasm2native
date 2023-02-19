@@ -138,7 +138,8 @@ public:
 
   void unimplemented(SourceLoc, StringRef Message);
 
-  W2N_NO_RETURN void fatal_unimplemented(SourceLoc, StringRef Message);
+  W2N_NO_RETURN
+  void fatalUnimplemented(SourceLoc, StringRef Message);
 
   void error(SourceLoc Loc, const Twine& Message);
 
@@ -288,7 +289,7 @@ public:
     return Ty;
   }
 
-  llvm::Type * getStorageType(Type * T);
+  llvm::Type * getStorageType(Type * T) const;
 
 #pragma mark Globals
 

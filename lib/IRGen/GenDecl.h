@@ -48,7 +48,7 @@ llvm::GlobalVariable *
 createLinkerDirectiveVariable(IRGenModule& IGM, StringRef Name);
 
 void disableAddressSanitizer(
-  IRGenModule& IGM, llvm::GlobalVariable * var
+  IRGenModule& IGM, llvm::GlobalVariable * Var
 );
 
 } // namespace irgen

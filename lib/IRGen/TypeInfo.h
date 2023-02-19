@@ -233,8 +233,8 @@ public:
 
   /// Whether this type is known to be fixed-size in the given
   /// resilience domain.  If true, spare bits can be used.
-  IsFixedSize_t isFixedSize(ResilienceExpansion expansion) const {
-    switch (expansion) {
+  IsFixedSize_t isFixedSize(ResilienceExpansion Expansion) const {
+    switch (Expansion) {
     case ResilienceExpansion::Maximal: return isFixedSize();
     case ResilienceExpansion::Minimal:
       // We can't be universally fixed size if we're not locally

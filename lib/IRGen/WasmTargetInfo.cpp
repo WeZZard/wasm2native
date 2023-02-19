@@ -134,23 +134,23 @@ static void configureWasm32(
 
 /// Configure a default target.
 WasmTargetInfo::WasmTargetInfo(
-  llvm::Triple::ObjectFormatType outputObjectFormat,
-  unsigned numPointerBits
+  llvm::Triple::ObjectFormatType OutputObjectFormat,
+  unsigned NumPointerBits
 ) :
-  OutputObjectFormat(outputObjectFormat),
-  HeapObjectAlignment(numPointerBits / 8),
+  OutputObjectFormat(OutputObjectFormat),
+  HeapObjectAlignment(NumPointerBits / 8),
   LeastValidPointerValue(SWIFT_ABI_DEFAULT_LEAST_VALID_POINTER) {
   setToMask(
     PointerSpareBits,
-    numPointerBits,
+    NumPointerBits,
     SWIFT_ABI_DEFAULT_SWIFT_SPARE_BITS_MASK
   );
   setToMask(
     FunctionPointerSpareBits,
-    numPointerBits,
+    NumPointerBits,
     SWIFT_ABI_DEFAULT_FUNCTION_SPARE_BITS_MASK
   );
-  if (numPointerBits == 64) {
+  if (NumPointerBits == 64) {
     ReferencePoisonDebugValue =
       SWIFT_ABI_DEFAULT_REFERENCE_POISON_DEBUG_VALUE_64;
   } else {

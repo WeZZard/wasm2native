@@ -38,7 +38,6 @@
 #include <w2n/IRGen/Linking.h>
 
 #include "GenDecl.h"
-#include "IRGenFunction.h"
 #include "IRGenModule.h"
 
 using namespace w2n;

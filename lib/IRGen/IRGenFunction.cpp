@@ -110,6 +110,21 @@ std::vector<Address> IRGenFunction::emitProlog(
 
   uint32_t LocalIndex = 0;
   std::vector<Address> FuncLocals;
+
+  // Emit locals in activation record for funciton arguments
+  for (auto& EachArg : CurFn->args()) {
+    // FIXME: Needs cache?
+    auto * Ty = EachArg.getType();
+    // FIXME: Alignment
+    Alignment FixedAlignment = Alignment(4);
+    auto DebugName =
+      (llvm::Twine("$local") + llvm::Twine(LocalIndex)).str();
+    auto Addr = createAlloca(Ty, FixedAlignment, DebugName);
+    // TODO: zero-initialize Addr
+    FuncLocals.emplace_back(Addr);
+  }
+
+  // Emit locals in activation record for local decls
   for (auto * EachLocal : Locals) {
     for (uint32_t I = 0; I < EachLocal->getCount(); I++) {
       // FIXME: Needs cache?
@@ -151,7 +166,8 @@ void IRGenFunction::emitEpilog() {
     if (ReturnType->isVoidTy()) {
       Builder.CreateRetVoid();
     } else {
-      Builder.CreateRet(RetVal.getAddress());
+      auto * LoadInst = Builder.CreateLoad(RetVal, "return-value-load");
+      Builder.CreateRet(LoadInst);
     }
   });
 }

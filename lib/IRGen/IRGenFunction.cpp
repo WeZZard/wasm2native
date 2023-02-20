@@ -121,6 +121,7 @@ std::vector<Address> IRGenFunction::emitProlog(
        + llvm::Twine(" aka $arg") + llvm::Twine(FuncLocals.size()))
         .str();
     auto Addr = createAlloca(Ty, FixedAlignment, DebugName);
+    Builder.CreateStore(&EachArg, Addr);
     // TODO: zero-initialize Addr
     FuncLocals.emplace_back(Addr);
   }

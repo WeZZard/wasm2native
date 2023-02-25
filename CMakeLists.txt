@@ -1,27 +1,15 @@
 cmake_minimum_required(VERSION 3.23)
 
 # ${W2N_MONOREPO_ROOT}: w2n monorepo root. The parent directory of the git repo.
-
 option(W2N_INCLUDE_TOOLS
-    "Generate build targets for w2n tools"
-    TRUE)
+  "Generate build targets for w2n tools"
+  TRUE)
 
 # Modules
 list(APPEND CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 list(APPEND CMAKE_MODULE_PATH
   "${W2N_MONOREPO_ROOT}/llvm-project/llvm/cmake/modules")
-
-# G-test
-
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        58d77fa8070e8cec2dc1ed015d66b454c8d78850 # release-1.12.1
-)
-
-FetchContent_MakeAvailable(googletest)
 
 # Setting up C++
 set(CMAKE_CXX_STANDARD 20)
@@ -40,6 +28,7 @@ include(W2NSharedCMakeConfig)
 include(AddW2N)
 
 set(W2N_BUILT_STANDALONE FALSE)
+
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   set(W2N_BUILT_STANDALONE TRUE)
 endif()

@@ -37,7 +37,7 @@ namespace w2n {
 
 namespace irgen {
 
-enum class StackContentKind {
+enum class ExecutionStackRecordKind {
   Unspecified,
   Operand,
   Frame,
@@ -99,12 +99,14 @@ public:
 
   const llvm::DILabel * getDebugLabel() const;
 
-  static StackContentKind kindof() {
-    return StackContentKind::Label;
+  static ExecutionStackRecordKind kindof() {
+    return ExecutionStackRecordKind::Label;
   }
 };
 
-/// Represents an instruction operands aka r-value.
+/// Represents an instruction operands on the execution stack. The IR-gen
+/// process calls this a.k.a. r-value.
+///
 class Operand {
 private:
 
@@ -141,12 +143,12 @@ public:
     return Val == nullptr;
   }
 
-  static StackContentKind kindof() {
-    return StackContentKind::Operand;
+  static ExecutionStackRecordKind kindof() {
+    return ExecutionStackRecordKind::Operand;
   }
 };
 
-/// Represents an active function call.
+/// Represents the active record of a function call.
 ///
 class Frame {
 private:
@@ -210,8 +212,8 @@ public:
     return Return;
   }
 
-  static StackContentKind kindof() {
-    return StackContentKind::Frame;
+  static ExecutionStackRecordKind kindof() {
+    return ExecutionStackRecordKind::Frame;
   }
 };
 
@@ -239,7 +241,7 @@ private:
       Label L;
     };
 
-    StackContentKind Kind;
+    ExecutionStackRecordKind Kind;
 
     Node(Operand&& V, Node * Prev) :
       Prev(Prev),
@@ -285,10 +287,10 @@ private:
 
     ~Node() {
       switch (Kind) {
-      case StackContentKind::Operand: V.~Operand(); break;
-      case StackContentKind::Frame: F.~Frame(); break;
-      case StackContentKind::Label: L.~Label(); break;
-      case StackContentKind::Unspecified:
+      case ExecutionStackRecordKind::Operand: V.~Operand(); break;
+      case ExecutionStackRecordKind::Frame: F.~Frame(); break;
+      case ExecutionStackRecordKind::Label: L.~Label(); break;
+      case ExecutionStackRecordKind::Unspecified:
         llvm_unreachable("unspecified node kind.");
       }
     }
@@ -301,11 +303,11 @@ private:
       return Prev;
     }
 
-    StackContentKind getKind() {
+    ExecutionStackRecordKind getKind() {
       return Kind;
     }
 
-    StackContentKind getKind() const {
+    ExecutionStackRecordKind getKind() const {
       return Kind;
     }
 
@@ -418,7 +420,7 @@ public:
     return &Popped->assertingGet<ContentTy>();
   }
 
-  StackContentKind pop() {
+  ExecutionStackRecordKind pop() {
     Node * Popped = Top;
     Top = Top->getPrevious();
     return Popped->getKind();
@@ -442,7 +444,7 @@ public:
     return Top->assertingGet<ContentTy>();
   }
 
-  StackContentKind topKind() const {
+  ExecutionStackRecordKind topKind() const {
     return Top->getKind();
   }
 

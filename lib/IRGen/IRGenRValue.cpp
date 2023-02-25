@@ -2,6 +2,7 @@
 #include "IRGenModule.h"
 #include "Reduction.h"
 #include <w2n/AST/Lowering.h>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
@@ -110,22 +111,22 @@ public:
 
   RValue visitStoreExpr(StoreExpr * E) {
     W2N_LOG_VISIT();
-    return w2n_proto_implemented([] { return RValue(); });
+    w2n_unimplemented();
   }
 
   RValue visitLoadExpr(LoadExpr * E) {
     W2N_LOG_VISIT();
-    return w2n_proto_implemented([] { return RValue(); });
+    w2n_unimplemented();
   }
 
   RValue visitCallExpr(CallExpr * E) {
     W2N_LOG_VISIT();
-    return w2n_proto_implemented([] { return RValue(); });
+    w2n_unimplemented();
   }
 
   RValue visitCallBuiltinExpr(CallBuiltinExpr * E) {
     W2N_LOG_VISIT();
-    return w2n_proto_implemented([] { return RValue(); });
+    w2n_unimplemented();
   }
 
 #undef LOG_VISIT

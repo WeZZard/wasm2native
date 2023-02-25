@@ -37,46 +37,41 @@ void IRGenFunction::emitStmt(Stmt * S) {
 #pragma mark - StmtEmitter Implementation
 
 void StmtEmitter::visitUnreachableStmt(UnreachableStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitBrStmt(BrStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitEndStmt(EndStmt * S) {
-  // Prototyped implementation
-  w2n_proto_implemented([&] {
-    while (Config.topKind() != ExecutionStackRecordKind::Frame) {
-      Config.pop();
-    }
-  });
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitBrIfStmt(BrIfStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitElseStmt(ElseStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitLoopStmt(LoopStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitBlockStmt(BlockStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitReturnStmt(ReturnStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitBrTableStmt(BrTableStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }
 
 void StmtEmitter::visitIfStmt(IfStmt * S) {
-  w2n_proto_implemented();
+  w2n_unimplemented();
 }

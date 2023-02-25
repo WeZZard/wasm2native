@@ -65,9 +65,8 @@ LLVM_CMAKE_CONFIG_ARGS+=("-DLLVM_ENABLE_PROJECTS=${LLVM_ENABLED_PROJECTS}")
 # Until that happens, we need to unset this variable from LLVM 
 # CMakeCache.txt for two reasons:
 # * Prevent PRs testing this variable to affect other runs landing
-#   unrelated features
-# * avoid fallouts should we land such change and then have to revert it 
-# to account for unforeseen regressions
+# * unrelated features avoid fallouts should we land such change and then
+# * have to revert it to account for unforeseen regressions
 LLVM_CMAKE_CONFIG_ARGS+=("-ULLVM_ENABLE_RUNTIMES")
 LLVM_CMAKE_CONFIG_ARGS="${LLVM_CMAKE_CONFIG_ARGS[@]}"
 
@@ -77,13 +76,14 @@ W2N_BUILD_ROOT=$BUILD_ROOT/wasm2native
 W2N_CMAKE_CONFIG_ARGS=()
 W2N_CMAKE_CONFIG_ARGS+=("-DCMAKE_BUILD_TYPE:string=${ARG_BUILD_TYPE}")
 W2N_CMAKE_CONFIG_ARGS+=("-DW2N_MONOREPO_ROOT:PATH=${MONOREPO_ROOT}")
-W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_BUILD_ROOT:PATH=${LLVM_BUILD_ROOT}")
-W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_SOURCE_ROOT:PATH=${LLVM_SOURCE_ROOT}")
 W2N_CMAKE_CONFIG_ARGS+=("-DW2N_SOURCE_ROOT:PATH=${W2N_SOURCE_ROOT}")
 W2N_CMAKE_CONFIG_ARGS+=("-DW2N_BUILD_ROOT:PATH=${W2N_BUILD_ROOT}")
+W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_BUILD_ROOT:PATH=${LLVM_BUILD_ROOT}")
+W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_SOURCE_ROOT:PATH=${LLVM_SOURCE_ROOT}")
 W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_DIR:PATH=${LLVM_BUILD_ROOT}/lib/cmake/llvm")
-W2N_CMAKE_CONFIG_ARGS+=("-DClang_DIR:PATH=${LLVM_BUILD_ROOT}/lib/cmake/clang")
 W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_TARGETS_TO_BUILD:string=${SUPPORTED_TARGETS}")
+W2N_CMAKE_CONFIG_ARGS+=("-DLLVM_BUILD_TESTS:bool=true")
+W2N_CMAKE_CONFIG_ARGS+=("-DClang_DIR:PATH=${LLVM_BUILD_ROOT}/lib/cmake/clang")
 W2N_CMAKE_CONFIG_ARGS="${W2N_CMAKE_CONFIG_ARGS[@]}"
 
 # $1: SECONDS_TO_COUNTDOWN, $2: PRODUCT_NAME

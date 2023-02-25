@@ -6,10 +6,10 @@ add_w2n_unittest(w2nASTTests
 target_include_directories(w2nASTTests PRIVATE ./)
 
 target_link_libraries(w2nASTTests
-   PRIVATE
-   w2nFrontend
-   w2nBasic
-   w2nAST
-   w2nParse
-   w2nSema
+  PRIVATE
+  w2nFrontend
+  w2nBasic
+  w2nAST
+  w2nParse
+  w2nSema
 )

@@ -1,13 +1,13 @@
 //===--- ImplementTypeIDZone.h - Implement a TypeID Zone --------*- C++
 //-*-===//
 //
-// This source file is part of the w2n.org open source project
+// This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2017 Apple Inc. and the w2n project authors
+// Copyright (c) 2014 - 2017 Apple Inc. and the Swift project authors
 // Licensed under Apache License v2.0 with Runtime Library Exception
 //
-// See https://w2n.org/LICENSE.txt for license information
-// See https://w2n.org/CONTRIBUTORS.txt for the list of w2n project
+// See https://Swift.org/LICENSE.txt for license information
+// See https://Swift.org/CONTRIBUTORS.txt for the list of Swift project
 // authors
 //
 //===----------------------------------------------------------------------===//

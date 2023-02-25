@@ -1,0 +1,56 @@
+# tests/lit.site.cfg.in - 'lit' test runner local config ----*- python -*-
+#
+# This source file is part of the Swift.org open source project
+#
+# Copyright (c) 2014 - 2017 Apple Inc. and the Swift project authors
+# Licensed under Apache License v2.0 with Runtime Library Exception
+#
+# See https://w2n.org/LICENSE.txt for license information
+# See https://w2n.org/CONTRIBUTORS.txt for the list of Swift project
+# authors
+#
+# ------------------------------------------------------------------------
+
+import os
+
+from lit.LitConfig import LitConfig
+from lit.TestingConfig import TestingConfig
+
+# Tell pylint that we know config and lit_config exist somewhere.
+if 'PYLINT_IMPORT' in os.environ:
+  lit_config = LitConfig()
+  config = TestingConfig()
+
+config.cmake = "@CMAKE_COMMAND@"
+config.llvm_src_root = "@LLVM_MAIN_SRC_DIR@"
+config.llvm_obj_root = "@LLVM_BINARY_DIR@"
+config.llvm_tools_dir = "@LLVM_TOOLS_DIR@"
+config.llvm_libs_dir = "@LLVM_LIBS_DIR@"
+config.llvm_code_generators = "@LLVM_TARGETS_TO_BUILD@".split(";")
+config.lit_tools_dir = "@LLVM_LIT_TOOLS_DIR@"
+config.w2n_src_root = lit_config.params.get(
+  "w2n_src_root", "@W2N_SOURCE_DIR@")
+config.w2n_obj_root = "@W2N_BINARY_DIR@"
+config.target_triple = "@LLVM_TARGET_TRIPLE@"
+config.variant_triple = "@VARIANT_TRIPLE@"
+config.variant_sdk = "@VARIANT_SDK@"
+config.variant_suffix = "@VARIANT_SUFFIX@"
+config.w2nlib_dir = "@LIT_W2NLIB_DIR@"
+config.w2n_test_results_dir = \
+    lit_config.params.get("w2n_test_results_dir",
+                          "@W2N_TEST_RESULTS_DIR@")
+
+config.coverage_mode = "@W2N_ANALYZE_CODE_COVERAGE@"
+config.lldb_build_root = "@LLDB_BUILD_DIR@"
+config.libdispatch_build_path = "@W2N_PATH_TO_LIBDISPATCH_BUILD@"
+config.libdispatch_static_build_path = "@W2N_PATH_TO_LIBDISPATCH_STATIC_BUILD@"
+config.w2n_driver_test_options = "@W2N_DRIVER_TEST_OPTIONS@"
+config.w2n_frontend_test_options = "@W2N_FRONTEND_TEST_OPTIONS@"
+
+# --- Darwin ---
+config.darwin_xcrun_toolchain = "@W2N_DARWIN_XCRUN_TOOLCHAIN@"
+
+if config.test_exec_root is None:
+  config.test_exec_root = os.path.dirname(os.path.realpath(__file__))
+lit_config.load_config(
+    config, os.path.join(config.w2n_src_root, "tests", "lit.cfg"))

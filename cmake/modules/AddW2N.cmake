@@ -1,10 +1,12 @@
-include(W2NUtils)
+include(macCatalystUtils)
+include(W2NList)
 
 function(_compute_lto_flag option out_var)
   string(TOLOWER "${option}" lowercase_option)
-  if (lowercase_option STREQUAL "full")
+
+  if(lowercase_option STREQUAL "full")
     set(${out_var} "-flto=full" PARENT_SCOPE)
-  elseif (lowercase_option STREQUAL "thin")
+  elseif(lowercase_option STREQUAL "thin")
     set(${out_var} "-flto=thin" PARENT_SCOPE)
   endif()
 endfunction()
@@ -19,7 +21,7 @@ function(add_w2n_host_tool executable)
     "${single_parameter_options}"
     "${multiple_parameter_options}"
     ${ARGN})
-  
+
   add_executable(${executable} ${AWHT_UNPARSED_ARGUMENTS})
 
   if("support" IN_LIST AWHT_LLVM_LINK_COMPONENTS)
@@ -29,23 +31,23 @@ function(add_w2n_host_tool executable)
   llvm_update_compile_flags(${executable})
   w2n_common_llvm_config(${executable} ${AWHT_LLVM_LINK_COMPONENTS})
 
-# TODO: Needs to clearify install path and @rpath for MachO files.
+  # TODO: Needs to clearify install path and @rpath for MachO files.
 endfunction()
 
 function(add_w2n_host_library name)
   set(options
-        SHARED
-        STATIC
-        OBJECT)
+    SHARED
+    STATIC
+    OBJECT)
   set(single_parameter_options)
   set(multiple_parameter_options
-        LLVM_LINK_COMPONENTS)
+    LLVM_LINK_COMPONENTS)
 
   cmake_parse_arguments(AWHL
-                        "${options}"
-                        "${single_parameter_options}"
-                        "${multiple_parameter_options}"
-                        ${ARGN})
+    "${options}"
+    "${single_parameter_options}"
+    "${multiple_parameter_options}"
+    ${ARGN})
   set(AWHL_SOURCES ${AWHL_UNPARSED_ARGUMENTS})
 
   translate_flags(AWHL "${options}")
@@ -74,17 +76,18 @@ function(add_w2n_host_library name)
   # Respect LLVM_COMMON_DEPENDS if it is set.
   #
   # LLVM_COMMON_DEPENDS if a global variable set in ./lib that provides targets
-  # such as tblgen that all LLVM based tools depend on. If we don't have it 
+  # such as tblgen that all LLVM based tools depend on. If we don't have it
   # defined, then do not add the dependency since some parts of w2n host tools
   # do not interact with LLVM tools and do not define LLVM_COMMON_DEPENDS.
-  if (LLVM_COMMON_DEPENDS)
+  if(LLVM_COMMON_DEPENDS)
     add_dependencies(${name} ${LLVM_COMMON_DEPENDS})
   endif()
+
   llvm_update_compile_flags(${name})
   w2n_common_llvm_config(${name} ${AWHL_LLVM_LINK_COMPONENTS})
   set_output_directory(${name}
-      BINARY_DIR ${W2N_RUNTIME_OUTPUT_INTDIR}
-      LIBRARY_DIR ${W2N_LIBRARY_OUTPUT_INTDIR})
+    BINARY_DIR ${W2N_RUNTIME_OUTPUT_INTDIR}
+    LIBRARY_DIR ${W2N_LIBRARY_OUTPUT_INTDIR})
 
   set_target_properties(${name} PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -92,7 +95,6 @@ function(add_w2n_host_library name)
   # with -cross-module-optimization enabled.
   target_compile_options(${name} PRIVATE
     $<$<AND:$<COMPILE_LANGUAGE:WebAssembly>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-cross-module-optimization>)
-
 endfunction()
 
 # Declare that files in this library are built with LLVM's support

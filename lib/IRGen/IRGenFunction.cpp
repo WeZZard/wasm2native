@@ -4,12 +4,12 @@
 #include "IRGenInternal.h"
 #include "IRGenModule.h"
 #include "Reduction.h"
-#include "llvm/Support/raw_ostream.h"
 #include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/raw_ostream.h>
 #include <cassert>
 #include <cstdio>
 #include <iterator>

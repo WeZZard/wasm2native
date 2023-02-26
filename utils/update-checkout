@@ -100,6 +100,12 @@ function update_checkout_git_impl() {
     popd
   else
     pushd $REPO_PATH
+    GIT_STATUS=$(git status --porcelain)
+    if  [ ! -z "$GIT_STATUS" ]; then
+      echo "The git status of $REPO_DIR is no clean."
+      echo "Commit or stash all the changes before updating the checkout."
+      return 1;
+    fi
     if [ "$REPO_DIR" == "wasm2native" ]; then
       git fetch
     else

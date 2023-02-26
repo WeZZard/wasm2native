@@ -31,6 +31,7 @@ config.lit_tools_dir = "@LLVM_LIT_TOOLS_DIR@"
 config.w2n_src_root = lit_config.params.get(
   "w2n_src_root", "@W2N_SOURCE_DIR@")
 config.w2n_obj_root = "@W2N_BINARY_DIR@"
+config.w2n_host_tools_bin_dir = "@W2N_HOST_TOOLS_BIN_DIR@"
 config.target_triple = "@LLVM_TARGET_TRIPLE@"
 config.variant_triple = "@VARIANT_TRIPLE@"
 config.variant_sdk = "@VARIANT_SDK@"

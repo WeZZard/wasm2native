@@ -230,6 +230,7 @@ function get_cmake_config_args() {
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_HOST_VARIANT_ARCH=${HOST_ARCH}")
       # TODO: Resolve W2N_SDKS dynamically
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_SDKS=OSX")
+      W2N_CMAKE_CONFIG_ARGS+=("-DW2N_HOST_TOOLS_BIN_DIR=${TOOLCHAIN_INSTALL_DIR}/bin")
       W2N_CMAKE_CONFIG_ARGS="${W2N_CMAKE_CONFIG_ARGS[@]}"
       RET_VAL=$W2N_CMAKE_CONFIG_ARGS;
       return 0;
@@ -391,7 +392,6 @@ function build_each() {
   case $CATEGORY in
     "host-tool")
       build_host_tool_product $PRODUCT_NAME $BUILDER
-      # TODO: install_host_tool_product
       return $?;
     ;;
     "compiler")

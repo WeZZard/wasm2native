@@ -124,14 +124,7 @@ if(NOT W2N_INCLUDE_TOOLS)
     list(APPEND W2N_LIT_ARGS
       "--path=${W2N_COMPILER_DIR}")
   else()
-    list(APPEND W2N_LIT_ARGS
-      "--path=${W2N_NATIVE_LLVM_TOOLS_PATH}"
-      "--param" "w2n_native_llvm_tools_path=${W2N_NATIVE_LLVM_TOOLS_PATH}"
-      "--path=${W2N_NATIVE_CLANG_TOOLS_PATH}"
-      "--param" "w2n_native_clang_tools_path=${W2N_NATIVE_CLANG_TOOLS_PATH}"
-      "--path=${W2N_NATIVE_W2N_TOOLS_PATH}"
-      "--param" "w2n_native_w2n_tools_path=${W2N_NATIVE_W2N_TOOLS_PATH}"
-    )
+    # TODO: list(APPEND W2N_LIT_ARGS "--path=..." "--param" "..."
   endif()
 
   if(W2N_BUILD_STDLIB)

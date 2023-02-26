@@ -1,2 +1,5 @@
-;; RUN: echo "/etc/passwd" > %t
-;; RUN: cat %t | grep -e "root"
+;; RUN: %target-wat2wasm %s --output %t
+;; RUN: %target-w2n-frontend %t -emit-ir
+(module
+  
+)

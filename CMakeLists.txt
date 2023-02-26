@@ -54,6 +54,9 @@ else()
   w2n_common_unified_build_config(W2N)
 endif()
 
+set(W2N_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(W2N_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+set(W2N_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(W2N_LIBRARY_OUTPUT_INTDIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

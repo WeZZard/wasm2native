@@ -31,6 +31,7 @@ SCHEMA=(
   'w2n wasm2native git ./ branch=main'
   'LLVM llvm-project git https://github.com/WeZZard/llvm-project.git branch=wasm2native/main'
   'WebAssemblySpec WebAssemblySpec git https://github.com/webassembly/spec.git branch=main'
+  'WebAssemblyBinaryTool wabt git https://github.com/WebAssembly/wabt.git tag=1.0.32'
 )
 
 if [ "$REPO_DIR" != "wasm2native" ]; then

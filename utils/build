@@ -205,6 +205,10 @@ function get_cmake_config_args() {
       LLVM_SOURCE_ROOT=$RET_VAL
       get_build_dir LLVM $BUILDER $BUILD_TYPE
       LLVM_BUILD_ROOT=$RET_VAL
+      get_source_dir W2N
+      W2N_SOURCE_ROOT=$RET_VAL
+      get_build_dir W2N $BUILDER $BUILD_TYPE
+      W2N_BUILD_ROOT=$RET_VAL
       # CMake
       W2N_CMAKE_CONFIG_ARGS+=("-DCMAKE_BUILD_TYPE:string=${BUILD_TYPE}")
       W2N_CMAKE_CONFIG_ARGS+=("-DCMAKE_C_COMPILER:string=${TOOLCHAIN_INSTALL_DIR}/bin/clang")
@@ -221,10 +225,10 @@ function get_cmake_config_args() {
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_MONOREPO_ROOT:PATH=${MONOREPO_ROOT}")
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_SOURCE_ROOT:PATH=${W2N_SOURCE_ROOT}")
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_BUILD_ROOT:PATH=${W2N_BUILD_ROOT}")
-      # FIXME: We need to list all hosts (to ship universal binary on macOS)
-      W2N_CMAKE_CONFIG_ARGS+=("-DW2N_HOST_VARIANT=osx")
+      # TODO: Resolve W2N_HOST_VARIANT_SDK dynamically
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_HOST_VARIANT_SDK=OSX")
-      W2N_CMAKE_CONFIG_ARGS+=("-DW2N_HOST_VARIANT_ARCH=arm64")
+      W2N_CMAKE_CONFIG_ARGS+=("-DW2N_HOST_VARIANT_ARCH=${HOST_ARCH}")
+      # TODO: Resolve W2N_SDKS dynamically
       W2N_CMAKE_CONFIG_ARGS+=("-DW2N_SDKS=OSX")
       W2N_CMAKE_CONFIG_ARGS="${W2N_CMAKE_CONFIG_ARGS[@]}"
       RET_VAL=$W2N_CMAKE_CONFIG_ARGS;

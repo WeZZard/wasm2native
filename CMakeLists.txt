@@ -77,6 +77,8 @@ if("${W2N_HOST_VARIANT_SDK}" MATCHES "(OSX|IOS*|TVOS*|WATCHOS*)")
   # Primary variant is always OSX; even on iOS hosts.
   set(W2N_PRIMARY_VARIANT_SDK_default "OSX")
   set(W2N_PRIMARY_VARIANT_ARCH_default "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+else()
+  message(FATAL_ERROR "Unsupported host variant sdk ${W2N_HOST_VARIANT_SDK}")
 endif()
 
 include_directories(SYSTEM "${W2N_SOURCE_ROOT}/include")

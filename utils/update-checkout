@@ -129,6 +129,13 @@ function update_checkout_git_impl() {
     fi
     popd
   fi
+  echo "git submodule update --recursive --init"
+  git submodule update --recursive --init
+  RET_VAL=$?
+  if [[ $RET_VAL -ne 0 ]]; then
+    echo "Error happened while executing git submodule update $REPO_PATH."
+    return $RET_VAL;
+  fi
   return 0
 }
 

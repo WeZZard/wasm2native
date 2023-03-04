@@ -1,6 +1,18 @@
 #!/bin/sh
 
 ARG_CLONES=0
+EXEC_NAME="$(basename $0)"
+
+function print_help() {
+  echo "wasm2native mono-repo update checkout."
+  echo "usage:"
+  echo "  $EXEC_NAME                  update monorepo's checkout without clone if there are components do not exist."
+  echo ""
+  echo "options:"
+  echo "  --clone                     update monorepo's checkout with clone if there are components do not exist."
+  echo ""
+  echo "  --help                      print the helps."
+}
 
 # $1: ARG
 function arg_parse() {
@@ -8,6 +20,10 @@ function arg_parse() {
   case $ARG in
     "--clone")
       ARG_CLONES=1;
+      ;;
+    "--help")
+      print_help;
+      exit 0;
       ;;
   esac
 }

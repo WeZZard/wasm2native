@@ -42,7 +42,7 @@ REPO_DIR=$(basename $PROJECT_ROOT)
 GIT_REPO_UPSTREAM_NAME="wasm2native-update-checkout-managed-upstream"
 
 # A list of space-separated repo checkout config which follows the pattern:
-# REPO-NAME REPO-DIR-IN-MONO-REPO SOURCE-SCHEMA SOURCE-URL CHECKOUT-PATTERN
+# REPO-NAME REPO-DIR-IN-MONO-REPO VCS-SCHEMA VCS-URL VCS-CHECKOUT
 SCHEMA=(
   'w2n wasm2native git ./ branch=main'
   'LLVM llvm-project git https://github.com/WeZZard/llvm-project.git branch=wasm2native/main'

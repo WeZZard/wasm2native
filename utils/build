@@ -9,6 +9,34 @@ ARG_DRY_RUN=0;
 ARG_FRESH=0;
 # Currently only support Ninja
 ARG_BUILDER="Ninja"
+EXEC_NAME="$(basename $0)"
+
+function print_help() {
+  echo "wasm2native build-script."
+  echo "usage:"
+  echo "  $EXEC_NAME                  build wasm2native with debug configuration with host tools built with release configuration."
+  echo ""
+  echo "options:"
+  echo "  --debug                     build wasm2native with debug configuration"
+  echo "  --release                   build wasm2native with release configuration"
+  echo "  --release-with-debug-info   build wasm2native with release with debug info configuration"
+  echo "  --release-min-size          build wasm2native with release and minimized size configuration"
+  echo ""
+  echo "  --host-tools=[debug, release, release-with-debug-info, release-min-size]"
+  echo "                              build the host tools with specified configuration"
+  echo ""
+  echo "  --build-toolchain           build the toolchain which used for building wasm2native"
+  echo "  --build-wabt                build the WebAssembly Binary Toolkit which used for testing wasm2native"
+  echo "  --build-wasm2native         build wasm2native"
+  echo "  --build-llvm                build llvm which relied by wasm2native"
+  echo ""
+  echo "  --clean                     clean the build directory"
+  echo "  --dry-run                   print commands but not execute them"
+  echo "  --config-only               config the build driver instead of config then build"
+  echo "  --fresh                     build with a fresh config"
+  echo ""
+  echo "  --help                      print the helps."
+}
 
 # $1: ARG
 function arg_parse() {
@@ -61,6 +89,10 @@ function arg_parse() {
       ;;
     "--fresh")
       ARG_FRESH=1;
+      ;;
+    "--help")
+      print_help;
+      exit 0;
       ;;
   esac
 }

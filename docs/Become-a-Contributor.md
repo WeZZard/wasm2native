@@ -86,3 +86,33 @@ utils/tidy-code
 ```
 
 This takes times to complete.
+
+3. Commit message
+
+- The commit message should start with a bracketed small letter phrase
+indicates the contents you changed or "NFC". "NFC" means non-functional
+change.
+
+Small letter is not a requirement unless the phrase is an abbreviation.
+This is because commiting is often the last step of a developer's coding
+process. It should not take much energy to press the `shift` key to
+compose a commit message. You should focus on the clearity and completness
+of the message.
+
+```ascii
+// bad
+Improve ir generation speed.
+
+// good
+[irgen] Improve ir generation speed.
+```
+
+- The commit message should be a complete sentence.
+
+```asci
+// bad
+[frontend] Bugfix
+
+// good
+[frontend] Fixes frontend does not receive -emit-ir argument.
+```

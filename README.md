@@ -31,12 +31,11 @@ moment.
 
 - [x] 1. Emit empty object file
 - [x] 2. Emit object file with simple WebAssembly binary
-- [x] 3. Implement WebAssembly instructions with test-driven development
-  - [ ] 3.1 Introduce test-driven infrastructure for wasm-to-IR verification
-  - [ ] 3.2 Complete remaining register/stack/static-memory instructions
-  - [ ] 3.3 Design and implement the runtime support for dynamic memory
-  - [ ] 3.4 Design and implement import and export support
-- [ ] 4. Design and implement the compiler driver
+- [x] 3. Introduce test-driven infrastructure for wasm-to-IR verification
+- [ ] 4. Implement remaining register/stack/static-memory instructions
+- [ ] 5. Implement dynamic memory runtime support and instructions
+- [ ] 6. Implement the compiler driver
+- [ ] 7. Implement import and export support
 
 ### Status of Components and Tools
 

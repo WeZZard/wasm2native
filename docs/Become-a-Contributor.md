@@ -6,21 +6,27 @@ environment ready, you should check out
 
 ## Honor the Code Style
 
-The project uses LLVM Code Style with several modifications:
+The project honors most parts of LLVM Code Style but there are also
+several modifications:
 
 1. Prefer `Foo * foo` instead of `Foo* foo` and `Foo *foo`.
 
-The computer display goes larger and larger. The resolution of display
-goes denser and denser. A developer may have its font size been set too
-small to tell the difference between:
+The pointer qualifier `*` usually maps to an x-height glyph in most
+fonts:
+
+<img src="https://lh3.googleusercontent.com/iF6wBmzTnSHNp-T_P5fIOhLoqiaiPQGSkXwprlQYa7sYzxgieax7zCm2OgKXInHSsDIbgjUWZKUk2eM6y1yb7ud623QmleY6qfJdz4M=w1064-v0"
+  width="532px"
+  alt="An illustration of x-height with alphabets xyMd"/>
+
+Since the computer display goes larger and larger and the resolution of
+display goes denser and denser, a developer may have its font size been
+set too small to tell the difference between:
 
 - `Foo foo` and `Foo *foo`;
 - `Foo foo` and `Foo* foo`;
 
-since the pointer qualifier `*` usually maps to an x-height glyph in most
-fonts. This coulld introduce bugs which originally couldn't be.
-
-![x-height](https://lh3.googleusercontent.com/iF6wBmzTnSHNp-T_P5fIOhLoqiaiPQGSkXwprlQYa7sYzxgieax7zCm2OgKXInHSsDIbgjUWZKUk2eM6y1yb7ud623QmleY6qfJdz4M=w1064-v0 "An illustration of x-height with alphabets xyMd")
+This could make the developer misunderstand the type of a variable or
+misuse a variable.
 
 The style `Foo * foo` makes an emphasis on the pointer qualifier. This
 makes people to tell the difference between `Foo foo` and `Foo * foo` in
@@ -33,10 +39,12 @@ a part of `foo` which is an instance of the reference, we don't prefer
 `Foo &foo`. We also don't prefer `Foo & foo` here because `&` usually
 maps to a glyph with cap-height.
 
-![cap-height](https://lh3.googleusercontent.com/GV5FQ8hady9sQU0eHxUw_6O3TqPBxd1hezBNMSyw8WfdibMPZIMqt3x4gXVJWN7exKc-MT6teHqKNGnrbXPvLYq01weNCr2NVhVb5Q=w1064-v0 "An illustration of cap-height with alphabets xyMd")
+<img src="https://lh3.googleusercontent.com/GV5FQ8hady9sQU0eHxUw_6O3TqPBxd1hezBNMSyw8WfdibMPZIMqt3x4gXVJWN7exKc-MT6teHqKNGnrbXPvLYq01weNCr2NVhVb5Q=w1064-v0"
+  width='532px'
+  alt="An illustration of cap-height with alphabets xyMd"/>
 
-A glyph with such a height already can make people to tell the difference
-between:
+A glyph with such a height already can make people to easily tell the
+difference between:
 
 - `Foo& foo` and `Foo foo`;
 - `Foo& foo` and `Foo * foo`;
@@ -75,7 +83,8 @@ utils/format-code
 
 If you have followed the steps in
 [Get the Develop Environment Ready](./Get-the-Develop-Environment-Ready.md),
-clangd would diagnose your code when you are writing them.
+the clangd plugin of Visual Studio Code would diagnose your code when you
+are writing them.
 
 If you use other configures of develop environment you can format the code
 in the project by executing the `tidy-code` script in the `utils`
@@ -101,10 +110,10 @@ of the message.
 
 ```ascii
 // bad
-Improve ir generation speed.
+Improves ir generation speed.
 
 // good
-[irgen] Improve ir generation speed.
+[irgen] Improves ir generation speed.
 ```
 
 - The commit message should be a complete sentence.

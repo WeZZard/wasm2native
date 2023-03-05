@@ -1,6 +1,6 @@
 # wasm2native
 
-A WebAssembly Binary to Native Code Compiler
+A WebAssembly binary to native code compiler
 
 ## About the Project
 
@@ -24,6 +24,40 @@ enables them to focus on the middle-end and backend.
 Moreover, WebAssembly + WASI is a good candidate for serverless and edge
 computation. Investing in WebAssembly is not a bad choice at the current
 moment.
+
+## Status of the Project
+
+### Roadmap
+
+- [x] 1. Emit empty object file
+- [x] 2. Emit object file with simple WebAssembly binary
+- [x] 3. Implement WebAssembly instructions with test-driven development
+  - [ ] 3.1 Introduce test-driven infrastructure of wasm-to-IR verification
+  - [ ] 3.2 Complete remaining register/stack/static-memory instructions
+  - [ ] 3.3 Design and implement the runtime support for dynamic memory
+  - [ ] 3.4 Design and implement import and export support
+- [ ] 4. Design and implement the compiler driver
+
+### Status of Components and Tools
+
+Status Transition: None -> Prototype -> Ported from Swift -> WIP -> Done
+
+| Components   | Status            | Tools  | Status    |
+|:------------:|:-----------------:|:------:|:---------:|
+| ABI          | Ported from Swift | Driver | Prototype |
+| AST          | WIP               |        |           |
+| Basic        | WIP               |        |           |
+| Driver       | Ported from Swift |        |           |
+| DriverTool   | Ported from Swift |        |           |
+| Frontend     | WIP               |        |           |
+| FrontendTool | WIP               |        |           |
+| IRGen        | WIP               |        |           |
+| Localization | Ported from Swift |        |           |
+| Options      | Ported from Swift |        |           |
+| Parse        | WIP               |        |           |
+| Runtime      | None              |        |           |
+| Sema         | WIP               |        |           |
+| TBDGen       | Ported from Swift |        |           |
 
 ## Build and Run the Code
 

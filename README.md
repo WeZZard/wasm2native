@@ -7,8 +7,8 @@ A WebAssembly binary to native code compiler
 I set the project to learn the details of building an industrial-level
 compiler with LLVM technologies and modern compiler architecture brought
 from the Swift compiler. The idea originated from the process that I
-was trying to do some optimizations for the product that the company I'm
-serving for on the level of the Swift compiler. I encountered a lot of
+was trying to do some optimizations for the product of the company that
+I'm serving for on the level of the Swift compiler. I encountered a lot of
 questions about how to use LLVM in this process. Thus I thought that the
 best way to have answers to these questions is to build a compiler with
 LLVM technologies and reuse the architecture of the Swift
@@ -32,7 +32,7 @@ moment.
 - [x] 1. Emit empty object file
 - [x] 2. Emit object file with simple WebAssembly binary
 - [x] 3. Implement WebAssembly instructions with test-driven development
-  - [ ] 3.1 Introduce test-driven infrastructure of wasm-to-IR verification
+  - [ ] 3.1 Introduce test-driven infrastructure for wasm-to-IR verification
   - [ ] 3.2 Complete remaining register/stack/static-memory instructions
   - [ ] 3.3 Design and implement the runtime support for dynamic memory
   - [ ] 3.4 Design and implement import and export support

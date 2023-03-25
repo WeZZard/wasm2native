@@ -1,8 +1,8 @@
 # Get the Develop Environment Ready
 
-Visual Studio Code is the recommended IDE to develop this project. If you
-are experienced in configuring multi-programming-languages mixed develop
-environment which includes shell script, Python and C++ with other IDEs,
+Visual Studio Code is the recommended IDE for developing the project. If
+you are experienced in configuring IDEs for multi-programming-languages
+mixed develop environment which includes shell script, Python and C++,
 you can also use them instead of Visual Studio Code.
 
 The steps of configuring Visual Studio Code to fit the development process

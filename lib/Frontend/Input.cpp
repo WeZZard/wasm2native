@@ -1,5 +1,6 @@
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/Twine.h>
+#include <w2n/Basic/Filesystem.h>
 #include <w2n/Frontend/Input.h>
 
 using namespace w2n;
@@ -14,7 +15,7 @@ bool Input::derivePrimarySpecificPaths(
     StringRef Stem = path::stem(Filename);
     StringRef ParentPath = path::parent_path(Filename);
 
-    SmallString<256> FilenameBodyBuf;
+    SmallString<PathLength256> FilenameBodyBuf;
     path::append(
       FilenameBodyBuf, path::begin(ParentPath), path::end(ParentPath)
     );

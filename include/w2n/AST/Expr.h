@@ -477,7 +477,7 @@ public:
 
   static CallBuiltinExpr *
   create(ASTContext& Context, Identifier BuiltinName, ValueType * Ty) {
-    new (Context) CallBuiltinExpr(BuiltinName, Ty);
+    return new (Context) CallBuiltinExpr(BuiltinName, Ty);
   }
 
   LLVM_RTTI_CLASSOF_LEAF_CLASS(Expr, CallBuiltin);

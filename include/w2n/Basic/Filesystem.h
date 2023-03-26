@@ -20,8 +20,11 @@ class FileSystem;
 
 namespace w2n {
 
-/// Max length of a path for the most of times. \c 128 is guessed.
-constexpr const uint8_t CommonPathLength = 128;
+/// Length of a path for most of the time. \c 128 is guessed.
+constexpr const uint8_t PathLength128 = 128;
+
+/// Length of a path for some of the time. \c 256 is guessed.
+constexpr const uint16_t PathLength256 = 256;
 
 /// Invokes \p action with a raw_ostream that refers to a temporary file,
 /// which is then renamed into place as \p outputPath when the action

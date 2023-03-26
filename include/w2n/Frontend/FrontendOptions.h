@@ -44,15 +44,13 @@ public:
   /// compilations. This prevents ASTContext being freed.
   bool ReuseFrontendForMultipleCompilations = false;
 
-public:
-
   FrontendOptions() {
   }
 
   static bool doesActionPerformEndOfPipelineActions(ActionType Action);
 
   const PrimarySpecificPaths&
-  getPrimarySpecificPathsForPrimary(StringRef filename) const;
+  getPrimarySpecificPathsForPrimary(StringRef PrimaryFilename) const;
 };
 
 } // namespace w2n

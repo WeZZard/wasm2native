@@ -111,10 +111,10 @@ bool performAction(CompilerInstance& Instance, int& ReturnValue) {
 
   switch (Action) {
   case FrontendOptions::ActionType::NoneAction: return false;
-  case FrontendOptions::ActionType::EmitIR: break;
-  case FrontendOptions::ActionType::EmitIRGen: break;
-  case FrontendOptions::ActionType::EmitAssembly: break;
-  case FrontendOptions::ActionType::EmitBC: break;
+  case FrontendOptions::ActionType::EmitIR:
+  case FrontendOptions::ActionType::EmitIRGen:
+  case FrontendOptions::ActionType::EmitAssembly:
+  case FrontendOptions::ActionType::EmitBC:
   case FrontendOptions::ActionType::EmitObject:
     return withSemanticAnalysis(
       Instance,

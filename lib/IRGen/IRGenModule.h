@@ -84,9 +84,9 @@ public:
 
   llvm::StringMap<ModuleDecl *> OriginalModules;
 
-  llvm::SmallString<CommonPathLength> OutputFilename;
+  llvm::SmallString<PathLength128> OutputFilename;
 
-  llvm::SmallString<CommonPathLength> MainInputFilenameForDebugInfo;
+  llvm::SmallString<PathLength128> MainInputFilenameForDebugInfo;
 
   /// Order dependency -- TargetInfo must be initialized after Opts.
   const WasmTargetInfo TargetInfo;

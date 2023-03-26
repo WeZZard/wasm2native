@@ -57,8 +57,6 @@ public:
     assert(!Filename.empty());
   }
 
-public:
-
   /// Retrieves the type of this input file.
   file_types::ID getType() const {
     return FileID;
@@ -87,11 +85,12 @@ public:
   /// Return w2n-standard file name from a buffer name set by
   /// llvm::MemoryBuffer::getFileOrSTDIN, which uses "<stdin>" instead of
   /// "-".
+  ///
   static StringRef
-  convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions(
-    StringRef filename
+  convertBufferNameFromLLVM_getFileOrSTDIN_toW2NConventions( // NOLINT
+    StringRef BufferName
   ) {
-    return filename.equals("<stdin>") ? "-" : filename;
+    return BufferName.equals("<stdin>") ? "-" : BufferName;
   }
 
   /// Retrieves the name of the output file corresponding to this input.

@@ -5,10 +5,13 @@
 #include <llvm/Support/Host.h>
 #include <llvm/Support/Path.h>
 #include <set>
+#include <w2n/AST/DiagnosticEngine.h>
 #include <w2n/AST/IRGenOptions.h>
 #include <w2n/Basic/LLVM.h>
+#include <w2n/Basic/PrimarySpecificPaths.h>
 #include <w2n/Basic/Unimplemented.h>
 #include <w2n/Frontend/Frontend.h>
+#include <w2n/Frontend/FrontendOptions.h>
 #include <w2n/Options/Options.h>
 
 using namespace w2n;
@@ -16,30 +19,37 @@ using namespace llvm::opt;
 
 static bool parseFrontendOptions(
   FrontendOptions& Options,
-  const ArgList& Arguments,
+  const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 );
 
 static bool parseLanguageOptions(
   LanguageOptions& Options,
-  const ArgList& Arguments,
+  const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 );
 
 static bool parseSearchPathOptions(
   SearchPathOptions& Options,
-  const ArgList& Arguments,
+  const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 );
 
 static bool parseIRGenOptions(
   IRGenOptions& Options,
-  const ArgList& Arguments,
+  const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
+);
+
+static bool derivePrimarySpecificPaths(
+  Input& I,
+  PrimarySpecificPaths& PSPs,
+  FrontendOptions& Opts,
+  DiagnosticEngine& Diag
 );
 
 CompilerInvocation::CompilerInvocation(){};
@@ -52,8 +62,9 @@ bool CompilerInvocation::parseArgs(
 ) {
   using namespace options;
 
-  if (Args.empty())
+  if (Args.empty()) {
     return false;
+  }
 
   // Parse frontend command line options using W2N's option table.
   unsigned MissingIndex;
@@ -61,7 +72,7 @@ bool CompilerInvocation::parseArgs(
   std::unique_ptr<llvm::opt::OptTable> Table = createW2NOptTable();
   llvm::opt::InputArgList ParsedArgs =
     Table->ParseArgs(Args, MissingIndex, MissingCount, FrontendOption);
-  if (MissingCount) {
+  if (MissingCount != 0) {
     // TODO: Diagnose arguments of missing options
     return true;
   }
@@ -108,13 +119,13 @@ bool parseFrontendOptions(
   SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 ) {
   std::set<StringRef> AllInputFiles;
-  bool hadDuplicates = false;
+  bool HadDuplicates = false;
   for (const Arg * A : Args.filtered(options::OPT_INPUT)) {
-    hadDuplicates =
-      !AllInputFiles.insert(A->getValue()).second || hadDuplicates;
+    HadDuplicates =
+      !AllInputFiles.insert(A->getValue()).second || HadDuplicates;
   }
 
-  if (hadDuplicates) {
+  if (HadDuplicates) {
     // TODO: Diagnose duplicates
   }
 
@@ -128,7 +139,7 @@ bool parseFrontendOptions(
       continue;
     }
     PrimarySpecificPaths ISPs;
-    EachInput.derivePrimarySpecificPaths(ISPs, Diagnostic);
+    derivePrimarySpecificPaths(EachInput, ISPs, Options, Diagnostic);
     EachInput.setPrimarySpecificPaths(std::move(ISPs));
     // Resolve input specific paths
     InputsAndOutputs.addInput(EachInput);
@@ -137,9 +148,9 @@ bool parseFrontendOptions(
 
   // Derive ModuleName
   if (InputsAndOutputs.hasSingleInput()) {
-    auto& FirstISPs =
+    const auto& FirstISPs =
       InputsAndOutputs.firstInput().getPrimarySpecificPaths();
-    auto& OutputFileName = FirstISPs.OutputFilename;
+    const auto& OutputFileName = FirstISPs.OutputFilename;
     StringRef Stem = llvm::sys::path::stem(OutputFileName);
     Options.ModuleName = Stem.str();
   } else {
@@ -177,7 +188,7 @@ bool parseLanguageOptions(
   LanguageOptions& Options,
   const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 ) {
   if (Args.hasArg(options::OPT_target)) {
     Options.Target =
@@ -204,26 +215,84 @@ bool parseLanguageOptions(
 
 bool parseSearchPathOptions(
   SearchPathOptions& Options,
-  const ArgList& Arguments,
+  const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 ) {
   return false;
 }
 
 bool parseIRGenOptions(
   IRGenOptions& Options,
-  const ArgList& Arguments,
+  const ArgList& Args,
   DiagnosticEngine& Diagnostic,
-  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * buffers
+  SmallVectorImpl<std::unique_ptr<llvm::MemoryBuffer>> * Buffers
 ) {
   w2n_proto_implemented([&]() -> void {
-    Options.OutputKind = IRGenOutputKind::ObjectFile;
-    Options.EnableStackProtection = Arguments.hasFlag(
+    if (Args.hasArg(options::OPT_emit_object)) {
+      Options.OutputKind = IRGenOutputKind::ObjectFile;
+    } else if (Args.hasArg(options::OPT_emit_assembly)) {
+      Options.OutputKind = IRGenOutputKind::NativeAssembly;
+    } else if (Args.hasArg(options::OPT_emit_ir)) {
+      Options.OutputKind = IRGenOutputKind::LLVMAssemblyAfterOptimization;
+    } else if (Args.hasArg(options::OPT_emit_irgen)) {
+      Options.OutputKind =
+        IRGenOutputKind::LLVMAssemblyBeforeOptimization;
+    } else if (Args.hasArg(options::OPT_emit_bc)) {
+      Options.OutputKind = IRGenOutputKind::LLVMBitcode;
+    }
+    Options.EnableStackProtection = Args.hasFlag(
       options::OPT_enable_stack_protector,
       options::OPT_disable_stack_protector,
       Options.EnableStackProtection
     );
   });
   return false;
+}
+
+bool derivePrimarySpecificPaths(
+  Input& I,
+  PrimarySpecificPaths& PSPs,
+  FrontendOptions& Opts,
+  DiagnosticEngine& Diag
+) {
+  switch (I.getType()) {
+  case file_types::ID::TY_Wasm: {
+    using namespace llvm::sys;
+    StringRef FilenameRef(I.getFileName());
+    StringRef Stem = path::stem(I.getFileName());
+    StringRef ParentPath = path::parent_path(I.getFileName());
+
+    SmallString<PathLength256> FilenameBodyBuf;
+    path::append(
+      FilenameBodyBuf, path::begin(ParentPath), path::end(ParentPath)
+    );
+    path::append(FilenameBodyBuf, path::begin(Stem), path::end(Stem));
+
+    Twine FilenameBody(FilenameBodyBuf); // NOLINT(llvm-twine-local)
+
+    // Supplementary output paths
+    SupplementaryOutputPaths SOPs;
+    SOPs.DependenciesFilePath = FilenameBody.concat(".d").str();
+    SOPs.SerializedDiagnosticsPath =
+      FilenameBody.concat(".serialized-diagnostics").str();
+    SOPs.FixItsOutputPath = FilenameBody.concat("-fixit.json").str();
+    SOPs.TBDPath = FilenameBody.concat(".tbd").str();
+
+    std::string OutputFilename;
+    if (Opts.RequestedAction != FrontendOptions::ActionType::EmitObject) {
+      OutputFilename = "-";
+    } else {
+      OutputFilename = FilenameBody.concat(".o").str();
+    }
+    PSPs = PrimarySpecificPaths(OutputFilename, "", SOPs);
+    return false;
+  }
+  case file_types::ID::TY_INVALID:
+    // TODO: Diagnostic invalid.
+    return true;
+  default:
+    // TODO: Diagnostic illegal inputs.
+    return true;
+  }
 }

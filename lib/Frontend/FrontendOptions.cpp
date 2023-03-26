@@ -4,9 +4,9 @@
 using namespace w2n;
 
 bool FrontendOptions::doesActionPerformEndOfPipelineActions(
-  ActionType action
+  ActionType Action
 ) {
-  switch (action) {
+  switch (Action) {
   case ActionType::NoneAction:
   case ActionType::PrintVersion: return false;
   case ActionType::EmitAssembly:
@@ -19,7 +19,10 @@ bool FrontendOptions::doesActionPerformEndOfPipelineActions(
 }
 
 const PrimarySpecificPaths&
-FrontendOptions::getPrimarySpecificPathsForPrimary(StringRef filename
+FrontendOptions::getPrimarySpecificPathsForPrimary(
+  StringRef PrimaryFilename
 ) const {
-  return InputsAndOutputs.getPrimarySpecificPathsForPrimary(filename);
+  return InputsAndOutputs.getPrimarySpecificPathsForPrimary(
+    PrimaryFilename
+  );
 }

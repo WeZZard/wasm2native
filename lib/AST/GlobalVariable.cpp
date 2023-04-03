@@ -17,6 +17,7 @@ GlobalVariable::GlobalVariable(
 ) :
   Module(Module),
   Linkage(Linkage),
+  Index(Index),
   Name(Name),
   Ty(Ty),
   IsMutable(IsMutable),

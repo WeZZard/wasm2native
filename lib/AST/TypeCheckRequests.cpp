@@ -1,4 +1,3 @@
-#include <_types/_uint32_t.h>
 #include <cassert>
 #include <cstdio>
 #include <w2n/AST/ASTContext.h>
@@ -44,7 +43,7 @@ GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
     GlobalCount += 1;
   }
 
-  llvm::outs() << "[GlobalVariableRequest] [evaluate] global count = "
+  llvm::errs() << "[GlobalVariableRequest] [evaluate] global count = "
                << GlobalCount << "\n";
 
   return Globals;

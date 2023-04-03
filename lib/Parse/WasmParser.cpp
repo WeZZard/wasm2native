@@ -662,31 +662,34 @@ public:
     BlockLevel++;
     std::vector<InstNode> Instructions;
     InstNode Instruction = nullptr;
-    std::cout << "[WasmParser::Implementation] [parseInstructionsUntil] ["
-              << BlockLevel << "] BEGAN\n";
+    llvm::errs(
+    ) << "[WasmParser::Implementation] [parseInstructionsUntil] ["
+      << BlockLevel << "] BEGAN\n";
     while (Instruction.isNull() || !Predicate(Instruction)) {
       Instruction = parseInstruction(Ctx);
       if (!Predicate(Instruction)) {
         Instructions.push_back(Instruction);
       }
     }
-    std::cout << "[WasmParser::Implementation] [parseInstructionsUntil] ["
-              << BlockLevel << "] ENDED\n";
+    llvm::errs(
+    ) << "[WasmParser::Implementation] [parseInstructionsUntil] ["
+      << BlockLevel << "] ENDED\n";
     BlockLevel--;
     return std::make_pair(Instructions, Instruction);
   }
 
   InstNode parseInstruction(ReadContext& Ctx) {
     Instruction Opcode = Instruction(readOpcode(Ctx));
-    std::cout << "[WasmParser::Implementation] [parseInstruction] ["
-              << BlockLevel
-              << "] OPCODE = 0x"
-              // Adding a unary + operator before the variable of any
-              // primitive data type will give printable numerical value
-              // instead of ASCII character(in case of char type).
-              //
-              // https://stackoverflow.com/a/31991844/1393062
-              << std::hex << +(uint8_t)Opcode << "\n";
+    llvm::errs(
+    ) << "[WasmParser::Implementation] [parseInstruction] ["
+      << BlockLevel
+      << "] OPCODE = 0x"
+      // Adding a unary + operator before the variable of any
+      // primitive data type will give printable numerical value
+      // instead of ASCII character(in case of char type).
+      //
+      // https://stackoverflow.com/a/31991844/1393062
+      << llvm::format_hex((uint8_t)Opcode, 8) << "\n";
     switch (Opcode) {
 #define INST(Id, Opcode0, ...)                                           \
   case Instruction::Id:                                                  \
@@ -1212,12 +1215,12 @@ public:
 #define CUSTOM_SECTION_DECL(Id, Parent)
 #define SECTION_DECL(Id, _)                                              \
   case SectionKindImmediate::Id:                                         \
-    std::cout << "Parse " << #Id << "\n";                                \
+    llvm::errs() << "Parse " << #Id << "\n";                             \
     Parsed##Id##Decl = parse##Id##Decl(Section, Ctx, SectionIdx);        \
     return Parsed##Id##Decl;
 #include <w2n/AST/DeclNodes.def>
     case SectionKindImmediate::CustomSection:
-      std::cout << "Parse CustomSection\n";
+      llvm::errs() << "Parse CustomSection\n";
       return parseCustomSectionDecl(Section, Ctx, SectionIdx);
     }
     llvm_unreachable("unknown section type");

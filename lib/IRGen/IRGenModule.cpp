@@ -2,6 +2,7 @@
 #include "Address.h"
 #include "GenDecl.h"
 #include "IRGenFunction.h"
+#include "llvm/Support/Debug.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
@@ -86,7 +87,7 @@ void IRGenModule::emitGlobalVariable(GlobalVariable * V) {
 }
 
 void IRGenModule::emitFunction(Function * F) {
-  llvm::outs() << "[IRGenModule] " << __FUNCTION__ << "\n";
+  llvm::errs() << "[IRGenModule] " << __FUNCTION__ << "\n";
   if (F->isExternalDeclaration()) {
     return;
   }

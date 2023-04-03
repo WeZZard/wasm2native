@@ -1,3 +1,4 @@
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <iostream>
 #include <w2n/AST/FileUnit.h>
@@ -76,7 +77,7 @@ int w2n::performFrontend(
 
   std::string SetupErr;
   if (Instance.setup(Invocation, SetupErr)) {
-    std::cout << SetupErr;
+    llvm::errs() << SetupErr;
     return 1;
   }
 

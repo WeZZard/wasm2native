@@ -45,7 +45,7 @@ public:
   }
 
 #define W2N_LOG_VISIT()                                                  \
-  llvm::outs() << "[RValueEmitter] " << __FUNCTION__ << "\n";
+  llvm::errs() << "[RValueEmitter] " << __FUNCTION__ << "\n";
 
   // Grab a global variable address an push to the stack.
   RValue visitGlobalGetExpr(GlobalGetExpr * E) {

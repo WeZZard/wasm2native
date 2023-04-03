@@ -209,8 +209,12 @@ public:
 
 #define DECL(Id, Parent)
 #define SECTION_DECL(Id, Parent)                                         \
-  Id##Decl * get##Id() { return getSection<Id##Decl>(); }                \
-  const Id##Decl * get##Id() const { return getSection<Id##Decl>(); }
+  Id##Decl * get##Id() {                                                 \
+    return getSection<Id##Decl>();                                       \
+  }                                                                      \
+  const Id##Decl * get##Id() const {                                     \
+    return getSection<Id##Decl>();                                       \
+  }
 
 #include <w2n/AST/DeclNodes.def>
 
@@ -241,9 +245,13 @@ public:                                                                  \
     return get##Id##ListImpl();                                          \
   }                                                                      \
                                                                          \
-  id##_iterator id##_begin() { return get##Id##List().begin(); }         \
+  id##_iterator id##_begin() {                                           \
+    return get##Id##List().begin();                                      \
+  }                                                                      \
                                                                          \
-  id##_iterator id##_end() { return get##Id##List().end(); }             \
+  id##_iterator id##_end() {                                             \
+    return get##Id##List().end();                                        \
+  }                                                                      \
                                                                          \
   const_##id##_iterator id##_begin() const {                             \
     return get##Id##List().begin();                                      \

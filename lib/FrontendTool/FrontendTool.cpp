@@ -28,7 +28,7 @@ static bool performAction(CompilerInstance& Instance, int& ReturnValue);
 static bool withSemanticAnalysis(
   CompilerInstance& Instance,
   llvm::function_ref<bool(CompilerInstance&)> Continuation,
-  bool runDespiteErrors = false
+  bool RunDespiteErrors = false
 );
 
 using ModuleOrSourceFile = PointerUnion<ModuleDecl *, SourceFile *>;
@@ -41,7 +41,7 @@ static GeneratedModule generateIR(
   StringRef OutputFilename,
   ModuleOrSourceFile MSF,
   llvm::GlobalVariable *& HashGlobal,
-  ArrayRef<std::string> parallelOutputFilenames
+  ArrayRef<std::string> ParallelOutputFilenames
 );
 
 static bool
@@ -135,12 +135,12 @@ bool withSemanticAnalysis(
 ) {
   Instance.performSemanticAnalysis();
 
-  bool hadError = Instance.getASTContext().hadError();
-  if (hadError) {
+  bool HadError = Instance.getASTContext().hadError();
+  if (HadError) {
     return true;
   }
 
-  return Continuation(Instance) || hadError;
+  return Continuation(Instance) || HadError;
 }
 
 GeneratedModule generateIR(
@@ -217,7 +217,7 @@ void performEndOfPipelineActions(CompilerInstance& Instance) {
 void freeASTContextIfPossible(CompilerInstance& Instance) {
   // If the stats reporter is installed, we need the ASTContext to live
   // through the entire compilation process.
-  if (Instance.getASTContext().Stats) {
+  if (Instance.getASTContext().Stats != nullptr) {
     return;
   }
 
@@ -229,14 +229,14 @@ void freeASTContextIfPossible(CompilerInstance& Instance) {
     return;
   }
 
-  const auto& opts = Instance.getInvocation().getFrontendOptions();
+  const auto& Opts = Instance.getInvocation().getFrontendOptions();
 
   // If there are multiple primary inputs it is too soon to free
   // the ASTContext, etc.. OTOH, if this compilation generates code for >
   // 1 primary input, then freeing it after processing the last primary is
   // unlikely to reduce the peak heap size. So, only optimize the
   // single-primary-case (or WMO).
-  if (opts.InputsAndOutputs.hasMultiplePrimaryInputs()) {
+  if (Opts.InputsAndOutputs.hasMultiplePrimaryInputs()) {
     return;
   }
 

@@ -44,56 +44,59 @@ using namespace w2n;
 using namespace irgen;
 
 static void
-addLLVMFunctionAttributes(Function * f, Signature& signature) {
+addLLVMFunctionAttributes(Function * F, Signature& Signature) {
   // TODO: Swift deals with inline and readonly here.
 }
 
 // Eagerly emit functions that are externally visible. Functions that are
 // dynamic replacements must also be eagerly emitted.
 static bool isLazilyEmittedFunction(Function * F, IRGenModule * M) {
-  if (F->isPossiblyUsedExternally())
+  if (F->isPossiblyUsedExternally()) {
     return false;
+  }
 
   // Needed by lldb to print global variables which are propagated by the
   // mandatory GlobalOpt.
-  if (M->getOptions().OptMode == OptimizationMode::NoOptimization && F->isGlobalInit())
+  if (M->getOptions().OptMode == OptimizationMode::NoOptimization && F->isGlobalInit()) {
     return false;
+  }
 
   return true;
 }
 
 llvm::Function * IRGenModule::getAddrOfFunction(
-  Function * F, ForDefinition_t forDefinition
+  Function * F, ForDefinition_t ForDefinition
 ) {
-  LinkEntity entity = LinkEntity::forFunction(F);
+  LinkEntity Entity = LinkEntity::forFunction(F);
 
   // Check whether we've created the function already.
   // FIXME: We should integrate this into the LinkEntity cache more
   // cleanly.
-  llvm::Function * Fn = Module->getFunction(entity.mangleAsString());
-  if (Fn) {
-    if (forDefinition) {
-      updateLinkageForDefinition(*this, Fn, entity);
+  llvm::Function * Fn = Module->getFunction(Entity.mangleAsString());
+  if (Fn != nullptr) {
+    if (ForDefinition != 0) {
+      updateLinkageForDefinition(*this, Fn, Entity);
     }
     return Fn;
   }
 
-  LinkInfo Link = LinkInfo::get(*this, entity, forDefinition);
-  bool isDefinition = F->isDefinition();
-  bool hasOrderNumber = isDefinition;
-  unsigned orderNumber = ~0U;
+  LinkInfo Link = LinkInfo::get(*this, Entity, ForDefinition);
+  bool IsDefinition = F->isDefinition();
+  bool HasOrderNumber = IsDefinition;
+  unsigned OrderNumber = ~0U;
   llvm::Function * InsertBefore = nullptr;
 
   // If the SIL function has a definition, we should have an order
   // number for it; make sure to insert it in that position relative
   // to other ordered functions.
-  if (hasOrderNumber) {
-    orderNumber = IRGen.getFunctionOrder(F);
-    if (auto emittedFunctionIterator = EmittedFunctionsByOrder.findLeastUpperBound(orderNumber))
-      InsertBefore = *emittedFunctionIterator;
+  if (HasOrderNumber) {
+    OrderNumber = IRGen.getFunctionOrder(F);
+    if (auto * EmittedFunctionIterator = EmittedFunctionsByOrder.findLeastUpperBound(OrderNumber)) {
+      InsertBefore = *EmittedFunctionIterator;
+    }
   }
 
-  if (isDefinition && !forDefinition && isLazilyEmittedFunction(F, this)) {
+  if (IsDefinition && (ForDefinition == 0) && isLazilyEmittedFunction(F, this)) {
     IRGen.addLazyFunction(F);
   }
 
@@ -109,14 +112,14 @@ llvm::Function * IRGenModule::getAddrOfFunction(
     shouldEmitStackProtector(F)
   );
 
-  if (!forDefinition) {
+  if (ForDefinition == 0) {
     Fn->setComdat(nullptr);
   }
 
   // If we have an order number for this function, set it up as
   // appropriate.
-  if (hasOrderNumber) {
-    EmittedFunctionsByOrder.insert(orderNumber, Fn);
+  if (HasOrderNumber) {
+    EmittedFunctionsByOrder.insert(OrderNumber, Fn);
   }
   return Fn;
 }
@@ -126,7 +129,7 @@ llvm::Function * IRGenModule::getAddrOfFunction(
 /// Given that we're going to define a global value but already have a
 /// forward-declaration of it, update its linkage.
 void irgen::updateLinkageForDefinition(
-  IRGenModule& IGM, llvm::GlobalValue * global, const LinkEntity& entity
+  IRGenModule& IGM, llvm::GlobalValue * Global, const LinkEntity& Entity
 ) {
 }
 
@@ -142,7 +145,7 @@ llvm::Function * irgen::createFunction(
 }
 
 static void markGlobalAsUsedBasedOnLinkage(
-  IRGenModule& IGM, LinkInfo& link, llvm::GlobalValue * Global
+  IRGenModule& IGM, LinkInfo& Link, llvm::GlobalValue * Global
 ) {
   // FIXME: InternalizeAtLink
   // If we're internalizing public symbols at link time, don't make
@@ -152,9 +155,9 @@ static void markGlobalAsUsedBasedOnLinkage(
 
   // Everything externally visible is considered used in Swift.
   // That mostly means we need to be good at not marking things external.
-  if (link.isUsed())
+  if (Link.isUsed()) {
     IGM.addUsedGlobal(Global);
-  else if (!IGM.IRGen.Opts.shouldOptimize() &&
+  } else if (!IGM.IRGen.Opts.shouldOptimize() &&
           // WebAssembly does not have object abstraction. The following
           // things might shall be removed.
           // FIXME: !IGM.IRGen.Opts.ConditionalRuntimeRecords &&
@@ -179,10 +182,11 @@ llvm::GlobalVariable * irgen::createGlobalVariable(
 ) {
   auto Name = LinkInfo.getName();
   llvm::GlobalValue * ExistingValue = IGM.Module->getNamedGlobal(Name);
-  if (ExistingValue) {
-    auto existingVar = dyn_cast<llvm::GlobalVariable>(ExistingValue);
-    if (existingVar && existingVar->getValueType() == ObjectType)
-      return existingVar;
+  if (ExistingValue != nullptr) {
+    auto * ExistingVar = dyn_cast<llvm::GlobalVariable>(ExistingValue);
+    if ((ExistingVar != nullptr) && ExistingVar->getValueType() == ObjectType) {
+      return ExistingVar;
+    }
 
     IGM.error(
       SourceLoc(),
@@ -194,12 +198,12 @@ llvm::GlobalVariable * irgen::createGlobalVariable(
     ExistingValue->setName(Name + ".unique");
   }
 
-  auto Var = new llvm::GlobalVariable(
+  auto * Var = new llvm::GlobalVariable(
     *IGM.Module,
     ObjectType,
-    /*constant*/ false,
+    /*isConstant*/ false,
     LinkInfo.getLinkage(),
-    /*initializer*/ nullptr,
+    /*Initializer*/ nullptr,
     Name
   );
   ApplyIRLinkage({LinkInfo.getLinkage(),
@@ -230,16 +234,17 @@ irgen::createLinkerDirectiveVariable(IRGenModule& IGM, StringRef Name) {
   static const uint8_t Alignment = 8;
 
   // Use a char type as the type for this linker directive.
-  auto ProperlySizedIntTy = Type::getBuiltinIntegerType(
+  auto * ProperlySizedIntTy = Type::getBuiltinIntegerType(
     Size, IGM.getWasmModule()->getASTContext()
   );
-  auto StorageType = IGM.getStorageType(ProperlySizedIntTy);
+  auto * StorageType = IGM.getStorageType(ProperlySizedIntTy);
 
   llvm::GlobalValue * ExistingValue = IGM.Module->getNamedGlobal(Name);
-  if (ExistingValue) {
-    auto ExistingVar = dyn_cast<llvm::GlobalVariable>(ExistingValue);
-    if (ExistingVar && ExistingVar->getValueType() == StorageType)
+  if (ExistingValue != nullptr) {
+    auto * ExistingVar = dyn_cast<llvm::GlobalVariable>(ExistingValue);
+    if ((ExistingVar != nullptr) && ExistingVar->getValueType() == StorageType) {
       return ExistingVar;
+    }
 
     IGM.error(
       SourceLoc(),
@@ -253,7 +258,7 @@ irgen::createLinkerDirectiveVariable(IRGenModule& IGM, StringRef Name) {
 
   llvm::GlobalValue::LinkageTypes Linkage =
     llvm::GlobalValue::LinkageTypes::ExternalLinkage;
-  auto var = new llvm::GlobalVariable(
+  auto * Var = new llvm::GlobalVariable(
     *IGM.Module,
     StorageType,
     /*constant*/ true,
@@ -266,20 +271,20 @@ irgen::createLinkerDirectiveVariable(IRGenModule& IGM, StringRef Name) {
      llvm::GlobalValue::VisibilityTypes::DefaultVisibility,
      llvm::GlobalValue::DLLStorageClassTypes::DefaultStorageClass}
   )
-    .to(var);
-  var->setAlignment(llvm::MaybeAlign(Alignment));
-  disableAddressSanitizer(IGM, var);
-  IGM.addUsedGlobal(var);
-  return var;
+    .to(Var);
+  Var->setAlignment(llvm::MaybeAlign(Alignment));
+  disableAddressSanitizer(IGM, Var);
+  IGM.addUsedGlobal(Var);
+  return Var;
 }
 
 void irgen::disableAddressSanitizer(
-  IRGenModule& IGM, llvm::GlobalVariable * var
+  IRGenModule& IGM, llvm::GlobalVariable * Var
 ) {
   // Add an operand to llvm.asan.globals denylisting this global variable.
-  llvm::Metadata * metadata[] = {
+  llvm::Metadata * Metadata[] = {
     // The global variable to denylist.
-    llvm::ConstantAsMetadata::get(var),
+    llvm::ConstantAsMetadata::get(Var),
 
     // Source location. Optional, unnecessary here.
     nullptr,
@@ -289,17 +294,19 @@ void irgen::disableAddressSanitizer(
 
     // Whether the global is dynamically initialized.
     llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(
-      llvm::Type::getInt1Ty(IGM.Module->getContext()), false
+      llvm::Type::getInt1Ty(IGM.Module->getContext()),
+      static_cast<uint64_t>(false)
     )),
 
     // Whether the global is denylisted.
     llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(
-      llvm::Type::getInt1Ty(IGM.Module->getContext()), true
+      llvm::Type::getInt1Ty(IGM.Module->getContext()),
+      static_cast<uint64_t>(true)
     ))};
 
-  auto * globalNode =
-    llvm::MDNode::get(IGM.Module->getContext(), metadata);
-  auto * asanMetadata =
+  auto * GlobalNode =
+    llvm::MDNode::get(IGM.Module->getContext(), Metadata);
+  auto * AsanMetadata =
     IGM.Module->getOrInsertNamedMetadata("llvm.asan.globals");
-  asanMetadata->addOperand(globalNode);
+  AsanMetadata->addOperand(GlobalNode);
 }

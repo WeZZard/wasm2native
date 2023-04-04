@@ -679,7 +679,7 @@ public:
   }
 
   InstNode parseInstruction(ReadContext& Ctx) {
-    Instruction Opcode = Instruction(readOpcode(Ctx));
+    auto Opcode = readOpcode(Ctx);
     llvm::errs(
     ) << "[WasmParser::Implementation] [parseInstruction] ["
       << BlockLevel
@@ -692,9 +692,13 @@ public:
       << llvm::format_hex((uint8_t)Opcode, 8) << "\n";
     switch (Opcode) {
 #define INST(Id, Opcode0, ...)                                           \
-  case Instruction::Id:                                                  \
+  case Opcode0:                                                          \
     return parse##Id(Ctx);
 #include <w2n/AST/Instructions.def>
+    default:
+      // Unimplemented opcode!
+      w2n_unimplemented();
+      break;
     }
   }
 

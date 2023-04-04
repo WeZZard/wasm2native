@@ -4,6 +4,7 @@ add_w2n_host_library(w2nIRGen STATIC
   GenDecl.cpp
   IRGen.cpp
   IRGenerator.cpp
+  IRGenConstructor.cpp
   IRGenFunction.cpp
   IRGenModule.cpp
   IRGenRequests.cpp
@@ -13,10 +14,10 @@ add_w2n_host_library(w2nIRGen STATIC
   Signature.cpp
   WasmTargetInfo.cpp
   LLVM_LINK_COMPONENTS
-    target
-    transformutils
-    bitwriter
-    lto
+  target
+  transformutils
+  bitwriter
+  lto
 )
 target_link_libraries(w2nIRGen PRIVATE
   w2nAST

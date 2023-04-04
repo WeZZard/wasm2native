@@ -1,3 +1,4 @@
+#include <llvm/ADT/PointerIntPair.h>
 #include <llvm/ADT/Twine.h>
 #include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/Module.h>
@@ -6,13 +7,15 @@
 using namespace w2n;
 
 GlobalVariable::GlobalVariable(
-  ModuleDecl& Module,
+  ModuleDecl * Module,
   ASTLinkage Linkage,
   uint32_t Index,
   llvm::Optional<Identifier> Name,
   ValueType * Ty,
   bool IsMutable,
-  // Function& Init,
+  bool IsExported,
+  bool IsImported,
+  Function * Init,
   GlobalDecl * Decl
 ) :
   Module(Module),
@@ -21,22 +24,58 @@ GlobalVariable::GlobalVariable(
   Name(Name),
   Ty(Ty),
   IsMutable(IsMutable),
-  // Init(Init),
+  IsExported(IsExported),
+  InitAndIsImported(llvm::PointerIntPair<Function *, 1>(
+    Init, static_cast<unsigned int>(IsImported)
+  )),
   Decl(Decl) {
 }
 
 GlobalVariable * GlobalVariable::create(
-  ModuleDecl& Module,
+  ModuleDecl * Module,
   ASTLinkage Linkage,
   uint32_t Index,
   llvm::Optional<Identifier> Name,
   ValueType * Ty,
   bool IsMutable,
-  // Function& Init,
+  bool IsExported,
+  Function * Init,
   GlobalDecl * Decl
 ) {
-  return new (Module.getASTContext())
-    GlobalVariable(Module, Linkage, Index, Name, Ty, IsMutable, Decl);
+  return new (Module->getASTContext()) GlobalVariable(
+    Module,
+    Linkage,
+    Index,
+    Name,
+    Ty,
+    IsMutable,
+    IsExported,
+    false,
+    Init,
+    Decl
+  );
+}
+
+GlobalVariable * GlobalVariable::create(
+  ModuleDecl * Module,
+  ASTLinkage Linkage,
+  uint32_t Index,
+  llvm::Optional<Identifier> Name,
+  ValueType * Ty,
+  bool IsMutable
+) {
+  return new (Module->getASTContext()) GlobalVariable(
+    Module,
+    Linkage,
+    Index,
+    Name,
+    Ty,
+    IsMutable,
+    true,
+    true,
+    nullptr,
+    nullptr
+  );
 }
 
 std::string GlobalVariable::getDescriptiveName() const {
@@ -44,7 +83,7 @@ std::string GlobalVariable::getDescriptiveName() const {
 }
 
 std::string GlobalVariable::getFullQualifiedDescriptiveName() const {
-  return (llvm::Twine(Module.getName().str()) + llvm::Twine(".")
+  return (llvm::Twine(Module->getName().str()) + llvm::Twine(".")
           + llvm::Twine(getDescriptiveName()))
     .str();
 }

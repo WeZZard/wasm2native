@@ -43,6 +43,9 @@ private:
 
   llvm::Optional<Identifier> Name;
 
+  /// FIXME: \c FuncTypeDecl is weird here.
+  /// When we creating function for global inits, it is weird to create
+  /// a \c FuncTypeDecl in-place.
   FuncTypeDecl * Type;
 
   /// @note: Global variable's init expression does not have locals.
@@ -101,21 +104,10 @@ public:
   static Function * createInit(
     ModuleDecl * Module,
     uint32_t Index,
-    FuncTypeDecl * Type,
+    ValueType * ReturnType,
     ExpressionDecl * Expression,
     llvm::Optional<Identifier> Name
-  ) {
-    return new (Expression->getASTContext()) Function(
-      Module,
-      FunctionKind::GlobalInit,
-      Index,
-      Name,
-      Type,
-      {},
-      Expression,
-      false
-    );
-  }
+  );
 
   FunctionKind getKind() const {
     return Kind;
@@ -206,20 +198,13 @@ public:
     }
   }
 
-  std::string getUniqueName() const {
-    return (llvm::Twine(getDescriptiveKindName()) + llvm::Twine("$")
-            + llvm::Twine(Index))
-      .str();
-  }
+  /// A name used for debugging the compiler like: global-init$0,
+  /// global-init$1 or function$0, funciton$1 ...
+  std::string getDescriptiveName() const;
 
-  std::string getUnmangledName() const {
-    if (hasName()) {
-      return (llvm::Twine(getUniqueName()) + llvm::Twine(" : ")
-              + llvm::Twine(getName().value().get()))
-        .str();
-    }
-    return getUniqueName();
-  }
+  /// A full qualified name used for debugging the compiler like:
+  /// module.global-init$0, module.global-init$1 ...
+  std::string getFullQualifiedDescriptiveName() const;
 
   W2N_DEBUG_DUMP;
 

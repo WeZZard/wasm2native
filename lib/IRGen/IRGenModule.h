@@ -122,7 +122,7 @@ public:
 
   void emitGlobalVariable(GlobalVariable * V);
 
-  void emitFunction(Function * Func);
+  llvm::Function * emitFunction(Function * Func);
 
   void emitCoverageMapping();
 

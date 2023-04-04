@@ -1,6 +1,11 @@
+#include "Address.h"
 #include "IRGenFunction.h"
 #include "Reduction.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include <cassert>
 #include <w2n/AST/Lowering.h>
+#include <w2n/Basic/Unimplemented.h>
 
 using namespace w2n;
 using namespace w2n::irgen;
@@ -12,9 +17,18 @@ namespace {
 class StmtEmitter : public Lowering::ASTVisitor<StmtEmitter> {
 public:
 
+  IRGenModule& IGM;
+
+  IRBuilder& Builder;
+
   Configuration& Config;
 
-  StmtEmitter(Configuration& Config) : Config(Config){};
+  StmtEmitter(
+    IRGenModule& IGM, IRBuilder& Builder, Configuration& Config
+  ) :
+    IGM(IGM),
+    Builder(Builder),
+    Config(Config){};
 
   StmtEmitter(const StmtEmitter&) = delete;
   StmtEmitter& operator=(const StmtEmitter&) = delete;
@@ -31,7 +45,7 @@ public:
 #pragma mark - IRGenFunction
 
 void IRGenFunction::emitStmt(Stmt * S) {
-  StmtEmitter(*TopConfig).visit(S);
+  StmtEmitter(IGM, Builder, *TopConfig).visit(S);
 }
 
 #pragma mark - StmtEmitter Implementation
@@ -45,7 +59,25 @@ void StmtEmitter::visitBrStmt(BrStmt * S) {
 }
 
 void StmtEmitter::visitEndStmt(EndStmt * S) {
-  w2n_unimplemented();
+  auto TopKind = Config.topKind();
+  std::vector<Operand *> PoppedOps;
+  while (TopKind != ExecutionStackRecordKind::Frame
+         && TopKind != ExecutionStackRecordKind::Label) {
+    switch (TopKind) {
+    case ExecutionStackRecordKind::Operand:
+      PoppedOps.push_back(Config.pop<Operand>());
+      break;
+    default: Config.pop(); break;
+    }
+    TopKind = Config.topKind();
+  }
+  if (TopKind == ExecutionStackRecordKind::Frame) {
+    auto& F = Config.top<Frame>();
+    auto& RetAddr = F.getReturn();
+    assert(PoppedOps.size() == 1);
+    // FIXME: Alignment
+    Builder.CreateStore(PoppedOps[0]->getLowered(), RetAddr);
+  }
 }
 
 void StmtEmitter::visitBrIfStmt(BrIfStmt * S) {

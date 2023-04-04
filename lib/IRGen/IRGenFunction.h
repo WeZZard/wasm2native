@@ -70,7 +70,7 @@ public:
     return Fn->getASTContext();
   }
 
-  void emitFunction();
+  llvm::Function * emitFunction();
 
   void unimplemented(SourceLoc Loc, StringRef Message);
 

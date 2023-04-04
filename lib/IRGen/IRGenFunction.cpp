@@ -42,9 +42,9 @@ IRGenFunction::IRGenFunction(
 IRGenFunction::~IRGenFunction() {
 }
 
-void IRGenFunction::emitFunction() {
+llvm::Function * IRGenFunction::emitFunction() {
   if (CurFn != nullptr) {
-    return;
+    return CurFn;
   }
 
   llvm::FunctionType * FnTy = IGM.getFuncType(Fn->getType()->getType());
@@ -52,7 +52,7 @@ void IRGenFunction::emitFunction() {
   CurFn = llvm::Function::Create(
     FnTy,
     llvm::Function::ExternalLinkage,
-    Fn->getUniqueName(),
+    Fn->getDescriptiveName(),
     IGM.getModule()
   );
 
@@ -78,6 +78,8 @@ void IRGenFunction::emitFunction() {
   emitEpilog();
 
   mergeCleanupBlocks();
+
+  return CurFn;
 }
 
 void IRGenFunction::unimplemented(SourceLoc Loc, StringRef Message) {

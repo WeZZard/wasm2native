@@ -30,13 +30,19 @@ GlobalVariableRequest::evaluate(Evaluator& Eval, ModuleDecl * Mod) const {
   uint32_t GlobalCount = 0;
 
   for (GlobalDecl * D : G->getGlobals()) {
+    auto * InitFn = Function::createInit(
+      Mod, D->getIndex(), D->getType()->getType(), D->getInit(), None
+    );
     GlobalVariable * V = GlobalVariable::create(
-      *Mod,
+      Mod,
       GetASTLinkage(D),
       D->getIndex(),
       None,
       D->getType()->getType(),
       D->getType()->isMutable(),
+      // FIXME: Check export info when export is implemented
+      false,
+      InitFn,
       D
     );
     Globals->push_back(V);

@@ -1,10 +1,10 @@
 #ifndef W2N_AST_MODULE_H
 #define W2N_AST_MODULE_H
 
-#include "llvm/ADT/STLExtras.h"
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/None.h>
 #include <llvm/ADT/Optional.h>
+#include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/ilist.h>
 #include <llvm/Support/ErrorHandling.h>
@@ -23,6 +23,8 @@
 
 namespace w2n {
 
+class Function;
+class GlobalVariable;
 class FileUnit;
 class SourceFile;
 class ASTContext;

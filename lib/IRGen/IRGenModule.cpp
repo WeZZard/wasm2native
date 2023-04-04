@@ -1,12 +1,14 @@
 #include "IRGenModule.h"
 #include "Address.h"
 #include "GenDecl.h"
+#include "IRGenConstructor.h"
 #include "IRGenFunction.h"
-#include "llvm/Support/Debug.h"
+#include "llvm/Transforms/Utils/ModuleUtils.h"
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/Function.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
@@ -20,7 +22,9 @@
 #include <memory>
 #include <w2n/AST/ASTVisitor.h>
 #include <w2n/AST/Decl.h>
+#include <w2n/AST/GlobalVariable.h>
 #include <w2n/AST/IRGenRequests.h>
+#include <w2n/AST/Linkage.h>
 #include <w2n/AST/Module.h>
 #include <w2n/Basic/Unimplemented.h>
 #include <w2n/IRGen/Linking.h>
@@ -83,17 +87,25 @@ GeneratedModule IRGenModule::intoGeneratedModule() && {
 }
 
 void IRGenModule::emitGlobalVariable(GlobalVariable * V) {
-  getAddrOfGlobalVariable(V, ForDefinition);
+  ForDefinition_t Def = ForDefinition;
+  if (V->isImported()) {
+    Def = NotForDefinition;
+  }
+  Address Addr = getAddrOfGlobalVariable(V, Def);
+  if (Def != NotForDefinition) {
+    auto * InitFn = emitFunction(V->getInit());
+    emitGlobalVariableConstructor(*this, V, Addr, InitFn);
+  }
 }
 
-void IRGenModule::emitFunction(Function * F) {
+llvm::Function * IRGenModule::emitFunction(Function * F) {
   llvm::errs() << "[IRGenModule] " << __FUNCTION__ << "\n";
   if (F->isExternalDeclaration()) {
-    return;
+    return nullptr;
   }
 
   // TODO: PrettyStackTraceFunction stackTrace("emitting IR", f);
-  IRGenFunction(*this, F).emitFunction();
+  return IRGenFunction(*this, F).emitFunction();
 }
 
 void IRGenModule::emitCoverageMapping() {

@@ -1,6 +1,7 @@
 #ifndef W2N_AST_GLOBALVARIABLE_H
 #define W2N_AST_GLOBALVARIABLE_H
 
+#include <llvm/ADT/PointerIntPair.h>
 #include <llvm/ADT/ilist.h>
 #include <w2n/AST/ASTAllocated.h>
 #include <w2n/AST/Decl.h>
@@ -24,47 +25,60 @@ class GlobalVariable :
   public ASTAllocated<GlobalVariable> {
 private:
 
-  ModuleDecl& Module;
+  ModuleDecl * Module;
   ASTLinkage Linkage;
   uint32_t Index;
   llvm::Optional<Identifier> Name;
   ValueType * Ty;
   bool IsMutable;
-  // Function& Init;
+  bool IsExported;
+  llvm::PointerIntPair<Function *, 1> InitAndIsImported;
   GlobalDecl * Decl;
 
   GlobalVariable(
-    ModuleDecl& Module,
+    ModuleDecl * Module,
     ASTLinkage Linkage,
     uint32_t Index,
     llvm::Optional<Identifier> Name,
     ValueType * Ty,
     bool IsMutable,
-    // Function& Init,
+    bool IsExported,
+    bool IsImported,
+    Function * Init,
     GlobalDecl * Decl
   );
 
 public:
 
   static GlobalVariable * create(
-    ModuleDecl& Module,
+    ModuleDecl * Module,
     ASTLinkage Linkage,
     uint32_t Index,
     llvm::Optional<Identifier> Name,
     ValueType * Ty,
     bool IsMutable,
-    // Function& Init,
-    GlobalDecl * Decl = nullptr
+    bool IsExported,
+    Function * Init,
+    GlobalDecl * Decl
+  );
+
+  static GlobalVariable * create(
+    ModuleDecl * Module,
+    ASTLinkage Linkage,
+    uint32_t Index,
+    llvm::Optional<Identifier> Name,
+    ValueType * Ty,
+    bool IsMutable
   );
 
   ~GlobalVariable() {
   }
 
-  ModuleDecl& getModule() {
+  ModuleDecl * getModule() {
     return Module;
   };
 
-  const ModuleDecl& getModule() const {
+  const ModuleDecl * getModule() const {
     return Module;
   }
 
@@ -92,9 +106,25 @@ public:
     return IsMutable;
   }
 
+  bool isExported() const {
+    return IsExported;
+  }
+
+  bool isImported() const {
+    return InitAndIsImported.getInt() != 0;
+  }
+
+  Function * getInit() {
+    return InitAndIsImported.getPointer();
+  };
+
+  const Function * getInit() const {
+    return InitAndIsImported.getPointer();
+  }
+
   GlobalDecl * getDecl() {
     return Decl;
-  };
+  }
 
   const GlobalDecl * getDecl() const {
     return Decl;

@@ -220,9 +220,9 @@ std::string LinkEntity::mangleAsString() const {
   case Kind::Memory: w2n_unimplemented();
   case Kind::ReadonlyGlobalVariable:
   case Kind::GlobalVariable: {
-    auto G = getGlobalVariable();
-    auto& M = G->getModule();
-    return (Twine(M.getName().str()) + Twine(".global$")
+    auto * G = getGlobalVariable();
+    auto * M = G->getModule();
+    return (Twine(M->getName().str()) + Twine(".global$")
             + Twine(G->getIndex()))
       .str();
   }

@@ -25,6 +25,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -312,6 +313,10 @@ private:
       return Prev;
     }
 
+    void setPrevious(Node * Node) {
+      Prev = Node;
+    }
+
     ExecutionStackRecordKind getKind() {
       return Kind;
     }
@@ -415,6 +420,12 @@ public:
     Top = Node::create(*Context, std::move(C), Top);
   }
 
+  template <typename NodeTy>
+  void push(NodeTy * Node) {
+    Node->setPrevious(Top);
+    Top = Node;
+  }
+
   template <typename ContentTy, typename... Args>
   void push(Args&&... AA) {
     Top = Node::create(
@@ -426,12 +437,14 @@ public:
   ContentTy * pop() {
     Node * Popped = Top;
     Top = Top->getPrevious();
+    Popped->setPrevious(nullptr);
     return &Popped->assertingGet<ContentTy>();
   }
 
   ExecutionStackRecordKind pop() {
     Node * Popped = Top;
     Top = Top->getPrevious();
+    Popped->setPrevious(nullptr);
     return Popped->getKind();
   }
 

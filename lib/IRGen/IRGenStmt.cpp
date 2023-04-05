@@ -1,9 +1,10 @@
 #include "Address.h"
 #include "IRGenFunction.h"
 #include "Reduction.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/DerivedTypes.h>
 #include <cassert>
+#include <stack>
 #include <w2n/AST/Lowering.h>
 #include <w2n/Basic/Unimplemented.h>
 
@@ -59,27 +60,28 @@ void StmtEmitter::visitBrStmt(BrStmt * S) {
 }
 
 void StmtEmitter::visitEndStmt(EndStmt * S) {
-  auto TopKind = Config.topKind();
-  std::vector<Operand *> PoppedOps;
-  while (TopKind != ExecutionStackRecordKind::Frame
-         && TopKind != ExecutionStackRecordKind::Label) {
-    switch (TopKind) {
-    case ExecutionStackRecordKind::Operand:
-      PoppedOps.push_back(Config.pop<Operand>());
-      break;
-    default: Config.pop(); break;
-    }
-    TopKind = Config.topKind();
+  auto NextTopKind = Config.topKind();
+  std::stack<Operand *> PoppedOps;
+  while (NextTopKind == ExecutionStackRecordKind::Operand) {
+    PoppedOps.push(Config.pop<Operand>());
+    NextTopKind = Config.topKind();
   }
-  if (TopKind == ExecutionStackRecordKind::Frame) {
+  if (NextTopKind == ExecutionStackRecordKind::Frame) {
     auto& F = Config.top<Frame>();
     auto& RetAddr = F.getReturn();
     if (!PoppedOps.empty()) {
       assert(PoppedOps.size() == 1);
       // FIXME: Alignment
-      Builder.CreateStore(PoppedOps[0]->getLowered(), RetAddr);
+      Builder.CreateStore(PoppedOps.top()->getLowered(), RetAddr);
     } else {
       assert(F.hasNoReturn());
+    }
+  } else if (NextTopKind == ExecutionStackRecordKind::Label) {
+    Config.pop<Label>();
+    while (!PoppedOps.empty()) {
+      auto * Node = PoppedOps.top();
+      PoppedOps.pop();
+      Config.push(Node);
     }
   }
 }

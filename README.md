@@ -4,20 +4,20 @@ A WebAssembly binary to native code compiler
 
 ## About the Project
 
-I set the project to learn the details of building an industrial-level
+I started the project to learn the details of building an industrial-level
 compiler with LLVM technologies and modern compiler architecture brought
-from the Swift compiler. The idea originated from the process that I
-was trying to do some optimizations for the product of the company that
-I'm serving for on the level of the Swift compiler. I encountered a lot of
-questions about how to use LLVM in this process. Thus I thought that the
-best way to have answers to these questions is to build a compiler with
-LLVM technologies and reuse the architecture of the Swift
+from the Swift compiler. The idea originated in the process when I
+was trying to do some optimizations on the level of the Swift compiler for
+the product of the company that I'm serving. Since I encountered a lot of
+questions about how to use LLVM in the meanwhile, I brought out the idea
+that the best way to have answers to those questions is to build a
+compiler with LLVM technologies and reuse the architecture of the Swift
 compiler.
 
-Even though this project started from my interest, it is open for
-contribution.
+But the project itself is open for contribution though it was started from
+my interest.
 
-WebAssembly is chosen because of its simplicity of grammar. This can
+WebAssembly is chosen because of its simplicity in grammar. This can
 free developers of the project from complex frontend implementations and
 enables them to focus on the middle-end and backend.
 
@@ -64,13 +64,13 @@ Status Transition: None -> Prototype -> Ported from Swift -> WIP -> Done
 
 ### Prerequisites
 
-To build the project, you have to get CMake and ninja installed on your
+To build the project, you have to get CMake and Ninja installed on your
 computer.
 
 For **macOS**:
 
-Developers who use macOS may have [homebrew](https://brew.sh) installed on
-their computer firstly.
+Developers who use macOS may have [Homebrew](https://brew.sh) installed on
+their computers first.
 
 ```shell
 brew install cmake ninja
@@ -78,7 +78,7 @@ brew install cmake ninja
 
 ### Getting Started
 
-By running the following code you can get the monorepo setup and the
+By running the following code you can get the mono-repo setup and the
 project built with debug configuration.
 
 ```shell

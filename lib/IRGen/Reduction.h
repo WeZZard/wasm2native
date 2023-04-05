@@ -212,6 +212,15 @@ public:
     return Return;
   }
 
+  bool hasNoReturn() const {
+    return getFunc()
+      ->getType()
+      ->getType()
+      ->getReturns()
+      ->getValueTypes()
+      .empty();
+  }
+
   static ExecutionStackRecordKind kindof() {
     return ExecutionStackRecordKind::Frame;
   }

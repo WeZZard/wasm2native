@@ -74,9 +74,13 @@ void StmtEmitter::visitEndStmt(EndStmt * S) {
   if (TopKind == ExecutionStackRecordKind::Frame) {
     auto& F = Config.top<Frame>();
     auto& RetAddr = F.getReturn();
-    assert(PoppedOps.size() == 1);
-    // FIXME: Alignment
-    Builder.CreateStore(PoppedOps[0]->getLowered(), RetAddr);
+    if (!PoppedOps.empty()) {
+      assert(PoppedOps.size() == 1);
+      // FIXME: Alignment
+      Builder.CreateStore(PoppedOps[0]->getLowered(), RetAddr);
+    } else {
+      assert(F.hasNoReturn());
+    }
   }
 }
 
